@@ -1,0 +1,6 @@
+# VSCode
+.vscode/
+
+# Rust
+/target
+/coverage
