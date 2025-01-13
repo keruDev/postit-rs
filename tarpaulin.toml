@@ -1,0 +1,11 @@
+[global]
+exclude-files = ["src/main.rs"]
+run-types = ["Tests"]
+ignore-tests = false
+verbose = true
+line = true
+fail-under = 90
+
+[report]
+output-dir = "coverage"
+out = ["Html"]

@@ -4,3 +4,9 @@
 # Rust
 /target
 /coverage
+
+# Rust - tarpaulin
+build_rs_cov.profraw
+
+# Misc
+*.csv

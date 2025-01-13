@@ -1,10 +1,11 @@
+use std::fmt;
+
 use clap::ValueEnum;
 use colored::{ColoredString, Colorize as _};
-use std::fmt::{self, Debug};
 
 
 #[derive(Debug, Clone, Copy, ValueEnum, Eq, PartialEq)]
-/// Priority of the Task, which is used to define the task's color and importance. 
+/// Priority of the Task, which is used to define the task's color and importance.
 pub enum Priority {
     /// High priority tasks are colored red.
     High,
@@ -13,7 +14,7 @@ pub enum Priority {
     /// Low priority tasks are colored blue.
     Low,
     /// None priority tasks are colored white.
-    None
+    None,
 }
 
 impl Priority {
@@ -39,7 +40,7 @@ impl fmt::Display for Priority {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
 /// Representation of a Task.
 pub struct Task {
     /// Identifier of the task.
@@ -64,6 +65,36 @@ impl Task {
         Self { id, content, priority, checked }
     }
 
+    /// Transforms a line with the format `id,content,priority,checked` to a Task.
+    pub fn from(line: &str) -> Self {
+        let (id, content, priority, checked) = Self::unpack(line);
+        Self::new(id, content, priority, checked)
+    }
+
+    /// Splits a line with the format `id,content,priority,checked` and handles each value.
+    ///
+    /// # Panics
+    /// If the `id` field can't be obtained from the first index or there is an error parsing.
+    /// If the `content` field can't be obtained from the second index.
+    pub fn unpack(line: &str) -> (u128, String, Priority, bool) {
+        let list: Vec<&str> = line.split(',').collect();
+
+        let id = list[0]
+            .parse()
+            .expect("id field parsed incorrectly; must be a natural number");
+
+        let content = list[1].trim().to_owned();
+
+        let priority = list
+            .get(2)
+            .map_or(Priority::Med, |&s| Priority::from_str(s.trim()));
+
+        let checked = list.get(3)
+            .is_some_and(|&s| matches!(s.trim(), "true"));
+
+        (id, content, priority, checked)
+    }
+
     /// Returns the fields of the Task instance.
     pub const fn fields(&self) -> (&u128, &String, &Priority, &bool) {
         (&self.id, &self.content, &self.priority, &self.checked)
@@ -75,36 +106,8 @@ impl Task {
         format!("{id},{content},{priority},{checked}")
     }
 
-    /// Splits a line with the format `id,content,priority,checked` and handles each value.
-    /// 
-    /// # Panics
-    /// If the `id` field can't be obtained from the first index or there is an error parsing.
-    /// If the `content` field can't be obtained from the second index.
-    pub fn unpack(line: &str) -> (u128, String, Priority, bool) {
-        let list: Vec<&str> = line.split(',').collect();
-    
-        let id = list[0].parse()
-            .expect("id field parsed incorrectly; must be a natural number");
-    
-        let content = list[1].trim().to_owned();
-    
-        let priority = list.get(2)
-            .map_or(Priority::Med, |&s| Priority::from_str(s.trim()));
-    
-        let checked = list.get(3)
-            .is_some_and(|&s| matches!(s.trim(), "true"));
-    
-        (id, content, priority, checked)
-    }
-
-    /// Transforms a line with the format `id,content,priority,checked` to a Task.
-    pub fn from_str(line: &str) -> Self {
-        let (id, content, priority, checked) = Self::unpack(line);
-        Self::new(id, content, priority, checked)
-    }
-
     /// Marks the task as checked.
-    /// 
+    ///
     /// # Errors
     /// If the task is already checked, an error will be returned.
     pub fn check(&mut self) -> Result<&Self, &str> {
@@ -115,9 +118,9 @@ impl Task {
             Ok(self)
         }
     }
-    
+
     /// Marks the task as unchecked.
-    /// 
+    ///
     /// # Errors
     /// If the task is already unchecked, an error will be returned.
     pub fn uncheck(&mut self) -> Result<&Self, &str> {
@@ -129,7 +132,7 @@ impl Task {
         }
     }
 
-    /// Stylizes the string to colored and strikethrough. 
+    /// Transforms the task into a stylized string (colored, bold and strikethrough).
     pub fn stylize(&self) -> ColoredString {
         let msg = &self.to_string();
 

@@ -1,16 +1,18 @@
 [package]
 name = "postit"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["cristianmarcosmartin1@gmail.com"]
 description = "Task manager on your CLI."
 license = "MIT OR Apache-2.0"
-readme = "README.md"
 repository = "https://github.com/keruDev/postit-rs"
+documentation = "https://docs.rs/postit/"
 keywords = ["cli", "productivity", "todo-list"]
 categories = ["command-line-utilities"]
+readme = "README.md"
 
 [dependencies]
+colored = "2.1.0"
 clap = { version = "4.5", default-features = false, features = [
 	"std",
 	"derive",
@@ -19,8 +21,11 @@ clap = { version = "4.5", default-features = false, features = [
 	"error-context",
 	"suggestions",
 ] }
-colored = "2.1.0"
 
 [[bin]]
 name = "postit"
 path = "src/main.rs"
+
+[[test]]
+name = "unittest"
+path = "tests/mod.rs"
