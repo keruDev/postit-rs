@@ -21,6 +21,8 @@ clap = { version = "4.5", default-features = false, features = [
 	"error-context",
 	"suggestions",
 ] }
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.135"
 
 [[bin]]
 name = "postit"

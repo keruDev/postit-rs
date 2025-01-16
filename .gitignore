@@ -10,3 +10,4 @@ build_rs_cov.profraw
 
 # Misc
 *.csv
+*.json

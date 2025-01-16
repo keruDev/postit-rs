@@ -2,6 +2,7 @@ use crate::core::task::Task;
 use crate::core::todo::Todo;
 
 use super::csv::Csv;
+use super::json::Json;
 
 use std::fmt;
 use std::fs;
@@ -15,12 +16,15 @@ use clap::ValueEnum;
 pub enum FileExtension {
     /// Extension of a `Csv` file.
     Csv,
+    /// Extension of a `Json` file.
+    Json,
 }
 
 impl fmt::Display for FileExtension {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Self::Csv => write!(f, "csv"),
+            Self::Json => write!(f, "json"),
         }
     }
 }
@@ -31,6 +35,7 @@ impl FileExtension {
     pub fn from_os_str(ext: &std::ffi::OsStr) -> Self {
         match ext.to_str() {
             Some("csv") => Self::Csv,
+            Some("json") => Self::Json,
             Some("txt") => {
                 println!("Text files use CSV format by default");
                 Self::Csv
@@ -120,26 +125,29 @@ impl SaveFile {
         }
     }
 
-    /// Returns a vector of tasks from the contents of the file.
-    pub fn to_tasks(&self) -> Vec<Task> {
-        match self.ext {
-            FileExtension::Csv => Csv::to_tasks(self),
-        }
-    }
-
     /// Returns the lines of the file.
     pub fn read(&self) -> Vec<String> {
         match self.ext {
             FileExtension::Csv => Csv::read(self),
+            FileExtension::Json => Json::read(self),
+        }
+    }
+
+    /// Returns a vector of tasks from the contents of the file.
+    pub fn to_tasks(&self) -> Vec<Task> {
+        match self.ext {
+            FileExtension::Csv => Csv::to_tasks(self),
+            FileExtension::Json => Json::to_tasks(self),
         }
     }
 
     /// Saves the contents of the Todo instance into a file.
     pub fn save(&self, todo: &Todo) {
-        let bytes = match self.ext {
-            FileExtension::Csv => Csv::to_bytes(&todo.tasks),
+        match self.ext {
+            FileExtension::Csv => {
+                self.write(Csv::to_bytes(&todo.tasks));
+            },
+            FileExtension::Json => Json::write(&self, &todo.tasks),
         };
-
-        self.write(bytes)
     }
 }

@@ -2,9 +2,11 @@ use std::fmt;
 
 use clap::ValueEnum;
 use colored::{ColoredString, Colorize as _};
+use serde::{Deserialize, Serialize};
 
 
-#[derive(Debug, Clone, Copy, ValueEnum, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, ValueEnum, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 /// Priority of the Task, which is used to define the task's color and importance.
 pub enum Priority {
     /// High priority tasks are colored red.
@@ -40,7 +42,8 @@ impl fmt::Display for Priority {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 /// Representation of a Task.
 pub struct Task {
     /// Identifier of the task.
