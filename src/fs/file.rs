@@ -1,153 +1,103 @@
 use crate::core::task::Task;
 use crate::core::todo::Todo;
+use crate::fs::csv::Csv;
+use crate::fs::json::Json;
 
-use super::csv::Csv;
-use super::json::Json;
-
-use std::fmt;
+use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use clap::ValueEnum;
-
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
-/// Representation of the file extensions allowed.
-pub enum FileExtension {
-    /// Extension of a `Csv` file.
-    Csv,
-    /// Extension of a `Json` file.
-    Json,
-}
-
-impl fmt::Display for FileExtension {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            Self::Csv => write!(f, "csv"),
-            Self::Json => write!(f, "json"),
-        }
-    }
-}
-
-impl FileExtension {
-    /// Transforms `OsStr` to `FileExtension`.
-    /// If the file extension is invalid,
-    pub fn from_os_str(ext: &std::ffi::OsStr) -> Self {
-        match ext.to_str() {
-            Some("csv") => Self::Csv,
-            Some("json") => Self::Json,
-            Some("txt") => {
-                println!("Text files use CSV format by default");
-                Self::Csv
-            }
-            _ => {
-                eprintln!("Unsupported file format; defaulting to CSV");
-                Self::Csv
-            }
-        }
-    }
+pub trait Persister {
+    fn check_file(&self);
+    fn open(&self) -> fs::File;
+    fn read(&self) -> Vec<String>;
+    fn write(&self, todo: &Todo);
+    fn tasks(&self) -> Vec<Task>;
 }
 
 /// Representation of a file.
-#[derive(Clone, Debug, PartialEq)]
 pub struct SaveFile {
-    /// Path of the file.
-    pub path: PathBuf,
-    /// Full file name.
-    pub name: String,
-    /// Root of the file name.
-    pub root: String,
-    /// Extension of the file.
-    pub ext: FileExtension,
+    /// File that implements the `Persister` trait.
+    pub persister: Box<dyn Persister>,
 }
 
 impl SaveFile {
     /// Constructor of the `SaveFile` struct.
-    pub const fn new(path: PathBuf, name: String, root: String, ext: FileExtension) -> Self {
-        Self { path, name, root, ext }
+    pub const fn new(persister: Box<dyn Persister>) -> Self {
+        Self { persister }
     }
 
     /// Creates a `SaveFile` instance from a path.
     pub fn from(path: &str) -> Self {
         let mut path = Path::new(path).to_owned();
-
-        let root = path.file_stem().map_or_else(
-            || "tasks".to_owned(),
-            |stem| stem.to_string_lossy().into_owned(),
-        );
+        path = Self::check_file_name(path);
 
         let ext = path
             .extension()
-            .map_or(FileExtension::Csv, FileExtension::from_os_str);
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_owned();
 
-        let name = format!("{root}.{ext}");
+        let persister: Box<dyn Persister> = match ext.as_str() {
+            "csv" => Box::new(Csv::new(path.clone())),
+            "json" => Box::new(Json::new(path.clone())),
+            "txt" => {
+                println!("Text files use CSV format by default");
+                Box::new(Csv::new(path.clone()))
+            }
+            _ => {
+                eprintln!("Unsupported file format; defaulting to CSV");
+                Box::new(Csv::new(path.clone()))
+            }
+        };
 
-        path.set_extension(ext.to_string());
+        persister.check_file();
 
-        if !path.exists() {
-            let msg = format!("Path doesn't exist; creating {path:?}");
-            println!("{msg}");
-            Self::create(Path::new(&name));
-        }
+        Self::new(persister)
+    }
 
-        Self::new(path.clone(), name, root, ext)
+    pub fn check_file_name(mut path: PathBuf) -> PathBuf {
+        let file_name = path
+            .file_name()
+            .unwrap_or(OsStr::new("tasks"))
+            .to_string_lossy()
+            .into_owned();
+
+        let mut parts: Vec<&str> = file_name.split('.').collect();
+
+        let first = if parts[0].is_empty() { "tasks" } else { parts[0] };
+        parts[0] = first;
+
+        parts.retain(|part| !part.is_empty() || part == &first);
+
+        if parts.len() == 1 { parts.push("csv") }
+
+        path.set_file_name(parts.join("."));
+
+        path
     }
 
     /// Creates a file if it doesn't exist. If it exists, just opens the file.
     ///
     /// # Panics
     /// If the file can't be created.
-    pub fn create(path: &Path) -> fs::File {
-        fs::File::create(path).expect("Should have been able to create the file")
-    }
-
-    /// Creates a file if it doesn't exist. If it exists, just opens the file.
-    ///
-    /// # Panics
-    /// If the file can't be opened.
     pub fn open(&self) -> fs::File {
-        fs::File::create(&self.path).expect("Should have been able to open the file")
+        self.persister.open()
     }
 
     /// Returns the raw contents of a file (including escape characters) in a single `String`.
-    ///
-    /// # Panics
-    /// If the file can't be read.
-    pub fn raw(&self) -> String {
-        fs::read_to_string(&self.path).expect("Should have been able to read the raw file")
-    }
-
-    /// Writes `bytes` to `self.path`.
-    pub fn write(&self, bytes: Vec<u8>) {
-        match fs::write(&self.path, bytes) {
-            Ok(()) => (),
-            Err(e) => eprintln!("{e}"),
-        }
-    }
-
-    /// Returns the lines of the file.
     pub fn read(&self) -> Vec<String> {
-        match self.ext {
-            FileExtension::Csv => Csv::read(self),
-            FileExtension::Json => Json::read(self),
-        }
+        self.persister.read()
     }
 
     /// Returns a vector of tasks from the contents of the file.
-    pub fn to_tasks(&self) -> Vec<Task> {
-        match self.ext {
-            FileExtension::Csv => Csv::to_tasks(self),
-            FileExtension::Json => Json::to_tasks(self),
-        }
+    pub fn tasks(&self) -> Vec<Task> {
+        self.persister.tasks()
     }
 
-    /// Saves the contents of the Todo instance into a file.
-    pub fn save(&self, todo: &Todo) {
-        match self.ext {
-            FileExtension::Csv => {
-                self.write(Csv::to_bytes(&todo.tasks));
-            },
-            FileExtension::Json => Json::write(&self, &todo.tasks),
-        };
+    /// Writes the contents of the Todo instance into a file.
+    pub fn write(&self, todo: &Todo) {
+        self.persister.write(todo)
     }
 }

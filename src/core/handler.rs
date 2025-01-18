@@ -7,26 +7,19 @@ use super::todo::Todo;
 /// Handles operations via commands, load previous tasks,
 /// saves the contents of the todo-list for future operations...
 pub struct Handler {
-    /// Representation of the file where the todo-list is loaded from and stored in.
-    pub file: SaveFile,
     /// Instance of the todo-list with previous tasks.
     pub todo: Todo,
 }
 
 impl Handler {
-    /// Constructor of the Handler struct.
-    pub const fn new(file: SaveFile, todo: Todo) -> Self {
-        Self { file, todo }
-    }
-
     /// Runs the Handler struct based on the args.
     pub fn run(args: Args) {
         let Args { command, ids, task, path } = args.check();
 
         let file = SaveFile::from(&path);
-        let todo = Todo::read(&file);
+        let todo = Todo { tasks: file.persister.tasks() };
 
-        let mut handler = Self::new(file, todo);
+        let mut handler = Self { todo };
 
         match command {
             Command::View => return handler.view(),
@@ -36,7 +29,7 @@ impl Handler {
             Command::Drop => handler.drop(&ids),
         };
 
-        handler.file.save(&handler.todo);
+        file.persister.write(&handler.todo);
     }
 
     /// Shows the list of current tasks.

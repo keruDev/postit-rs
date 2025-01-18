@@ -15,7 +15,7 @@ fn fakes(name: &str) -> (Args, SaveFile, Todo) {
     
     let path = mock.to_string();
     let file = SaveFile::from(&path);
-    let todo = Todo::read(&file);
+    let todo = Todo::new(&file);
 
     let args = Args {
         command: Command::View,
@@ -31,7 +31,7 @@ fn expected(path: PathBuf) -> (SaveFile, Todo) {
     let path = path.display().to_string();
 
     let file = SaveFile::from(&path);
-    let todo = Todo::read(&file);
+    let todo = Todo::new(&file);
 
     (file, todo)
 }
@@ -41,7 +41,7 @@ fn test_handler_new() {
     let path = MockPath::test("handler_new").to_string();
 
     let file = SaveFile::from(&path);
-    let todo = Todo::read(&file);
+    let todo = Todo::new(&file);
 
     let result = Handler::new(file.clone(), todo.clone());
 
@@ -76,7 +76,7 @@ fn test_handler_add() {
     Handler::run(args);
     
     todo.add(Task::from(task));
-    file.save(&todo);
+    file.write(&todo);
 
     let (expected_file, expected_todo) = expected(file.path.clone());
     
@@ -97,7 +97,7 @@ fn test_handler_check() {
     Handler::run(args);
     
     todo.check(&ids);
-    file.save(&todo);
+    file.write(&todo);
 
     let (expected_file, expected_todo) = expected(file.path.clone());
     
@@ -118,7 +118,7 @@ fn test_handler_uncheck() {
     Handler::run(args);
     
     todo.check(&ids);
-    file.save(&todo);
+    file.write(&todo);
 
     let (expected_file, expected_todo) = expected(file.path.clone());
     
@@ -139,7 +139,7 @@ fn test_handler_drop() {
     Handler::run(args);
     
     todo.check(&ids);
-    file.save(&todo);
+    file.write(&todo);
 
     let (expected_file, expected_todo) = expected(file.path.clone());
     

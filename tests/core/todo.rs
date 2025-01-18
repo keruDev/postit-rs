@@ -9,7 +9,7 @@ fn fakes(name: &str) -> (SaveFile, Todo) {
     path.populate();
 
     let file = SaveFile::from(&path.to_string());
-    let todo = Todo::read(&file);
+    let todo = Todo::new(&file);
 
     (file, todo)
 }
@@ -20,9 +20,9 @@ fn test_todo_read() {
     path.populate();
 
     let file = SaveFile::from(&path.to_string());
-    let todo = Todo::read(&file);
+    let todo = Todo::new(&file);
     
-    assert_eq!(todo.tasks, file.to_tasks());
+    assert_eq!(todo.tasks, file.tasks());
     
     MockPath::drop(file.path);
 }

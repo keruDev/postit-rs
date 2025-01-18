@@ -1,5 +1,3 @@
-use crate::fs::file::SaveFile;
-
 use super::task::Task;
 
 /// Contains all the Tasks.
@@ -10,11 +8,6 @@ pub struct Todo {
 }
 
 impl Todo {
-    /// Reads the tasks in a `SaveFile` instance.
-    pub fn read(file: &SaveFile) -> Self {
-        Self { tasks: file.to_tasks() }
-    }
-
     /// Returns tasks based on the ids passed.
     pub fn get(&mut self, ids: &Vec<u128>) -> Vec<&mut Task> {
         self.tasks
@@ -40,12 +33,12 @@ impl Todo {
                     .find(|n| !ids.contains(n))
                     .unwrap_or(end + 1);
 
-                task.id = new_id;
-
                 eprintln!(
-                    "The ID {} is already used; using {} as an ID",
+                    "ID {} is already used; using {} as an ID",
                     &task.id, new_id
                 );
+
+                task.id = new_id;
             }
         }
 
