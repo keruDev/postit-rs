@@ -16,50 +16,72 @@ pub struct Handler {
 impl Handler {
     /// Runs the Handler struct based on the args.
     pub fn run(args: Args) {
-        let Args { command, ids, task, path } = args.check();
-
-        let file = SaveFile::from(&path);
-        let todo = Todo::from(&file);
-
-        let mut handler = Self { todo };
-
-        match command {
-            Command::View => return handler.view(),
-            Command::Add => handler.add(&task),
-            Command::Check => handler.check(&ids),
-            Command::Uncheck => handler.uncheck(&ids),
-            Command::Drop => handler.drop(&ids),
-        };
-
-        file.persister.write(&handler.todo);
+        match args.command {
+            Command::View { path } => Self::view(&path),
+            Command::Add { path, task } => Self::add(&path, &task),
+            Command::Check { path, ids } => Self::check(&path, &ids),
+            Command::Uncheck { path, ids } => Self::uncheck(&path, &ids),
+            Command::Drop { path, ids } => Self::drop(&path, &ids),
+            Command::Copy { old, new } => Self::copy(&old, &new),
+        }
     }
 
     /// Shows the list of current tasks.
-    fn view(&mut self) {
-        self.todo.view();
+    fn view(path: &str) {
+        Todo::read(path).view();
+    }
+
+    /// Copies the contents of a file to another.
+    fn copy(old: &str, new: &str) {
+        let old_path = SaveFile::from(old);
+        let new_path = SaveFile::from(new);
+
+        let contents = Todo::from(&old_path);
+
+        new_path.persister.write(&contents);
     }
 
     /// Adds a new task to the list.
-    fn add(&mut self, task: &str) {
-        self.todo.add(Task::from(task));
-        self.todo.view();
+    fn add(path: &str, task: &str) {
+        let file = SaveFile::from(path);
+        let mut todo = Todo::from(&file);
+
+        todo.add(Task::from(task));
+        todo.view();
+
+        file.persister.write(&todo);
     }
 
     /// Checks the tasks based on the ids passed.
-    fn check(&mut self, ids: &[u128]) {
-        self.todo.check(ids);
-        self.todo.view();
+    fn check(path: &str, ids: &[u128]) {
+        let file = SaveFile::from(path);
+        let mut todo = Todo::from(&file);
+
+        todo.check(ids);
+        todo.view();
+
+        file.persister.write(&todo);
     }
 
     /// Unchecks the tasks based on the ids passed.
-    fn uncheck(&mut self, ids: &[u128]) {
-        self.todo.uncheck(ids);
-        self.todo.view();
+    fn uncheck(path: &str, ids: &[u128]) {
+        let file = SaveFile::from(path);
+        let mut todo = Todo::from(&file);
+
+        todo.uncheck(ids);
+        todo.view();
+
+        file.persister.write(&todo);
     }
 
     /// Drops tasks from the list based on the ids passed.
-    fn drop(&mut self, ids: &[u128]) {
-        self.todo.drop(ids);
-        self.todo.view();
+    fn drop(path: &str, ids: &[u128]) {
+        let file = SaveFile::from(path);
+        let mut todo = Todo::from(&file);
+
+        todo.drop(ids);
+        todo.view();
+
+        file.persister.write(&todo);
     }
 }

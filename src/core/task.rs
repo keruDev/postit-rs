@@ -2,12 +2,11 @@
 
 use std::fmt;
 
-use clap::ValueEnum;
 use colored::Colorize as _;
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Debug, Clone, Copy, ValueEnum, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 /// Priority of the Task, which is used to define the task's color and importance.
 pub enum Priority {
@@ -73,7 +72,7 @@ impl fmt::Display for Task {
 
         let styled = if self.checked { bold.strikethrough() } else { bold };
 
-        write!(f, "{}", styled)
+        write!(f, "{styled}")
     }
 }
 
