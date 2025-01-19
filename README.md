@@ -25,6 +25,7 @@ The `-p` flag can be used on any command to specify the path of the file used to
 
 Supported file formats:
 - csv
+- json
 
 Display:
 - Different colors depending on priority.
@@ -39,7 +40,7 @@ Display:
 
 Here is a sample with every possible task format so you can test `postit`.
 
-```arduino
+```
 // tasks.csv
 
 1,Task,low,false
@@ -58,7 +59,7 @@ Keep in mind every command uses `-p tasks.csv` by default.
 
 Same as running just `postit`:
 
-```arduino
+```
 postit -c view
 
 1,Task,low,false
@@ -80,7 +81,7 @@ Adds a task with the format `id,content,priority,checked`:
 - **priority**: `high`, `med`, `low` or `none`.
 - **checked**: `true` or `false`.
 
-```arduino
+```
 postit -c add -t "9,New task,low,false"
 
 1,Task,low,false
@@ -99,7 +100,7 @@ postit -c add -t "9,New task,low,false"
 
 Checks tasks if they are unchecked.
 
-```arduino
+```
 postit -c check -i 3,4,5,6
 
 1,Task,low,false
@@ -117,7 +118,7 @@ postit -c check -i 3,4,5,6
 
 Unchecks tasks if they are checked.
 
-```arduino
+```
 postit -c uncheck -i 3,4,5,6
 
 1,Task,low,false
@@ -135,7 +136,7 @@ postit -c uncheck -i 3,4,5,6
 
 Note tasks must be checked to be dropped:
 
-```arduino
+```
 postit -c drop -i 3,4,5,6
 
 1,Task,low,false
