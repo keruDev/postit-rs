@@ -23,7 +23,7 @@ pub enum Priority {
 
 impl Priority {
     /// Transforms a string slice into a `Priority` value.
-    pub fn from_str(s: &str) -> Self {
+    pub fn from(s: &str) -> Self {
         match s {
             "high" => Self::High,
             "low" => Self::Low,
@@ -44,7 +44,7 @@ impl fmt::Display for Priority {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 /// Representation of a Task.
 pub struct Task {
@@ -92,7 +92,7 @@ impl Task {
 
         let priority = list
             .get(2)
-            .map_or(Priority::Med, |&s| Priority::from_str(s.trim()));
+            .map_or(Priority::Med, |&s| Priority::from(s.trim()));
 
         let checked = list.get(3)
             .is_some_and(|&s| matches!(s.trim(), "true"));

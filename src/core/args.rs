@@ -18,7 +18,7 @@ pub enum Command {
     Drop,
 }
 
-#[derive(Parser, Clone, Debug, PartialEq)]
+#[derive(Parser, Clone, Debug, PartialEq, Eq)]
 #[command(author, version, about, long_about = None, next_line_help = false)]
 /// Manages the Arguments received by console.
 pub struct Args {
@@ -49,7 +49,7 @@ impl Args {
             Command::View => (),
             Command::Add => assert!(!self.task.is_empty(), "Argument missing: 'task'"),
             Command::Check | Command::Uncheck | Command::Drop => {
-                assert!(!self.ids.is_empty(), "Argument missing: 'ids'")
+                assert!(!self.ids.is_empty(), "Argument missing: 'ids'");
             }
         }
 

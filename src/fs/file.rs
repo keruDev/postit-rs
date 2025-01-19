@@ -52,7 +52,7 @@ impl SaveFile {
     pub fn check_file_name(mut path: PathBuf) -> PathBuf {
         let file_name: String = path
             .file_name()
-            .unwrap_or(OsStr::new("tasks"))
+            .unwrap_or_else(|| OsStr::new("tasks"))
             .to_string_lossy()
             .into_owned();
 

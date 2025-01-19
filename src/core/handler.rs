@@ -1,5 +1,5 @@
 //! Entry point of the program where all operations to the [Todo] are executed
-//! and files are written via a [SaveFile] instance.
+//! and files are written via a [`SaveFile`] instance.
 
 use crate::fs::file::SaveFile;
 
@@ -46,19 +46,19 @@ impl Handler {
     }
 
     /// Checks the tasks based on the ids passed.
-    fn check(&mut self, ids: &Vec<u128>) {
+    fn check(&mut self, ids: &[u128]) {
         self.todo.check(ids);
         self.todo.view();
     }
 
     /// Unchecks the tasks based on the ids passed.
-    fn uncheck(&mut self, ids: &Vec<u128>) {
+    fn uncheck(&mut self, ids: &[u128]) {
         self.todo.uncheck(ids);
         self.todo.view();
     }
 
     /// Drops tasks from the list based on the ids passed.
-    fn drop(&mut self, ids: &Vec<u128>) {
+    fn drop(&mut self, ids: &[u128]) {
         self.todo.drop(ids);
         self.todo.view();
     }

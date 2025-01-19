@@ -5,7 +5,7 @@ use crate::fs::file::SaveFile;
 use super::task::Task;
 
 /// Contains all the Tasks.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Todo {
     /// List of Tasks.
     pub tasks: Vec<Task>,
@@ -18,7 +18,7 @@ impl Todo {
     }
 
     /// Returns tasks based on the ids passed.
-    pub fn get(&mut self, ids: &Vec<u128>) -> Vec<&mut Task> {
+    pub fn get(&mut self, ids: &[u128]) -> Vec<&mut Task> {
         self.tasks
             .iter_mut()
             .filter(|task| ids.contains(&task.id))
@@ -55,7 +55,7 @@ impl Todo {
     }
 
     /// Marks a task as checked.
-    pub fn check(&mut self, ids: &Vec<u128>) {
+    pub fn check(&mut self, ids: &[u128]) {
         for task in self.get(ids) {
             if let Err(e) = task.check() {
                 eprintln!("{e}");
@@ -64,7 +64,7 @@ impl Todo {
     }
 
     /// Marks a task as unchecked.
-    pub fn uncheck(&mut self, ids: &Vec<u128>) {
+    pub fn uncheck(&mut self, ids: &[u128]) {
         for task in self.get(ids) {
             if let Err(e) = task.uncheck() {
                 eprintln!("{e}");
@@ -73,7 +73,7 @@ impl Todo {
     }
 
     /// Drops a task from the list.
-    pub fn drop(&mut self, ids: &Vec<u128>) {
+    pub fn drop(&mut self, ids: &[u128]) {
         self.tasks.retain(|task| {
             if ids.contains(&task.id) && !task.checked {
                 eprintln!("Task {} can't be dropped; must be checked first", &task.id);

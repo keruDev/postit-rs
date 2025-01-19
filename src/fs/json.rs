@@ -1,4 +1,4 @@
-//! Utilities to handle JSON files with [serde] and [serde_json].
+//! Utilities to handle JSON files with [serde] and [`serde_json`].
 //! 
 //! The `Json` struct implements the [Persister] trait.
 
@@ -25,7 +25,7 @@ impl Json {
     }
 
     /// Default contents of the `Json` file.
-    pub fn default() -> String {
+    pub fn array() -> String {
         String::from("[]")
     }
 }
@@ -34,10 +34,9 @@ impl Persister for Json {
     fn as_any(&self) -> &dyn Any { self }
 
     fn is_empty(&self) -> bool {
-        match self.path.metadata() {
-            Ok(meta) => meta.len() == 0,
-            Err(_) => true
-        }
+        self.path
+            .metadata()
+            .map_or(true, |meta| meta.len() == 0)
     }
     
     fn is_equal(&self, other: &dyn Persister) -> bool {
@@ -51,7 +50,7 @@ impl Persister for Json {
         if !self.path.exists() || self.is_empty() {
             println!("Path doesn't exist; creating {:?}", &self.path);
 
-            fs::write(&self.path, Self::default()).expect("Should have been able to write");
+            fs::write(&self.path, Self::array()).expect("Should have been able to write");
         }
     }
     

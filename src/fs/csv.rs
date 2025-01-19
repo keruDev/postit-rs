@@ -29,7 +29,7 @@ impl Csv {
     }
 
     /// Transforms tasks into file lines.
-    pub fn format(tasks: &Vec<Task>) -> Vec<String> {
+    pub fn format(tasks: &[Task]) -> Vec<String> {
         tasks.iter().map(Task::format).collect()
     }
 
@@ -43,10 +43,9 @@ impl Persister for Csv {
     fn as_any(&self) -> &dyn Any { self }
 
     fn is_empty(&self) -> bool {
-        match self.path.metadata() {
-            Ok(meta) => meta.len() == 0,
-            Err(_) => true
-        }
+        self.path
+            .metadata()
+            .map_or(true, |meta| meta.len() == 0)
     }
 
     fn is_equal(&self, other: &dyn Persister) -> bool {
@@ -58,7 +57,7 @@ impl Persister for Csv {
 
     fn check_file(&self) {
         if !self.path.exists() || self.is_empty() {
-            println!("{}", format!("Path doesn't exist; creating {:?}", &self.path));
+            println!("Path doesn't exist; creating {:?}", &self.path);
 
             fs::write(&self.path, Self::header())
                 .expect("Should have been able to create the file");
