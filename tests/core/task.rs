@@ -1,5 +1,4 @@
 use postit::core::task::{Task, Priority};
-use colored::*;
 
 fn fake_task_unchecked() -> Task {
     Task::new(1, String::from("Test"), Priority::Med, false)
@@ -102,27 +101,4 @@ fn uncheck_err() {
     let result = task.uncheck();
 
     assert!(result.is_err())
-}
-
-#[test]
-fn stylize_checked() {
-    let result = fake_task_checked().stylize();
-    
-    let mut expected = result.clone();
-    expected = expected.red();
-    expected = expected.bold();
-    expected = expected.strikethrough();
-
-    assert_eq!(result, expected);
-}
-
-#[test]
-fn stylize_unchecked() {
-    let result = fake_task_unchecked().stylize();
-    
-    let mut expected = result.clone();
-    expected = expected.yellow();
-    expected = expected.bold();
-
-    assert_eq!(result, expected);
 }

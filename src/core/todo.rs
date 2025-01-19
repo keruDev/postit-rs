@@ -29,7 +29,7 @@ impl Todo {
     pub fn view(&mut self) {
         self.tasks
             .iter_mut()
-            .for_each(|task| println!("{}", task.stylize()));
+            .for_each(|task| println!("{}", task));
     }
 
     /// Adds a task to the task list.
