@@ -45,12 +45,12 @@ fn is_equal_different_type_persisters() {
 
 #[test]
 fn check_file() {
-    let path = PathBuf::from("check_file.csv");
-    let csv = Csv::new(path.clone());
-
+    let mock = MockPath::csv("csv_check_file");
+    
+    let csv = Csv::new(mock.path());
     csv.check_file();
 
-    let result = fs::read_to_string(path).unwrap();
+    let result = fs::read_to_string(mock.path()).unwrap();
 
     assert_eq!(result, Csv::header());
 }
@@ -111,10 +111,10 @@ fn read() {
 
 #[test]
 fn open() {
-    let path = PathBuf::from("check_file.csv");
+    let mock = MockPath::csv("csv_open");
 
-    let mut csv = Csv::new(path.clone()).open();
-    let mut file = fs::File::open(path).unwrap();
+    let mut csv = Csv::new(mock.path()).open();
+    let mut file = fs::File::open(mock.path()).unwrap();
 
     let mut result = Vec::new();
     let mut expected = Vec::new();
