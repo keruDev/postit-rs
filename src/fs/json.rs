@@ -1,40 +1,57 @@
+//! Utilities to handle JSON files with [serde] and [serde_json].
+//! 
+//! The `Json` struct implements the [Persister] trait.
+
+use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
 use crate::core::task::Task;
 use crate::core::todo::Todo;
 
-use super::file::Persister;
+use super::traits::Persister;
 
-/// Representation of a Json file.
-#[derive(Debug, Clone, PartialEq)]
+
+/// Representation of a JSON file.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Json {
     path: PathBuf
 }
 
 impl Json {
-    pub fn new(path: PathBuf) -> Self {
+    /// Constructor of the `Json` struct.
+    pub const fn new(path: PathBuf) -> Self {
         Self { path }
     }
 
-    pub fn is_empty(&self) -> bool {
+    /// Default contents of the `Json` file.
+    pub fn default() -> String {
+        String::from("[]")
+    }
+}
+
+impl Persister for Json {
+    fn as_any(&self) -> &dyn Any { self }
+
+    fn is_empty(&self) -> bool {
         match self.path.metadata() {
             Ok(meta) => meta.len() == 0,
             Err(_) => true
         }
     }
-}
+    
+    fn is_equal(&self, other: &dyn Persister) -> bool {
+        other
+            .as_any()
+            .downcast_ref::<Self>()
+            .map_or(false, |persister| self.path == persister.path)
+    }
 
-impl Persister for Json {
     fn check_file(&self) {
-        println!("path {:?}", !self.path.exists());
-        println!("empt {:?}", self.is_empty());
-
         if !self.path.exists() || self.is_empty() {
-            let msg = format!("Path doesn't exist; creating {:?}", &self.path);
-            println!("{msg}");
+            println!("Path doesn't exist; creating {:?}", &self.path);
 
-            fs::write(&self.path, "".as_bytes()).expect("Should have been able to write");
+            fs::write(&self.path, Self::default()).expect("Should have been able to write");
         }
     }
     
@@ -58,12 +75,10 @@ impl Persister for Json {
             .collect()
     }
 
-    /// Converts a `String` into a byte vector.
     fn write(&self, todo: &Todo) {
         serde_json::to_writer_pretty(self.open(), &todo.tasks).unwrap();
     }
 
-    /// Transforms a JSON file into tasks.
     fn tasks(&self) -> Vec<Task> {
         serde_json::from_str(&self.read().join(""))
             .expect("JSON was not well-formatted")

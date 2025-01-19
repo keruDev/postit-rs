@@ -1,13 +1,15 @@
+//! Entry point of the program where all operations to the [Todo] are executed
+//! and files are written via a [SaveFile] instance.
+
 use crate::fs::file::SaveFile;
 
 use super::args::{Args, Command};
 use super::task::Task;
 use super::todo::Todo;
 
-/// Handles operations via commands, load previous tasks,
-/// saves the contents of the todo-list for future operations...
+/// Handles operations via commands.
 pub struct Handler {
-    /// Instance of the todo-list with previous tasks.
+    /// Instance of `Todo` with previous tasks loaded from a `SaveFile` instance.
     pub todo: Todo,
 }
 
@@ -17,7 +19,7 @@ impl Handler {
         let Args { command, ids, task, path } = args.check();
 
         let file = SaveFile::from(&path);
-        let todo = Todo { tasks: file.persister.tasks() };
+        let todo = Todo::from(&file);
 
         let mut handler = Self { todo };
 

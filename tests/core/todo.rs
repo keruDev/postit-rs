@@ -4,34 +4,27 @@ use postit::fs::file::SaveFile;
 
 use crate::mocks::MockPath;
 
-fn fakes(name: &str) -> (SaveFile, Todo) {
-    let path = MockPath::test(name);
-    path.populate();
-
-    let file = SaveFile::from(&path.to_string());
-    let todo = Todo::new(&file);
-
-    (file, todo)
+fn fakes(mock: &MockPath) -> Todo {
+    Todo::from(&SaveFile::from(&mock.to_string()))
 }
 
 #[test]
-fn test_todo_read() {
-    let path = MockPath::test("todo_read");
-    path.populate();
+fn read() {
+    let mock = MockPath::csv("todo_read");
 
-    let file = SaveFile::from(&path.to_string());
-    let todo = Todo::new(&file);
+    let file = SaveFile::from(&mock.to_string());
+    let todo = Todo::from(&file);
     
     assert_eq!(todo.tasks, file.tasks());
-    
-    MockPath::drop(file.path);
 }
 
 #[test]
-fn test_todo_get() {
-    let (file, mut todo) = fakes("todo_get");
+fn get() {
+    let mock = MockPath::csv("todo_get");
+
+    let mut todo = fakes(&mock);
     let clone = todo.clone();
-    
+
     let ids = vec![2, 3];
     let tasks = todo.get(&ids);
     let expected = vec![
@@ -40,31 +33,31 @@ fn test_todo_get() {
     ];
     
     assert_eq!(tasks, expected);
-
-    MockPath::drop(file.path);
 }
 
 // #[test]
-// fn test_todo_view() {}
+// view() {}
 
 #[test]
-fn test_todo_add_ok() {
-    let (file, mut todo) = fakes("todo_add_ok");
+fn add_ok() {
+    let mock = MockPath::csv("todo_add_ok");
+
+    let mut todo = fakes(&mock);
     let mut expected = todo.clone();
-    
+
     let task = Task::from("5,Test,med,false");
 
     todo.add(task.clone());
     expected.tasks.push(task);
-    
-    assert_eq!(todo, expected);
 
-    MockPath::drop(file.path);
+    assert_eq!(todo, expected);
 }
 
 #[test]
-fn test_todo_add_repeated_id() {
-    let (file, mut todo) = fakes("todo_add_repeated_id");
+fn add_repeated_id() {
+    let mock = MockPath::csv("todo_add_repeated_id");
+
+    let mut todo = fakes(&mock);
     let mut expected = todo.clone();
     
     let mut task = Task::from("1,Test,med,false");
@@ -74,13 +67,13 @@ fn test_todo_add_repeated_id() {
     expected.tasks.push(task);
     
     assert_eq!(todo, expected);
-
-    MockPath::drop(file.path);
 }
 
 #[test]
-fn test_todo_check_ok() {
-    let (file, mut todo) = fakes("todo_check_ok");
+fn check_ok() {
+    let mock = MockPath::csv("todo_check_ok");
+
+    let mut todo = fakes(&mock);
     let mut expected = todo.clone();
     
     let task = Task::from("5,Test,med,false");
@@ -89,13 +82,13 @@ fn test_todo_check_ok() {
     expected.tasks.push(task);
     
     assert_eq!(todo, expected);
-
-    MockPath::drop(file.path);
 }
 
 #[test]
-fn test_todo_uncheck_ok() {
-    let (file, mut todo) = fakes("todo_uncheck_ok");
+fn uncheck_ok() {
+    let mock = MockPath::csv("todo_uncheck_ok");
+
+    let mut todo = fakes(&mock);
     let mut expected = todo.clone();
     
     let task = Task::from("5,Test,med,true");
@@ -104,9 +97,7 @@ fn test_todo_uncheck_ok() {
     expected.tasks.push(task);
     
     assert_eq!(todo, expected);
-
-    MockPath::drop(file.path);
 }
 
 // #[test]
-// fn test_todo_drop() {}
+// fn drop () {}

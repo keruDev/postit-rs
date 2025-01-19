@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use postit::core::args::{Args, Command};
 use postit::core::handler::Handler;
 use postit::core::task::Task;
@@ -9,13 +7,10 @@ use postit::fs::file::SaveFile;
 use crate::mocks::MockPath;
 
 
-fn fakes(name: &str) -> (Args, SaveFile, Todo) {
-    let mock = MockPath::test(name);
-    mock.populate();
-    
+fn fakes(mock: &MockPath) -> (Args, SaveFile, Todo) {
     let path = mock.to_string();
     let file = SaveFile::from(&path);
-    let todo = Todo::new(&file);
+    let todo = Todo { tasks: file.persister.tasks() };
 
     let args = Args {
         command: Command::View,
@@ -27,47 +22,34 @@ fn fakes(name: &str) -> (Args, SaveFile, Todo) {
     (args, file, todo)
 }
 
-fn expected(path: PathBuf) -> (SaveFile, Todo) {
-    let path = path.display().to_string();
+fn expected(mock: &MockPath) -> (SaveFile, Todo) {
+    let path = mock.path.display().to_string();
 
     let file = SaveFile::from(&path);
-    let todo = Todo::new(&file);
+    let todo = Todo::from(&file);
 
     (file, todo)
 }
 
 #[test]
-fn test_handler_new() {
-    let path = MockPath::test("handler_new").to_string();
+fn view() {
+    let mock = MockPath::csv("handler_view");
 
-    let file = SaveFile::from(&path);
-    let todo = Todo::new(&file);
-
-    let result = Handler::new(file.clone(), todo.clone());
-
-    assert_eq!(result.todo, todo);
-    assert_eq!(result.file, file);
-
-    MockPath::drop(file.path);
-}
-
-#[test]
-fn test_handler_view() {
-    let (args, file, todo) = fakes("handler_view");
+    let (args, file, todo) = fakes(&mock);
 
     Handler::run(args);
 
-    let (expected_file, expected_todo) = expected(file.path.clone());
+    let (expected_file, expected_todo) = expected(&mock);
     
     assert_eq!(todo, expected_todo);
-    assert_eq!(file, expected_file);
-    
-    MockPath::drop(file.path);
+    assert_eq!(file.read(), expected_file.read());
 }
 
 #[test]
-fn test_handler_add() {
-    let (mut args, file, mut todo) = fakes("handler_add");
+fn add() {
+    let mock = MockPath::csv("handler_add");
+
+    let (mut args, file, mut todo) = fakes(&mock);
     let task = "5,Test,med,false";
     
     args.command = Command::Add;
@@ -78,17 +60,17 @@ fn test_handler_add() {
     todo.add(Task::from(task));
     file.write(&todo);
 
-    let (expected_file, expected_todo) = expected(file.path.clone());
+    let (expected_file, expected_todo) = expected(&mock);
     
     assert_eq!(todo, expected_todo);
-    assert_eq!(file, expected_file);
-
-    MockPath::drop(file.path);
+    assert_eq!(file.read(), expected_file.read());
 }
 
 #[test]
-fn test_handler_check() {
-    let (mut args, file, mut todo) = fakes("handler_check");
+fn check() {
+    let mock = MockPath::csv("handler_check");
+
+    let (mut args, file, mut todo) = fakes(&mock);
     let ids = vec![2, 3];
 
     args.command = Command::Check;
@@ -99,17 +81,17 @@ fn test_handler_check() {
     todo.check(&ids);
     file.write(&todo);
 
-    let (expected_file, expected_todo) = expected(file.path.clone());
+    let (expected_file, expected_todo) = expected(&mock);
     
     assert_eq!(todo, expected_todo);
-    assert_eq!(file, expected_file);
-    
-    MockPath::drop(file.path);
+    assert_eq!(file.read(), expected_file.read());
 }
 
 #[test]
-fn test_handler_uncheck() {
-    let (mut args, file, mut todo) = fakes("handler_uncheck");
+fn uncheck() {
+    let mock = MockPath::csv("handler_uncheck");
+
+    let (mut args, file, mut todo) = fakes(&mock);
     let ids = vec![2, 3];
 
     args.command = Command::Uncheck;
@@ -120,17 +102,17 @@ fn test_handler_uncheck() {
     todo.check(&ids);
     file.write(&todo);
 
-    let (expected_file, expected_todo) = expected(file.path.clone());
+    let (expected_file, expected_todo) = expected(&mock);
     
     assert_eq!(todo, expected_todo);
-    assert_eq!(file, expected_file);
-
-    MockPath::drop(file.path);
+    assert_eq!(file.read(), expected_file.read());
 }
 
 #[test]
-fn test_handler_drop() {
-    let (mut args, file, mut todo) = fakes("handler_drop");
+fn drop() {
+    let mock = MockPath::csv("handler_drop");
+
+    let (mut args, file, mut todo) = fakes(&mock);
     let ids = vec![2, 3];
 
     args.command = Command::Drop;
@@ -141,10 +123,8 @@ fn test_handler_drop() {
     todo.check(&ids);
     file.write(&todo);
 
-    let (expected_file, expected_todo) = expected(file.path.clone());
+    let (expected_file, expected_todo) = expected(&mock);
     
     assert_eq!(todo, expected_todo);
-    assert_eq!(file, expected_file);
-
-    MockPath::drop(file.path);
+    assert_eq!(file.read(), expected_file.read());
 }

@@ -1,133 +1,132 @@
-use std::fs;
-use std::path::Path;
+use std::ffi::OsStr;
 
-use postit::fs::file::{FileExtension, SaveFile};
+use postit::fs::csv::Csv;
+use postit::fs::file::SaveFile;
+use postit::fs::json::Json;
 
+use crate::mocks::MockPath;
 
 #[test]
-fn test_file_extension_from_os_str_csv() {
-    let ext = Path::new("test.csv").extension().unwrap();
-    let result = FileExtension::from_os_str(ext);
+fn fmt_debug() {
+    let mock = MockPath::csv("savefile_debug");
 
-    assert_eq!(result, FileExtension::_Csv);
+    let persister = SaveFile::get_persister(mock.path());
+    let file = SaveFile::new(persister);
+
+    let debug_output = format!("{:?}", file);
+    let expected_output = r#"SaveFile { persister: "Box<dyn Persister>" }"#;
+
+    assert_eq!(debug_output, expected_output);
 }
 
-#[test]
-fn test_file_extension_from_os_str_txt() {
-    let ext = Path::new("test.txt").extension().unwrap();
-    let result = FileExtension::from_os_str(ext);
-
-    assert_eq!(result, FileExtension::_Csv);
-}
 
 #[test]
-fn test_file_extension_from_os_str_default() {
-    let ext = Path::new("test.abc").extension().unwrap();
-    let result = FileExtension::from_os_str(ext);
-
-    assert_eq!(result, FileExtension::_Csv);
-}
-
-#[test]
-fn test_savefile_new() {
-    let path = Path::new("./test_savefile_new.csv").to_owned();
-    let name = String::from("test_savefile_new.csv");
-    let root = String::from("test_savefile_new");
-    let ext = FileExtension::_Csv;
-
-    let result = SaveFile::new(path.clone(), name.clone(), root.clone(), ext);
-    let expected = SaveFile { path, name, root, ext };
+fn from() {
+    let mock = MockPath::csv("savefile_from");
+    
+    let result = SaveFile::from(mock.to_str());
+    let expected = SaveFile::new(Box::new(Csv::new(mock.path())));
 
     assert_eq!(result, expected);
 }
 
 #[test]
-fn test_savefile_from() {
-    let path = "./test_savefile_from.csv";
-    let result = SaveFile::from(path);
-
-    let expected_path = Path::new(path).to_owned();
-    let expected_name = String::from("test_savefile_from.csv");
-    let expected_root = String::from("test_savefile_from");
-    let expected_ext = FileExtension::_Csv;
-
-    assert_eq!(result.path, expected_path);
-    assert_eq!(result.name, expected_name);
-    assert_eq!(result.root, expected_root);
-    assert_eq!(result.ext, expected_ext);
-}
-
-#[test]
-fn test_savefile_create() {
-    let path = Path::new("./test_savefile_create.csv");
-
-    SaveFile::open(path);
-    assert!(path.exists());
-
-    fs::remove_file(path).unwrap();
-}
-
-#[test]
-fn test_savefile_open() {
-    let path = "./test_savefile_create.csv";
-
-    let file = SaveFile::from(path);
-    file.open();
-
-    assert!(file.path.exists());
-
-    fs::remove_file(path).unwrap();
-}
-
-#[test]
-fn test_savefile_raw() {
-    let path = "./test_savefile_create.csv";
-    let content = "Test";
-    let bytes = content.as_bytes().to_vec();
-
-    let file = SaveFile::from(path);
-    file.write(bytes);
-
-    let result = file.raw();
-    assert_eq!(result, content);
-
-    fs::remove_file(path).unwrap();
-}
-
-#[test]
-fn test_savefile_write() {
-    let path = "./test_savefile_write.csv";
-    let content = "Test";
-    let bytes = content.as_bytes().to_vec();
-
-    let file = SaveFile::from(path);
-    file.write(bytes.clone());
+fn check_file_name_ok() {
+    let path = "temp_file.csv";
+    let mock = MockPath::new(path);
     
-    let result = fs::read(file.path).unwrap();
-    assert_eq!(result, bytes);
+    let checked_path = SaveFile::check_file_name(mock.path());
 
-    fs::remove_file(path).unwrap();
+    let result = checked_path
+        .file_name()
+        .unwrap();
+    let expected = OsStr::new(path);
+
+    assert_eq!(result, expected);
 }
 
-// #[test]
-// fn test_savefile_to_tasks_csv() {
-//     match self.ext {
-//         FileExtension::Csv => Csv::to_tasks(self),
-//     }
-// }
+#[test]
+fn check_file_name_no_name() {
+    let path = ".csv";
+    let mock = MockPath::new(path);
+    
+    let checked_path = SaveFile::check_file_name(mock.path());
+    let expected_path = format!("tasks{path}");
 
-// #[test]
-// fn test_savefile_read_csv() {
-//     match self.ext {
-//         FileExtension::Csv => Csv::read(self),
-//     }
-// }
+    let result = checked_path
+        .file_name()
+        .unwrap();
+    let expected = OsStr::new(&expected_path);
 
-// #[test]
-// fn test_savefile_save_csv() {
-//     let bytes = match self.ext {
-//         FileExtension::Csv => Csv::to_bytes(&todo.tasks),
-//     };
+    assert_eq!(result, expected);
+}
 
-//     self.write(bytes)
-// }
+#[test]
+fn check_file_name_no_ext() {
+    let path = "tasks";
+    let mock = MockPath::new(path);
+
+    let checked_path = SaveFile::check_file_name(mock.path());   
+    let expected_path = format!("{path}.csv");
+
+    let result = checked_path
+        .file_name()
+        .unwrap();
+    let expected = OsStr::new(&expected_path);
+
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn check_file_name_empty() {
+    let path = ".";
+    let mock = MockPath::new(path);
+    
+    let checked_path = SaveFile::check_file_name(mock.path());   
+    let result = checked_path
+        .file_name()
+        .unwrap();
+    let expected = OsStr::new("tasks.csv");
+
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn get_persister_csv() {
+    let mock = MockPath::csv("get_persister");
+    
+    let result = SaveFile::get_persister(mock.path());
+    let expected = Box::new(Csv::new(mock.path()));
+
+    assert!(result.is_equal(&*expected));
+}
+
+#[test]
+fn get_persister_json() {
+    let mock = MockPath::json("get_persister");
+    
+    let result = SaveFile::get_persister(mock.path());
+    let expected = Box::new(Json::new(mock.path()));
+
+    assert!(result.is_equal(&*expected));
+}
+
+#[test]
+fn get_persister_txt() {
+    let mock = MockPath::new("test_get_persister.txt");
+    
+    let result = SaveFile::get_persister(mock.path());
+    let expected = Box::new(Csv::new(mock.path()));
+
+    assert!(result.is_equal(&*expected));
+}
+
+#[test]
+fn get_persister_any() {
+    let mock = MockPath::new("test_get_persister.toml");
+    
+    let result = SaveFile::get_persister(mock.path());
+    let expected = Box::new(Csv::new(mock.path()));
+
+    assert!(result.is_equal(&*expected));
+}

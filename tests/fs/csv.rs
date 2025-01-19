@@ -1,37 +1,63 @@
+use std::fs;
+use std::io::Read;
+use std::path::PathBuf;
+
 use postit::core::task::{Priority, Task};
 use postit::fs::csv::Csv;
 use postit::fs::file::SaveFile;
+use postit::fs::json::Json;
+use postit::fs::traits::Persister;
 
 use crate::mocks::MockPath;
 
 
-fn fakes(name: &str) -> SaveFile {
-    let path = MockPath::test(name);
-    path.populate();
+#[test]
+fn is_equal_same_persisters() {
+    let mock = MockPath::new("is_equal_same_persisters.csv");
 
-    SaveFile::from(&path.to_string())
+    let left = Csv::new(mock.path());
+    let right = Csv::new(mock.path());
+
+    assert!(left.is_equal(&right));
 }
 
 #[test]
-fn test_csv_read() {
-    let file = fakes("csv_read");
+fn is_equal_same_persisters_different_path() {
+    let mock_left = MockPath::new("persister_left.csv");
+    let mock_right = MockPath::new("persister_right.csv");
 
-    let result = file.read();
-    let expected = vec![
-        "1,Test,low,false",
-        "2,Test,med,false",
-        "3,Test,high,true",
-        "4,Test,none,true",
-    ];
+    let left = Csv::new(mock_left.path());
+    let right = Csv::new(mock_right.path());
 
-    assert_eq!(result, expected);
-
-    MockPath::drop(file.path);
+    assert!(!left.is_equal(&right));
 }
 
 #[test]
-fn test_csv_parse() {
-    let file = fakes("csv_parse");
+fn is_equal_different_type_persisters() {
+    let mock_left = MockPath::new("is_equal_different_type_persisters.csv");
+    let mock_right = MockPath::new("is_equal_different_type_persisters.json");
+
+    let left = Csv::new(mock_left.path());
+    let right = Json::new(mock_right.path());
+
+    assert!(!left.is_equal(&right));
+}
+
+#[test]
+fn check_file() {
+    let path = PathBuf::from("check_file.csv");
+    let csv = Csv::new(path.clone());
+
+    csv.check_file();
+
+    let result = fs::read_to_string(path).unwrap();
+
+    assert_eq!(result, Csv::header());
+}
+
+#[test]
+fn parse() {
+    MockPath::csv("csv_parse");
 
     let (id, content, priority, checked) = Csv::parse("1,Test,med,false");
 
@@ -44,13 +70,11 @@ fn test_csv_parse() {
     assert_eq!(expected_content, content);
     assert_eq!(expected_priority, priority);
     assert_eq!(expected_checked, checked);
-
-    MockPath::drop(file.path);
 }
 
 #[test]
-fn test_csv_format() {
-    let file = fakes("csv_format");
+fn format() {
+    MockPath::csv("csv_format");
 
     let tasks = vec![
         Task::new(1, String::from("Test"), Priority::High, true),
@@ -64,42 +88,39 @@ fn test_csv_format() {
     ];
 
     assert_eq!(result, expected);
-    
-    MockPath::drop(file.path);
 }
 
 #[test]
-fn test_csv_to_bytes() {
-    let file = fakes("csv_to_bytes");
+fn read() {
+    let mock = MockPath::csv("csv_read");
 
-    let sep = if cfg!(windows) { "\r\n" } else { "\n" };
+    let file = SaveFile::from(mock.to_str());
+    let header = Csv::header().replace("\n", "");
 
-    let tasks = vec![
-        Task::new(1, String::from("Test"), Priority::High, true),
-        Task::new(2, String::from("Test"), Priority::Med, false),
-    ];
-
-    let result = Csv::to_bytes(&tasks.clone());
-    let expected = Csv::format(&tasks).join(sep).into_bytes();
-
-    assert_eq!(result, expected);
-    
-    MockPath::drop(file.path);
-}
-
-#[test]
-fn test_csv_to_tasks() {
-    let file = fakes("csv_to_tasks");
-
-    let result = Csv::to_tasks(&file);
+    let result = file.read();
     let expected = vec![
-        Task::new(1, String::from("Test"), Priority::Low, false),
-        Task::new(2, String::from("Test"), Priority::Med, false),
-        Task::new(3, String::from("Test"), Priority::High, true),
-        Task::new(4, String::from("Test"), Priority::None, true),
+        &header,
+        "1,Test,low,false",
+        "2,Test,med,false",
+        "3,Test,high,true",
+        "4,Test,none,true",
     ];
 
     assert_eq!(result, expected);
-    
-    MockPath::drop(file.path);
+}
+
+#[test]
+fn open() {
+    let path = PathBuf::from("check_file.csv");
+
+    let mut csv = Csv::new(path.clone()).open();
+    let mut file = fs::File::open(path).unwrap();
+
+    let mut result = Vec::new();
+    let mut expected = Vec::new();
+
+    csv.read_to_end(&mut result).expect("Error reading CSV");
+    file.read_to_end(&mut expected).expect("Error reading file");
+
+    assert_eq!(result, expected);
 }

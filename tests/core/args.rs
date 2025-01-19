@@ -1,7 +1,7 @@
 use postit::core::args::{Args, Command};
 
 #[test]
-fn test_args_check_returns_self_after_checks() {
+fn check_returns_self_after_checks() {
     let fake_args = Args {
         command: Command::Add,
         ids: vec![],
@@ -16,7 +16,7 @@ fn test_args_check_returns_self_after_checks() {
 }
 
 #[test]
-fn test_args_check_returns_self_no_checks() {
+fn check_returns_self_no_checks() {
     let fake_args = Args {
         command: Command::View,
         ids: vec![],
@@ -32,7 +32,7 @@ fn test_args_check_returns_self_no_checks() {
 
 #[test]
 #[should_panic]
-fn test_args_check_panics_empty_task() {
+fn check_panics_empty_task() {
     let fake_args = Args {
         command: Command::Add,
         ids: vec![],
@@ -45,7 +45,7 @@ fn test_args_check_panics_empty_task() {
 
 #[test]
 #[should_panic]
-fn test_args_check_panics_empty_ids() {
+fn check_panics_empty_ids() {
     let fake_args = Args {
         command: Command::Check,
         ids: vec![],

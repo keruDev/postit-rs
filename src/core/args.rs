@@ -1,3 +1,5 @@
+//! Argument parsing utilities with [clap].
+
 use clap::Parser;
 use clap::ValueEnum;
 

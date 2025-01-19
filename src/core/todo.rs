@@ -1,3 +1,7 @@
+//! Collection of existing tasks. This is where major task management is made.
+
+use crate::fs::file::SaveFile;
+
 use super::task::Task;
 
 /// Contains all the Tasks.
@@ -8,6 +12,11 @@ pub struct Todo {
 }
 
 impl Todo {
+    /// Creates a `Todo` instance from a file's contents.
+    pub fn from(file: &SaveFile) -> Self {
+        Self { tasks: file.persister.tasks() }
+    }
+
     /// Returns tasks based on the ids passed.
     pub fn get(&mut self, ids: &Vec<u128>) -> Vec<&mut Task> {
         self.tasks

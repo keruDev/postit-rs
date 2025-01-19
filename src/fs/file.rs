@@ -1,24 +1,34 @@
+//! Create for file management using persisters like [Csv] or [Json].
+
 use crate::core::task::Task;
 use crate::core::todo::Todo;
 use crate::fs::csv::Csv;
 use crate::fs::json::Json;
 
 use std::ffi::OsStr;
-use std::fs;
+use std::fmt;
 use std::path::{Path, PathBuf};
 
-pub trait Persister {
-    fn check_file(&self);
-    fn open(&self) -> fs::File;
-    fn read(&self) -> Vec<String>;
-    fn write(&self, todo: &Todo);
-    fn tasks(&self) -> Vec<Task>;
-}
+use super::traits::Persister;
 
-/// Representation of a file.
+/// Representation of a file that is used to manage .
 pub struct SaveFile {
     /// File that implements the `Persister` trait.
     pub persister: Box<dyn Persister>,
+}
+
+impl PartialEq for SaveFile {
+    fn eq(&self, other: &Self) -> bool {
+        self.persister.is_equal(&*other.persister)
+    }
+}
+
+impl fmt::Debug for SaveFile {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SaveFile")
+            .field("persister", &"Box<dyn Persister>")
+            .finish()
+    }
 }
 
 impl SaveFile {
@@ -31,34 +41,16 @@ impl SaveFile {
     pub fn from(path: &str) -> Self {
         let mut path = Path::new(path).to_owned();
         path = Self::check_file_name(path);
-
-        let ext = path
-            .extension()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_owned();
-
-        let persister: Box<dyn Persister> = match ext.as_str() {
-            "csv" => Box::new(Csv::new(path.clone())),
-            "json" => Box::new(Json::new(path.clone())),
-            "txt" => {
-                println!("Text files use CSV format by default");
-                Box::new(Csv::new(path.clone()))
-            }
-            _ => {
-                eprintln!("Unsupported file format; defaulting to CSV");
-                Box::new(Csv::new(path.clone()))
-            }
-        };
-
+        
+        let persister = Self::get_persister(path);
         persister.check_file();
 
         Self::new(persister)
     }
 
+    /// Checks the format of a file and return the same instance with the correct format.
     pub fn check_file_name(mut path: PathBuf) -> PathBuf {
-        let file_name = path
+        let file_name: String = path
             .file_name()
             .unwrap_or(OsStr::new("tasks"))
             .to_string_lossy()
@@ -78,12 +70,26 @@ impl SaveFile {
         path
     }
 
-    /// Creates a file if it doesn't exist. If it exists, just opens the file.
-    ///
-    /// # Panics
-    /// If the file can't be created.
-    pub fn open(&self) -> fs::File {
-        self.persister.open()
+    /// Returns a struct that implements the `Persister` trait based on the file extension.
+    pub fn get_persister(path: PathBuf) -> Box<dyn Persister> {
+        let ext = path
+            .extension()
+            .unwrap()
+            .to_str()
+            .unwrap();
+
+        match ext {
+            "csv" => Box::new(Csv::new(path)),
+            "json" => Box::new(Json::new(path)),
+            "txt" => {
+                println!("Text files use CSV format by default");
+                Box::new(Csv::new(path))
+            }
+            _ => {
+                eprintln!("Unsupported file format; defaulting to CSV");
+                Box::new(Csv::new(path))
+            }
+        }
     }
 
     /// Returns the raw contents of a file (including escape characters) in a single `String`.
@@ -91,13 +97,13 @@ impl SaveFile {
         self.persister.read()
     }
 
+    /// Writes the contents of the Todo instance into a file.
+    pub fn write(&self, todo: &Todo) {
+        self.persister.write(todo);
+    }
+
     /// Returns a vector of tasks from the contents of the file.
     pub fn tasks(&self) -> Vec<Task> {
         self.persister.tasks()
-    }
-
-    /// Writes the contents of the Todo instance into a file.
-    pub fn write(&self, todo: &Todo) {
-        self.persister.write(todo)
     }
 }

@@ -10,7 +10,7 @@ fn fake_task_checked() -> Task {
 }
 
 #[test]
-fn test_task_new() {
+fn new() {
     let result = Task::new(1, String::from("Test"), Priority::Med, false);
     let expected = fake_task_unchecked();
 
@@ -18,7 +18,7 @@ fn test_task_new() {
 }
 
 #[test]
-fn test_task_from() {
+fn from() {
     let line = "1,Test,med,false";
 
     let result = Task::from(line);
@@ -28,7 +28,7 @@ fn test_task_from() {
 }
 
 #[test]
-fn test_task_unpack() {
+fn unpack() {
     let line = "1,Test,med,false";
 
     let (id, content, priority, checked) = Task::unpack(line);
@@ -45,7 +45,7 @@ fn test_task_unpack() {
 }
 
 #[test]
-fn test_task_fields() {
+fn fields() {
     let expected = fake_task_unchecked();
 
     let (id, content, priority, checked) = expected.fields();
@@ -57,7 +57,7 @@ fn test_task_fields() {
 }
 
 #[test]
-fn test_task_format() {
+fn format() {
     let task = fake_task_unchecked();
 
     let result = task.format();
@@ -73,7 +73,7 @@ fn test_task_format() {
 }
 
 #[test]
-fn test_task_check_ok() {
+fn check_ok() {
     let mut task = fake_task_unchecked();
     let result = task.check();
 
@@ -81,7 +81,7 @@ fn test_task_check_ok() {
 }
 
 #[test]
-fn test_task_check_err() {
+fn check_err() {
     let mut task = fake_task_checked();
     let result = task.check();
 
@@ -89,7 +89,7 @@ fn test_task_check_err() {
 }
 
 #[test]
-fn test_task_uncheck_ok() {
+fn uncheck_ok() {
     let mut task = fake_task_checked();
     let result = task.uncheck();
 
@@ -97,7 +97,7 @@ fn test_task_uncheck_ok() {
 }
 
 #[test]
-fn test_task_uncheck_err() {
+fn uncheck_err() {
     let mut task = fake_task_unchecked();
     let result = task.uncheck();
 
@@ -105,7 +105,7 @@ fn test_task_uncheck_err() {
 }
 
 #[test]
-fn test_task_stylize_checked() {
+fn stylize_checked() {
     let result = fake_task_checked().stylize();
     
     let mut expected = result.clone();
@@ -117,7 +117,7 @@ fn test_task_stylize_checked() {
 }
 
 #[test]
-fn test_task_stylize_unchecked() {
+fn stylize_unchecked() {
     let result = fake_task_unchecked().stylize();
     
     let mut expected = result.clone();

@@ -1,3 +1,5 @@
+//! The core unit for task management.
+
 use std::fmt;
 
 use clap::ValueEnum;
