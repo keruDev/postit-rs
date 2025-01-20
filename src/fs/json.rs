@@ -48,7 +48,7 @@ impl Persister for Json {
 
     fn check_file(&self) {
         if !self.path.exists() || self.is_empty() {
-            println!("Path doesn't exist; creating {:?}", &self.path);
+            println!("Creating {:?}", &self.path);
 
             fs::write(&self.path, Self::array()).expect("Should have been able to write");
         }

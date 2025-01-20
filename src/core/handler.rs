@@ -33,12 +33,7 @@ impl Handler {
 
     /// Copies the contents of a file to another.
     fn copy(old: &str, new: &str) {
-        let old_path = SaveFile::from(old);
-        let new_path = SaveFile::from(new);
-
-        let contents = Todo::from(&old_path);
-
-        new_path.persister.write(&contents);
+        SaveFile::copy(old, new);
     }
 
     /// Adds a new task to the list.
