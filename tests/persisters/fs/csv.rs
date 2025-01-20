@@ -1,11 +1,10 @@
 use std::fs;
 use std::io::Read;
 
-use postit::core::task::{Priority, Task};
-use postit::fs::csv::Csv;
-use postit::fs::file::SaveFile;
-use postit::fs::json::Json;
-use postit::fs::traits::Persister;
+use postit::models::{Priority, Task};
+use postit::persisters::fs::{Csv, Json};
+use postit::persisters::base::SaveFile;
+use postit::persisters::traits::Persister;
 
 use crate::mocks::MockPath;
 

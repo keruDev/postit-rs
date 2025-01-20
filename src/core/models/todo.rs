@@ -1,6 +1,6 @@
 //! Collection of existing tasks. This is where major task management is made.
 
-use crate::fs::file::SaveFile;
+use crate::persisters::base::SaveFile;
 
 use super::task::Task;
 

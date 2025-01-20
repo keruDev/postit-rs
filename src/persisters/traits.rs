@@ -3,8 +3,7 @@
 use std::any::Any;
 use std::{fmt, fs};
 
-use crate::core::task::Task;
-use crate::core::todo::Todo;
+use crate::core::models::{Task, Todo};
 
 /// The `Persister` trait includes basic methods for data management.
 /// 

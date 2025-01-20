@@ -1,11 +1,11 @@
 //! Entry point of the program where all operations to the [Todo] are executed
 //! and files are written via a [`SaveFile`] instance.
 
-use crate::fs::file::SaveFile;
 
-use super::args::{Args, Command};
-use super::task::Task;
-use super::todo::Todo;
+use crate::persisters::base::SaveFile;
+
+use super::args::{Arguments, Command};
+use super::models::{Task, Todo};
 
 /// Handles operations via commands.
 pub struct Handler {
@@ -15,7 +15,7 @@ pub struct Handler {
 
 impl Handler {
     /// Runs the Handler struct based on the args.
-    pub fn run(args: Args) {
+    pub fn run(args: Arguments) {
         match args.command {
             Command::View { path } => Self::view(&path),
             Command::Add { path, task } => Self::add(&path, &task),

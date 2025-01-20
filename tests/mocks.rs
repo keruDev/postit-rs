@@ -2,12 +2,10 @@ use std::fs;
 use std::ops::Deref;
 use std::path::PathBuf;
 
-use postit::core::task::Task;
-use postit::core::todo::Todo;
-use postit::fs::csv::Csv;
-use postit::fs::json::Json;
+use postit::models::{Task, Todo};
+use postit::persisters::fs::{Csv, Json};
 
-use postit::fs::traits::Persister as _;
+use postit::persisters::traits::Persister as _;
 
 /// A temporary path used for testing purposes. 
 /// 

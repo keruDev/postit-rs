@@ -1,15 +1,13 @@
 //! Create for file management using persisters like [Csv] or [Json].
 
-use crate::core::task::Task;
-use crate::core::todo::Todo;
-use crate::fs::csv::Csv;
-use crate::fs::json::Json;
+use crate::models::{Task, Todo};
+use crate::persisters::fs::{Csv, Json};
+use crate::persisters::traits::Persister;
 
 use std::ffi::OsStr;
 use std::fmt;
 use std::path::{Path, PathBuf};
 
-use super::traits::Persister;
 
 /// Representation of a file that is used to manage .
 pub struct SaveFile {

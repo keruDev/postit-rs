@@ -18,7 +18,7 @@ pub enum Command {
         path: String,
 
         /// Full task structure (id,content,priority,checked).
-        #[arg(value_name = "TASK", help = "Structure: 'id,contents,priority,checked'")]
+        #[arg(value_name = "TASK", help = "Structure: 'id,content,priority,checked'")]
         task: String,
     },
     /// Marks a task as checked so it can be dropped.
@@ -66,7 +66,7 @@ pub enum Command {
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, next_line_help = false)]
 /// Manages the Arguments received by console.
-pub struct Args {
+pub struct Arguments {
     /// Command to execute
     #[command(subcommand)]
     pub command: Command,
