@@ -57,7 +57,7 @@ impl Persister for Csv {
 
     fn check_file(&self) {
         if !self.path.exists() || self.is_empty() {
-            println!("Path doesn't exist; creating {:?}", &self.path);
+            println!("Creating {:?}", &self.path);
 
             fs::write(&self.path, Self::header())
                 .expect("Should have been able to create the file");

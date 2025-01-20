@@ -1,6 +1,5 @@
 use std::fs;
 use std::io::Read;
-use std::path::PathBuf;
 
 use postit::core::task::{Priority, Task};
 use postit::fs::csv::Csv;
@@ -45,7 +44,7 @@ fn is_equal_different_type_persisters() {
 
 #[test]
 fn check_file() {
-    let mock = MockPath::csv("csv_check_file");
+    let mock = MockPath::new("csv_check_file.csv");
     
     let csv = Csv::new(mock.path());
     csv.check_file();

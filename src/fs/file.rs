@@ -92,6 +92,31 @@ impl SaveFile {
         }
     }
 
+    /// Copies the contents of a file to another.
+    pub fn copy(old: &str, new: &str) {
+        if old == new {
+            eprintln!("Both paths are the same");
+            return;
+        }
+
+        if !Path::new(old).exists() {
+            eprintln!("Old path doesn't exists");
+            return;
+        }
+
+        if Path::new(new).exists() {
+            eprintln!("New path already exists");
+            return;
+        }
+
+        let old_file = Self::from(old);
+        let new_file = Self::from(new);
+
+        let contents = Todo::from(&old_file);
+
+        new_file.persister.write(&contents);
+    }
+
     /// Returns the raw contents of a file (including escape characters) in a single `String`.
     pub fn read(&self) -> Vec<String> {
         self.persister.read()

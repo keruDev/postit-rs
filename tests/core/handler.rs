@@ -7,19 +7,12 @@ use postit::fs::file::SaveFile;
 use crate::mocks::MockPath;
 
 
-fn fakes(mock: &MockPath) -> (Args, SaveFile, Todo) {
+fn fakes(mock: &MockPath) -> (SaveFile, Todo) {
     let path = mock.to_string();
     let file = SaveFile::from(&path);
     let todo = Todo { tasks: file.persister.tasks() };
 
-    let args = Args {
-        command: Command::View,
-        ids: vec![],
-        task: String::new(),
-        path
-    };
-
-    (args, file, todo)
+    (file, todo)
 }
 
 fn expected(mock: &MockPath) -> (SaveFile, Todo) {
@@ -35,7 +28,8 @@ fn expected(mock: &MockPath) -> (SaveFile, Todo) {
 fn view() {
     let mock = MockPath::csv("handler_view");
 
-    let (args, file, todo) = fakes(&mock);
+    let (file, todo) = fakes(&mock);
+    let args = Args { command: Command::View { path: mock.to_string() } };
 
     Handler::run(args);
 
@@ -48,12 +42,10 @@ fn view() {
 #[test]
 fn add() {
     let mock = MockPath::csv("handler_add");
-
-    let (mut args, file, mut todo) = fakes(&mock);
     let task = "5,Test,med,false";
-    
-    args.command = Command::Add;
-    args.task = String::from(task);
+
+    let (file, mut todo) = fakes(&mock);
+    let args = Args { command: Command::Add { path: mock.to_string(), task: String::from(task) } };
 
     Handler::run(args);
     
@@ -69,12 +61,10 @@ fn add() {
 #[test]
 fn check() {
     let mock = MockPath::csv("handler_check");
-
-    let (mut args, file, mut todo) = fakes(&mock);
     let ids = vec![2, 3];
 
-    args.command = Command::Check;
-    args.ids.extend(&ids);
+    let (file, mut todo) = fakes(&mock);
+    let args = Args { command: Command::Check { path: mock.to_string(), ids: ids.to_owned() } };
 
     Handler::run(args);
     
@@ -90,12 +80,10 @@ fn check() {
 #[test]
 fn uncheck() {
     let mock = MockPath::csv("handler_uncheck");
-
-    let (mut args, file, mut todo) = fakes(&mock);
     let ids = vec![2, 3];
 
-    args.command = Command::Uncheck;
-    args.ids.extend(&ids);
+    let (file, mut todo) = fakes(&mock);
+    let args = Args { command: Command::Uncheck { path: mock.to_string(), ids: ids.to_owned() } };
 
     Handler::run(args);
     
@@ -111,12 +99,10 @@ fn uncheck() {
 #[test]
 fn drop() {
     let mock = MockPath::csv("handler_drop");
-
-    let (mut args, file, mut todo) = fakes(&mock);
     let ids = vec![2, 3];
 
-    args.command = Command::Drop;
-    args.ids.extend(&ids);
+    let (file, mut todo) = fakes(&mock);
+    let args = Args { command: Command::Drop { path: mock.to_string(), ids: ids.to_owned() } };
 
     Handler::run(args);
     
@@ -127,4 +113,21 @@ fn drop() {
     
     assert_eq!(todo, expected_todo);
     assert_eq!(file.read(), expected_file.read());
+}
+
+#[test]
+fn copy() {
+    let mock_old = MockPath::csv("handler_copy");
+    let new_path = "handler_copy.json";
+
+    let args = Args { command: Command::Copy { old: mock_old.to_string(), new: new_path.to_string() } };
+
+    Handler::run(args);
+
+    let mock_new = MockPath::new(new_path);
+    let (old_file, old_todo) = expected(&mock_old);
+    let (new_file, new_todo) = expected(&mock_new);
+
+    assert_eq!(old_file.tasks(), new_file.tasks());
+    assert_eq!(old_todo, new_todo);
 }

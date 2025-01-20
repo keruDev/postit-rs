@@ -17,6 +17,11 @@ impl Todo {
         Self { tasks: file.persister.tasks() }
     }
 
+    /// Reads a file and loads the `Todo` instance.
+    pub fn read(path: &str) -> Self {
+        Self::from(&SaveFile::from(path))
+    }
+
     /// Returns tasks based on the ids passed.
     pub fn get(&mut self, ids: &[u128]) -> Vec<&mut Task> {
         self.tasks
@@ -29,7 +34,7 @@ impl Todo {
     pub fn view(&mut self) {
         self.tasks
             .iter_mut()
-            .for_each(|task| println!("{}", task.stylize()));
+            .for_each(|task| println!("{task}"));
     }
 
     /// Adds a task to the task list.

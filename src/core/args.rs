@@ -1,58 +1,73 @@
 //! Argument parsing utilities with [clap].
 
-use clap::Parser;
-use clap::ValueEnum;
+use clap::{Parser, Subcommand};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+#[derive(Subcommand, Debug)]
 /// Contains the different commands available.
 pub enum Command {
     /// Shows a list of the current tasks.
-    View,
+    View {
+        /// Used to read from and save tasks to (default: tasks.csv)
+        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        path: String,
+    },
     /// Adds a new task to the list.
-    Add,
+    Add {
+        /// Used to read from and save tasks to (default: tasks.csv)
+        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        path: String,
+
+        /// Full task structure (id,content,priority,checked).
+        #[arg(value_name = "TASK", help = "Structure: 'id,contents,priority,checked'")]
+        task: String,
+    },
     /// Marks a task as checked so it can be dropped.
-    Check,
+    Check {
+        /// Used to read from and save tasks to (default: tasks.csv)
+        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        path: String,
+
+        /// Identifiers of tasks.
+        #[arg(value_name = "IDS", help = "Tasks to check")]
+        ids: Vec<u128>,
+    },
     /// Unchecks a task as if it hasn't been completed.
-    Uncheck,
+    Uncheck {
+        /// Used to read from and save tasks to (default: tasks.csv)
+        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        path: String,
+        
+        /// Identifiers of tasks.
+        #[arg(value_name = "IDS", help = "Tasks to uncheck")]
+        ids: Vec<u128>,    
+    },
     /// Deletes a task from the list.
-    Drop,
+    Drop{
+        /// Used to read from and save tasks to (default: tasks.csv)
+        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        path: String,
+
+        /// Identifiers of tasks.
+        #[arg(value_name = "IDS", help = "Tasks to drop")]
+        ids: Vec<u128>,
+    },
+    /// Copies the contents of a file to another.
+    Copy {
+        /// Used to read from and save tasks to (default: tasks.csv)
+        #[arg(value_name = "OLD_PATH", help = "Old path of the tasks file.")]
+        old: String,
+
+        /// Used to read from and save tasks to (default: tasks.csv)
+        #[arg(value_name = "NEW_PATH", help = "New path of the tasks file.")]
+        new: String, 
+    },
 }
 
-#[derive(Parser, Clone, Debug, PartialEq, Eq)]
+#[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, next_line_help = false)]
 /// Manages the Arguments received by console.
 pub struct Args {
     /// Command to execute
-    #[arg(long, short, value_name = "COMMAND", value_enum, default_value_t = Command::View)]
+    #[command(subcommand)]
     pub command: Command,
-
-    /// Identifiers for tasks. Used to 'check', 'uncheck' or 'drop'
-    #[arg(long, short, value_name = "IDS", value_delimiter = ',', default_value = "0", hide_default_value = true)]
-    pub ids: Vec<u128>,
-
-    /// Full task structure (id,content,priority,checked). Used to 'add'
-    #[arg(long, short, value_name = "TASK", default_value = "", hide_default_value = true)]
-    pub task: String,
-
-    /// Used to read from and save tasks to (default: tasks.csv)
-    #[arg(long, short, value_name = "PATH", default_value = "tasks.csv", hide_default_value = true)]
-    pub path: String,
-}
-
-impl Args {
-    /// Checks the arguments received.
-    ///
-    /// # Panics
-    /// If there is an argument missing for the command passed.
-    pub fn check(self) -> Self {
-        match self.command {
-            Command::View => (),
-            Command::Add => assert!(!self.task.is_empty(), "Argument missing: 'task'"),
-            Command::Check | Command::Uncheck | Command::Drop => {
-                assert!(!self.ids.is_empty(), "Argument missing: 'ids'");
-            }
-        }
-
-        self
-    }
 }

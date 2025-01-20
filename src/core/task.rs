@@ -2,12 +2,11 @@
 
 use std::fmt;
 
-use clap::ValueEnum;
-use colored::{ColoredString, Colorize as _};
+use colored::Colorize as _;
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Debug, Clone, Copy, ValueEnum, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 /// Priority of the Task, which is used to define the task's color and importance.
 pub enum Priority {
@@ -60,7 +59,20 @@ pub struct Task {
 
 impl fmt::Display for Task {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Task({}: {})", self.id, self.content)
+        let msg = format!("Task({}: {})", self.id, self.content);
+
+        let colored = match self.priority {
+            Priority::High => msg.red(),
+            Priority::Med => msg.yellow(),
+            Priority::Low => msg.blue(),
+            Priority::None => msg.white(),
+        };
+
+        let bold = colored.bold();
+
+        let styled = if self.checked { bold.strikethrough() } else { bold };
+
+        write!(f, "{styled}")
     }
 }
 
@@ -135,21 +147,5 @@ impl Task {
         } else {
             Err("task was already unchecked")
         }
-    }
-
-    /// Transforms the task into a stylized string (colored, bold and strikethrough).
-    pub fn stylize(&self) -> ColoredString {
-        let msg = &self.to_string();
-
-        let colored = match self.priority {
-            Priority::High => msg.red(),
-            Priority::Med => msg.yellow(),
-            Priority::Low => msg.blue(),
-            Priority::None => msg.white(),
-        };
-
-        let bold = colored.bold();
-
-        if self.checked { bold.strikethrough() } else { bold }
     }
 }
