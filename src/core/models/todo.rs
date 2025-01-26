@@ -14,7 +14,7 @@ pub struct Todo {
 impl Todo {
     /// Creates a `Todo` instance from a file's contents.
     pub fn from(file: &SaveFile) -> Self {
-        Self { tasks: file.persister.tasks() }
+        Self { tasks: file.tasks() }
     }
 
     /// Reads a file and loads the `Todo` instance.

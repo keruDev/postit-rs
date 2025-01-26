@@ -1,6 +1,6 @@
 //! Utilities to handle CSV files.
 //! 
-//! The `Csv` struct implements the [Persister] trait.
+//! The `Csv` struct implements the [`Persister`] trait.
 
 use std::any::Any;
 use std::fs;
@@ -32,7 +32,7 @@ impl Csv {
         tasks.iter().map(Task::format).collect()
     }
 
-    /// First line of the `Csv` file.
+    /// Returns the header of a the csv file.
     pub fn header() -> String {
         String::from("id,content,priority,checked\n")
     }
@@ -54,18 +54,19 @@ impl Persister for Csv {
             .map_or(false, |persister| self.path == persister.path)
     }
 
-    fn check_file(&self) {
-        if !self.path.exists() || self.is_empty() {
-            println!("Creating {:?}", &self.path);
+    fn default(&self) -> String {
+        Self::header()
+    }
 
-            fs::write(&self.path, Self::header())
-                .expect("Should have been able to create the file");
-        }
+    fn exists(&self) -> bool {
+        self.path.exists()
+    }
+
+    fn path(&self) -> PathBuf {
+        self.path.clone()
     }
 
     fn open(&self) -> fs::File {
-        self.check_file();
-
         fs::File::open(&self.path)
             .expect("Should have been able to create the file")
     }
@@ -81,15 +82,13 @@ impl Persister for Csv {
 
     fn write(&self, todo: &Todo) {
         let sep = if cfg!(windows) { "\r\n" } else { "\n" };
-        let mut bytes = Self::header().into_bytes();
+        let mut bytes = self.default().into_bytes();
         let mut tasks = Self::format(&todo.tasks).join(sep).into_bytes();
 
         bytes.append(&mut tasks);
 
-        match fs::write(&self.path, bytes) {
-            Ok(()) => (),
-            Err(e) => eprintln!("{e}"),
-        }
+        fs::write(&self.path, bytes)
+            .expect("Should have been able to write into the CSV file");
     }
 
     /// Transforms a csv file into tasks.

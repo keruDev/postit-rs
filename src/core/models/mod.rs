@@ -1,3 +1,5 @@
+//! Representations of objects that store specific data related to tasks and their information.
+
 mod task;
 mod todo;
 

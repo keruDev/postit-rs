@@ -9,7 +9,7 @@ use crate::mocks::MockPath;
 fn fakes(mock: &MockPath) -> (SaveFile, Todo) {
     let path = mock.to_string();
     let file = SaveFile::from(&path);
-    let todo = Todo { tasks: file.persister.tasks() };
+    let todo = Todo { tasks: file.tasks() };
 
     (file, todo)
 }

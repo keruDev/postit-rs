@@ -65,7 +65,7 @@ pub enum Command {
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, next_line_help = false)]
-/// Manages the Arguments received by console.
+/// Manages the `Arguments` received by console.
 pub struct Arguments {
     /// Command to execute
     #[command(subcommand)]

@@ -1,6 +1,7 @@
 //! Contains traits related to data persisting actions, such as reading or writing.
 
 use std::any::Any;
+use std::path::PathBuf;
 use std::{fmt, fs};
 
 use crate::core::models::{Task, Todo};
@@ -19,10 +20,14 @@ pub trait Persister: Any + fmt::Debug {
     /// Checks if the file is empty.
     fn is_empty(&self) -> bool;
 
-    /// Checks if a file is empty.
-    /// 
-    /// If it is, the file gets populated its with basic contents.
-    fn check_file(&self);
+    /// Checks if the path exists.
+    fn exists(&self) -> bool;
+
+    /// Checks if the path exists.
+    fn path(&self) -> PathBuf;
+
+    /// Default value that can populate the file if it's empty.
+    fn default(&self) -> String;
 
     /// Grants access to an open file.
     fn open(&self) -> fs::File;

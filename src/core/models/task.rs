@@ -5,6 +5,8 @@ use std::fmt;
 use colored::Colorize as _;
 use serde::{Deserialize, Serialize};
 
+use crate::core::error::{self, TaskError};
+
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -106,7 +108,8 @@ impl Task {
             .get(2)
             .map_or(Priority::Med, |&s| Priority::from(s.trim()));
 
-        let checked = list.get(3)
+        let checked = list
+            .get(3)
             .is_some_and(|&s| matches!(s.trim(), "true"));
 
         (id, content, priority, checked)
@@ -127,9 +130,9 @@ impl Task {
     ///
     /// # Errors
     /// If the task is already checked, an error will be returned.
-    pub fn check(&mut self) -> Result<&Self, &str> {
+    pub fn check(&mut self) -> Result<&Self, error::TaskError> {
         if self.checked {
-            Err("task was already checked")
+            Err(TaskError::AlreadyChecked)
         } else {
             self.checked = true;
             Ok(self)
@@ -140,12 +143,12 @@ impl Task {
     ///
     /// # Errors
     /// If the task is already unchecked, an error will be returned.
-    pub fn uncheck(&mut self) -> Result<&Self, &str> {
+    pub fn uncheck(&mut self) -> Result<&Self, error::TaskError> {
         if self.checked {
             self.checked = false;
             Ok(self)
         } else {
-            Err("task was already unchecked")
+            Err(TaskError::AlreadyUnchecked)
         }
     }
 }
