@@ -42,18 +42,6 @@ fn is_equal_different_type_persisters() {
 }
 
 #[test]
-fn check_file() {
-    let mock = MockPath::new("csv_check_file.csv");
-    
-    let csv = Csv::new(mock.path());
-    csv.check_file();
-
-    let result = fs::read_to_string(mock.path()).unwrap();
-
-    assert_eq!(result, Csv::header());
-}
-
-#[test]
 fn parse() {
     MockPath::csv("csv_parse");
 

@@ -1,4 +1,5 @@
 use std::ffi::OsStr;
+use std::fs;
 
 use postit::persisters::fs::{Csv, Json};
 use postit::persisters::base::SaveFile;
@@ -42,6 +43,30 @@ fn check_file_name_ok() {
     let expected = OsStr::new(path);
 
     assert_eq!(result, expected);
+}
+
+#[test]
+fn check_file_content_empty() {
+    let mock = MockPath::new("check_file_content_exists.csv");
+    
+    let persister = SaveFile::get_persister(mock.path());
+    SaveFile::check_file_content(&*persister);
+
+    let result = fs::read_to_string(mock.path()).unwrap();
+
+    assert_eq!(result, persister.default());
+}
+
+#[test]
+fn check_file_content_exists() {
+    let mock = MockPath::csv("check_file_content_empty");
+    
+    let persister = SaveFile::get_persister(mock.path());
+    SaveFile::check_file_content(&*persister);
+
+    let result = fs::read_to_string(mock.path()).unwrap();
+
+    assert_ne!(result, persister.default());
 }
 
 #[test]
@@ -128,4 +153,31 @@ fn get_persister_any() {
     let expected = Box::new(Csv::new(mock.path()));
 
     assert!(result.is_equal(&*expected));
+}
+
+#[test]
+#[should_panic]
+fn copy_same_paths() {
+    let old = String::from("test_copy_same_paths.csv");
+    let new = old.clone();
+
+    SaveFile::copy(&old, &new);
+}
+
+#[test]
+#[should_panic]
+fn copy_no_old_path() {
+    let old = String::from("test_copy_no_old_path.csv");
+    let new = String::from("test_copy_no_old_path.json");
+
+    SaveFile::copy(&old, &new);
+}
+
+#[test]
+#[should_panic]
+fn copy_path_exists() {
+    let old = MockPath::csv("test_copy_path_exists");
+    let new = MockPath::json("test_copy_path_exists");
+
+    SaveFile::copy(&old.to_string(), &new.to_string());
 }
