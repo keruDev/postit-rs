@@ -1,21 +1,19 @@
-//! Entry point of the program where all operations to the [Todo] are executed
-//! and files are written via a [`SaveFile`] instance.
+use crate::persisters::base::SaveFile;
 
-use crate::fs::file::SaveFile;
-
-use super::args::{Args, Command};
-use super::task::Task;
-use super::todo::Todo;
+use super::args::{Arguments, Command};
+use super::models::{Task, Todo};
 
 /// Handles operations via commands.
-pub struct Handler {
-    /// Instance of `Todo` with previous tasks loaded from a `SaveFile` instance.
-    pub todo: Todo,
-}
+/// 
+/// Entry point of the program where all operations are executed.
+/// 
+/// The [`Todo`] instance is loaded using the desired [`Persister`][`crate::persisters::traits::Persister`]
+/// instance, which is modified when the `Handler` finishes working.
+pub struct Handler;
 
 impl Handler {
     /// Runs the Handler struct based on the args.
-    pub fn run(args: Args) {
+    pub fn run(args: Arguments) {
         match args.command {
             Command::View { path } => Self::view(&path),
             Command::Add { path, task } => Self::add(&path, &task),
@@ -44,7 +42,7 @@ impl Handler {
         todo.add(Task::from(task));
         todo.view();
 
-        file.persister.write(&todo);
+        file.write(&todo);
     }
 
     /// Checks the tasks based on the ids passed.
@@ -55,7 +53,7 @@ impl Handler {
         todo.check(ids);
         todo.view();
 
-        file.persister.write(&todo);
+        file.write(&todo);
     }
 
     /// Unchecks the tasks based on the ids passed.
@@ -66,7 +64,7 @@ impl Handler {
         todo.uncheck(ids);
         todo.view();
 
-        file.persister.write(&todo);
+        file.write(&todo);
     }
 
     /// Drops tasks from the list based on the ids passed.
@@ -77,6 +75,6 @@ impl Handler {
         todo.drop(ids);
         todo.view();
 
-        file.persister.write(&todo);
+        file.write(&todo);
     }
 }

@@ -1,4 +1,4 @@
-use postit::core::task::{Task, Priority};
+use postit::models::{Task, Priority};
 
 fn fake_task_unchecked() -> Task {
     Task::new(1, String::from("Test"), Priority::Med, false)

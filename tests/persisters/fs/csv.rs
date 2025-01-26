@@ -1,11 +1,10 @@
 use std::fs;
 use std::io::Read;
 
-use postit::core::task::{Priority, Task};
-use postit::fs::csv::Csv;
-use postit::fs::file::SaveFile;
-use postit::fs::json::Json;
-use postit::fs::traits::Persister;
+use postit::models::{Priority, Task};
+use postit::persisters::fs::{Csv, Json};
+use postit::persisters::base::SaveFile;
+use postit::persisters::traits::Persister;
 
 use crate::mocks::MockPath;
 
@@ -40,18 +39,6 @@ fn is_equal_different_type_persisters() {
     let right = Json::new(mock_right.path());
 
     assert!(!left.is_equal(&right));
-}
-
-#[test]
-fn check_file() {
-    let mock = MockPath::new("csv_check_file.csv");
-    
-    let csv = Csv::new(mock.path());
-    csv.check_file();
-
-    let result = fs::read_to_string(mock.path()).unwrap();
-
-    assert_eq!(result, Csv::header());
 }
 
 #[test]

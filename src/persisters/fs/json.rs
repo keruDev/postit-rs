@@ -6,10 +6,9 @@ use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::core::task::Task;
-use crate::core::todo::Todo;
+use crate::core::models::{Task, Todo};
+use crate::persisters::traits::Persister;
 
-use super::traits::Persister;
 
 
 /// Representation of a JSON file.
@@ -24,7 +23,7 @@ impl Json {
         Self { path }
     }
 
-    /// Default contents of the `Json` file.
+    /// Returns the basic structure to initialize a JSON file.
     pub fn array() -> String {
         String::from("[]")
     }
@@ -46,17 +45,19 @@ impl Persister for Json {
             .map_or(false, |persister| self.path == persister.path)
     }
 
-    fn check_file(&self) {
-        if !self.path.exists() || self.is_empty() {
-            println!("Creating {:?}", &self.path);
+    fn default(&self) -> String {
+        Self::array()
+    }
 
-            fs::write(&self.path, Self::array()).expect("Should have been able to write");
-        }
+    fn exists(&self) -> bool {
+        self.path.exists()
+    }
+
+    fn path(&self) -> PathBuf {
+        self.path.clone()
     }
     
     fn open(&self) -> fs::File {
-        self.check_file();
-
         fs::OpenOptions::new()
             .write(true)
             .create(true)
@@ -75,7 +76,8 @@ impl Persister for Json {
     }
 
     fn write(&self, todo: &Todo) {
-        serde_json::to_writer_pretty(self.open(), &todo.tasks).unwrap();
+        serde_json::to_writer_pretty(self.open(), &todo.tasks)
+        .expect("Should have been able to write into the JSON file");
     }
 
     fn tasks(&self) -> Vec<Task> {

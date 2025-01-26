@@ -1,6 +1,5 @@
-use postit::core::task::Task;
-use postit::core::todo::Todo;
-use postit::fs::file::SaveFile;
+use postit::models::{Task, Todo};
+use postit::persisters::base::SaveFile;
 
 use crate::mocks::MockPath;
 

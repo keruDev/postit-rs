@@ -1,3 +1,3 @@
 pub mod core;
-pub mod fs;
+pub mod persisters;
 pub mod mocks;
