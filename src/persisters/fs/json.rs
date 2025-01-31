@@ -77,7 +77,7 @@ impl Persister for Json {
 
     fn write(&self, todo: &Todo) {
         serde_json::to_writer_pretty(self.open(), &todo.tasks)
-        .expect("Should have been able to write into the JSON file");
+            .expect("Should have been able to write into the JSON file");
     }
 
     fn tasks(&self) -> Vec<Task> {

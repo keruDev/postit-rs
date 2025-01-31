@@ -15,11 +15,11 @@ impl Handler {
     /// Runs the Handler struct based on the args.
     pub fn run(args: Arguments) {
         match args.command {
-            Command::View { path } => Self::view(&path),
-            Command::Add { path, task } => Self::add(&path, &task),
-            Command::Check { path, ids } => Self::check(&path, &ids),
-            Command::Uncheck { path, ids } => Self::uncheck(&path, &ids),
-            Command::Drop { path, ids } => Self::drop(&path, &ids),
+            Command::View { path } => Self::view(&Arguments::resolve_path(path)),
+            Command::Add { path, task } => Self::add(&Arguments::resolve_path(path), &task),
+            Command::Check { path, ids } => Self::check(&Arguments::resolve_path(path), &ids),
+            Command::Uncheck { path, ids } => Self::uncheck(&Arguments::resolve_path(path), &ids),
+            Command::Drop { path, ids } => Self::drop(&Arguments::resolve_path(path), &ids),
             Command::Copy { old, new } => Self::copy(&old, &new),
         }
     }

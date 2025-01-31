@@ -167,10 +167,12 @@ fn copy_same_paths() {
 #[test]
 #[should_panic]
 fn copy_no_old_path() {
-    let old = String::from("test_copy_no_old_path.csv");
-    let new = String::from("test_copy_no_old_path.json");
+    let old = MockPath::csv("test_copy_no_old_path");
+    old.clean();
 
-    SaveFile::copy(&old, &new);
+    let new = MockPath::json("test_copy_no_old_path");
+
+    SaveFile::copy(&old.to_string(), &new.to_string());
 }
 
 #[test]
