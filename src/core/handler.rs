@@ -2,10 +2,11 @@ use crate::persisters::base::SaveFile;
 
 use super::args::{Arguments, Command};
 use super::models::{Task, Todo};
+use super::Config;
 
-/// Handles operations via commands.
+/// Entry point where all operations are executed.
 /// 
-/// Entry point of the program where all operations are executed.
+/// Handles operations via commands.
 /// 
 /// The [`Todo`] instance is loaded using the desired [`Persister`][`crate::persisters::traits::Persister`]
 /// instance, which is modified when the `Handler` finishes working.
@@ -15,11 +16,11 @@ impl Handler {
     /// Runs the Handler struct based on the args.
     pub fn run(args: Arguments) {
         match args.command {
-            Command::View { path } => Self::view(&path),
-            Command::Add { path, task } => Self::add(&path, &task),
-            Command::Check { path, ids } => Self::check(&path, &ids),
-            Command::Uncheck { path, ids } => Self::uncheck(&path, &ids),
-            Command::Drop { path, ids } => Self::drop(&path, &ids),
+            Command::View { path } => Self::view(&Config::resolve_path(path)),
+            Command::Add { path, task } => Self::add(&Config::resolve_path(path), &task),
+            Command::Check { path, ids } => Self::check(&Config::resolve_path(path), &ids),
+            Command::Uncheck { path, ids } => Self::uncheck(&Config::resolve_path(path), &ids),
+            Command::Drop { path, ids } => Self::drop(&Config::resolve_path(path), &ids),
             Command::Copy { old, new } => Self::copy(&old, &new),
         }
     }

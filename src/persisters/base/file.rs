@@ -1,5 +1,6 @@
 //! Module for file management using persisters like [Csv] or [Json].
 
+use crate::Config;
 use crate::models::{Task, Todo};
 use crate::persisters::error::FileError;
 use crate::persisters::fs::{Csv, Json};
@@ -114,12 +115,20 @@ impl SaveFile {
     pub fn copy(old: &str, new: &str) {
         assert!(old != new, "{}", FileError::SamePaths);
         assert!(Path::new(old).exists(), "{}", FileError::NoOldPath);
-        assert!(!Path::new(new).exists(), "{}", FileError::PathExists);
+
+        if !Config::get().force_copy {
+            assert!(!Path::new(new).exists(), "{}", FileError::PathExists);
+        }
 
         let old_file = Self::from(old);
         let new_file = Self::from(new);
 
         new_file.write(&Todo::from(&old_file));
+
+        if Config::get().drop_after_copy {
+            fs::remove_file(&old)
+                .expect("Should have been able to delete file after copying");
+        }
     }
 
     /// Returns the raw contents of a file (including escape characters) in a single `String`.

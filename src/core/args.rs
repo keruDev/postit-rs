@@ -9,13 +9,13 @@ pub enum Command {
     View {
         /// Used to read from and save tasks to (default: tasks.csv)
         #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
-        path: String,
+        path: Option<String>,
     },
     /// Adds a new task to the list.
     Add {
         /// Used to read from and save tasks to (default: tasks.csv)
         #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
-        path: String,
+        path: Option<String>,
 
         /// Full task structure (id,content,priority,checked).
         #[arg(value_name = "TASK", help = "Structure: 'id,content,priority,checked'")]
@@ -25,7 +25,7 @@ pub enum Command {
     Check {
         /// Used to read from and save tasks to (default: tasks.csv)
         #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
-        path: String,
+        path: Option<String>,
 
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to check")]
@@ -35,17 +35,17 @@ pub enum Command {
     Uncheck {
         /// Used to read from and save tasks to (default: tasks.csv)
         #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
-        path: String,
+        path: Option<String>,
         
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to uncheck")]
-        ids: Vec<u128>,    
+        ids: Vec<u128>,
     },
     /// Deletes a task from the list.
     Drop{
         /// Used to read from and save tasks to (default: tasks.csv)
         #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
-        path: String,
+        path: Option<String>,
 
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to drop")]

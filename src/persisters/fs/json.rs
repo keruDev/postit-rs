@@ -10,7 +10,6 @@ use crate::core::models::{Task, Todo};
 use crate::persisters::traits::Persister;
 
 
-
 /// Representation of a JSON file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Json {
@@ -77,7 +76,7 @@ impl Persister for Json {
 
     fn write(&self, todo: &Todo) {
         serde_json::to_writer_pretty(self.open(), &todo.tasks)
-        .expect("Should have been able to write into the JSON file");
+            .expect("Should have been able to write into the JSON file");
     }
 
     fn tasks(&self) -> Vec<Task> {

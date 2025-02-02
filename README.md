@@ -1,11 +1,41 @@
 # 📝 postit-rs
 
-[![Crates.io](https://img.shields.io/badge/crates.io-blue.svg?style=flat&label=docs)](https://crates.io/crates/postit)
-[![Current Version](https://img.shields.io/crates/v/postit.svg?label=version)](https://crates.io/crates/postit)
+[![Current Crates.io Version](https://img.shields.io/crates/v/postit.svg)](https://crates.io/crates/postit)
+[![Docs.rs](https://img.shields.io/badge/postit-blue.svg?label=docs.rs)](https://docs.rs/postit/latest/postit/)
+
+Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
 
 Postit is a CLI utility aimed to help you complete your tasks.
-
 You can also save your tasks to keep track of them later.
+
+## Features
+
+`postit` is still in early development, so its features are currently limited.
+
+Customization:
+- Configuration file `postit.json` (more info in the [Configuration](#configuration) section).
+
+Supported file formats:
+- csv
+- json
+
+Display:
+- Checked tasks appear crossed out.
+- Different colors depending on priority.
+  - `high`: red
+  - `med`: yellow
+  - `low`: blue
+  - `none`: white
+
+## Configuration
+
+postit's behavior can be changed using the `postit.json` file.
+
+You can check out its possible fields in the [docs](https://docs.rs/postit/latest/postit/struct.Config.html) or down below:
+- `path`: location of the default file where tasks are stored.
+- `force_drop`: if true, allows dropping tasks without them being checked.
+- `force_copy`: if true, allows overwriting files on copy if they already exist.
+- `drop_after_copy`: if true, drops files after copying.
 
 ## Usage
 
@@ -128,22 +158,3 @@ Copies a file's contents into another:
 postit copy "tasks.csv" "tasks.json"
 ```
 
-## Features
-
-`postit` is still in early development, so its features are currently limited.
-
-Supported file formats:
-- csv
-- json
-
-Display:
-- Checked tasks appear crossed out.
-- Different colors depending on priority.
-  - `high`: red
-  - `med`: yellow
-  - `low`: blue
-  - `none`: white
-
-## Licenses
-
-Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
