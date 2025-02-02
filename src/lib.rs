@@ -23,7 +23,7 @@
 mod core;
 pub mod persisters;
 
-pub use core::Handler;
+pub use core::Postit;
 pub use core::Config;
 pub use core::args;
 pub use core::models;

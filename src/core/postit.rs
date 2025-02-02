@@ -9,11 +9,11 @@ use super::Config;
 /// Handles operations via commands.
 /// 
 /// The [`Todo`] instance is loaded using the desired [`Persister`][`crate::persisters::traits::Persister`]
-/// instance, which is modified when the `Handler` finishes working.
-pub struct Handler;
+/// instance, which is modified when the `Postit` finishes working.
+pub struct Postit;
 
-impl Handler {
-    /// Runs the Handler struct based on the args.
+impl Postit {
+    /// Runs the Postit struct based on the args.
     pub fn run(args: Arguments) {
         match args.command {
             Command::View { path } => Self::view(&Config::resolve_path(path)),
