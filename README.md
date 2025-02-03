@@ -10,10 +10,11 @@ You can also save your tasks to keep track of them later.
 
 ## Features
 
-`postit` is still in early development, so its features are currently limited.
+Although `postit` is still in early development and it is limited in features,
+it effectively serves its intended purpose.
 
 Customization:
-- Configuration file `postit.json` (more info in the [Configuration](#configuration) section).
+- Configuration file `postit.toml` (more info in the [Configuration](#configuration) section).
 
 Supported file formats:
 - csv
@@ -29,10 +30,10 @@ Display:
 
 ## Configuration
 
-postit's behavior can be changed using the `postit.json` file.
+postit's behavior can be changed using the `postit.toml` file.
 
 You can check out its possible fields in the [docs](https://docs.rs/postit/latest/postit/struct.Config.html) or down below:
-- `path`: location of the default file where tasks are stored.
+- `path`: location of the default file where tasks are stored (the `-p` or `--path` flag can override this).
 - `force_drop`: if true, allows dropping tasks without them being checked.
 - `force_copy`: if true, allows overwriting files on copy if they already exist.
 - `drop_after_copy`: if true, drops files after copying.
@@ -46,15 +47,11 @@ The commands currently available are:
 - [`uncheck`](#uncheck)
 - [`drop`](#drop)
 - [`copy`](#copy)
+- [`config`](#config)
 
 You can also use the `--help` flag for additional help on every command.
 
-The `-p` or `--path` flag (default: `tasks.csv`) can be used on any command to
-specify the path of the file used to manage tasks.
-
 ## Examples
-
-Keep in mind every command uses `-p tasks.csv` by default.
 
 Here is a sample of tasks so you try `postit`.
 
@@ -71,7 +68,8 @@ Here is a sample of tasks so you try `postit`.
 
 Syntax: `postit view`
 
-Shows the list of current tasks:
+Takes the `path` config defined at `postit.toml` (or the `-p` flag, if provided)
+to show the list of current tasks:
 
 ```csv
 postit view
@@ -137,13 +135,24 @@ postit uncheck 2,3
 
 Syntax: `postit drop <IDS>`
 
-Note tasks must be checked to be dropped:
+By default, tasks must be checked to be dropped.
 
 ```csv
 postit drop 2,3
 
 1,Task,low,false
 2,Task,med,false        (not dropped)
+// 3,Task,high,true     (dropped)
+4,Task,none,true
+```
+
+You can set the `force_drop` config to `true` to drop tasks wether they are checked or not.
+
+```csv
+postit drop 2,3
+
+1,Task,low,false
+// 2,Task,med,false     (dropped)
 // 3,Task,high,true     (dropped)
 4,Task,none,true
 ```
@@ -158,3 +167,24 @@ Copies a file's contents into another:
 postit copy "tasks.csv" "tasks.json"
 ```
 
+By default, if the file at `<NEW_PATH>` exists, `postit` will refuse to
+overwrite that file in case you are using that file as a backup or you simply
+don't want to overwrite it.
+
+You can set the `force_copy` config to `true` to overwrite it anyways.
+
+In the other hand, if you want to copy your file and delete the old one, you can
+do it by setting the `drop_after_copy` config to `true`. This will delete the file
+located at `<OLD_PATH>`.
+
+### config
+
+Syntax: `postit config <COMMAND>`
+
+Used to manage the config file. These are the available commands:
+- `init`: creates the `postit.toml` file.
+- `edit`: opens the default editor to change configs.
+- `drop`: deletes the config file (default values will be used at runtime).
+
+You can also check the [Configuration](#configuration) section where each config
+field is explained and there is a link to the official docs.
