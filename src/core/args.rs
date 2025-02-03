@@ -1,6 +1,17 @@
 //! Argument parsing utilities with [clap].
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
+
+#[derive(Subcommand, Clone, Debug, ValueEnum)]
+/// Options for managing something.
+pub enum ConfigOptions {
+    /// Creates the config file.
+    Init,
+    /// Opens the default editor to edit the file.
+    Edit,
+    /// Deletes the config
+    Drop,
+}
 
 #[derive(Subcommand, Debug)]
 /// Contains the different commands available.
@@ -8,13 +19,13 @@ pub enum Command {
     /// Shows a list of the current tasks.
     View {
         /// Used to read from and save tasks to (default: tasks.csv)
-        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        #[arg(long, short, value_name = "PATH")]
         path: Option<String>,
     },
     /// Adds a new task to the list.
     Add {
         /// Used to read from and save tasks to (default: tasks.csv)
-        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        #[arg(long, short, value_name = "PATH")]
         path: Option<String>,
 
         /// Full task structure (id,content,priority,checked).
@@ -24,7 +35,7 @@ pub enum Command {
     /// Marks a task as checked so it can be dropped.
     Check {
         /// Used to read from and save tasks to (default: tasks.csv)
-        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        #[arg(long, short, value_name = "PATH")]
         path: Option<String>,
 
         /// Identifiers of tasks.
@@ -34,7 +45,7 @@ pub enum Command {
     /// Unchecks a task as if it hasn't been completed.
     Uncheck {
         /// Used to read from and save tasks to (default: tasks.csv)
-        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        #[arg(long, short, value_name = "PATH")]
         path: Option<String>,
         
         /// Identifiers of tasks.
@@ -44,7 +55,7 @@ pub enum Command {
     /// Deletes a task from the list.
     Drop{
         /// Used to read from and save tasks to (default: tasks.csv)
-        #[arg(long, short, value_name = "PATH", default_value = "tasks.csv")]
+        #[arg(long, short, value_name = "PATH")]
         path: Option<String>,
 
         /// Identifiers of tasks.
@@ -61,6 +72,12 @@ pub enum Command {
         #[arg(value_name = "NEW_PATH", help = "New path of the tasks file.")]
         new: String, 
     },
+    /// Manages the configuration file.
+    Config {
+        #[command(subcommand)]
+        /// The option the `Config` command will use.
+        option: ConfigOptions,
+    }
 }
 
 #[derive(Parser, Debug)]

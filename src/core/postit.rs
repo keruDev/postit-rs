@@ -1,6 +1,6 @@
-use crate::persisters::base::SaveFile;
+use crate::persisters::SaveFile;
 
-use super::args::{Arguments, Command};
+use super::args::{Arguments, Command, ConfigOptions};
 use super::models::{Task, Todo};
 use super::Config;
 
@@ -13,31 +13,27 @@ use super::Config;
 pub struct Postit;
 
 impl Postit {
-    /// Runs the Postit struct based on the args.
+    /// Runs `Postit` commands based on the args provided.
     pub fn run(args: Arguments) {
         match args.command {
-            Command::View { path } => Self::view(&Config::resolve_path(path)),
-            Command::Add { path, task } => Self::add(&Config::resolve_path(path), &task),
-            Command::Check { path, ids } => Self::check(&Config::resolve_path(path), &ids),
-            Command::Uncheck { path, ids } => Self::uncheck(&Config::resolve_path(path), &ids),
-            Command::Drop { path, ids } => Self::drop(&Config::resolve_path(path), &ids),
+            Command::View { path } => Self::view(path),
+            Command::Add { path, task } => Self::add(path, &task),
+            Command::Check { path, ids } => Self::check(path, &ids),
+            Command::Uncheck { path, ids } => Self::uncheck(path, &ids),
+            Command::Drop { path, ids } => Self::drop(path, &ids),
             Command::Copy { old, new } => Self::copy(&old, &new),
+            Command::Config { option } => Self::config(option),
         }
     }
 
     /// Shows the list of current tasks.
-    fn view(path: &str) {
-        Todo::read(path).view();
-    }
-
-    /// Copies the contents of a file to another.
-    fn copy(old: &str, new: &str) {
-        SaveFile::copy(old, new);
+    fn view(path: Option<String>) {
+        Todo::read(&Config::resolve_path(path)).view();
     }
 
     /// Adds a new task to the list.
-    fn add(path: &str, task: &str) {
-        let file = SaveFile::from(path);
+    fn add(path: Option<String>, task: &str) {
+        let file = SaveFile::from(&Config::resolve_path(path));
         let mut todo = Todo::from(&file);
 
         todo.add(Task::from(task));
@@ -47,8 +43,8 @@ impl Postit {
     }
 
     /// Checks the tasks based on the ids passed.
-    fn check(path: &str, ids: &[u128]) {
-        let file = SaveFile::from(path);
+    fn check(path: Option<String>, ids: &[u128]) {
+        let file = SaveFile::from(&Config::resolve_path(path));
         let mut todo = Todo::from(&file);
 
         todo.check(ids);
@@ -58,8 +54,8 @@ impl Postit {
     }
 
     /// Unchecks the tasks based on the ids passed.
-    fn uncheck(path: &str, ids: &[u128]) {
-        let file = SaveFile::from(path);
+    fn uncheck(path: Option<String>, ids: &[u128]) {
+        let file = SaveFile::from(&Config::resolve_path(path));
         let mut todo = Todo::from(&file);
 
         todo.uncheck(ids);
@@ -69,13 +65,23 @@ impl Postit {
     }
 
     /// Drops tasks from the list based on the ids passed.
-    fn drop(path: &str, ids: &[u128]) {
-        let file = SaveFile::from(path);
+    fn drop(path: Option<String>, ids: &[u128]) {
+        let file = SaveFile::from(&Config::resolve_path(path));
         let mut todo = Todo::from(&file);
 
         todo.drop(ids);
         todo.view();
 
         file.write(&todo);
+    }
+
+    /// Copies the contents of a file to another.
+    fn copy(old: &str, new: &str) {
+        SaveFile::copy(old, new);
+    }
+
+    /// Manages the configuration file.   
+    fn config(option: ConfigOptions) {
+        Config::manage(option);
     }
 }

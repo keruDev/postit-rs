@@ -9,5 +9,6 @@
 build_rs_cov.profraw
 
 # Misc
+postit.toml
 *.csv
 *.json
