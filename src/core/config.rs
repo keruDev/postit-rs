@@ -10,15 +10,18 @@ use super::args::ConfigOptions;
 const CONFIG_PATH: &str = "postit.toml";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-/// Config struct
+/// Contains the configuration used to run `postit`.
+/// 
+/// If the configuration file doesn't exist, it uses the default values defined
+/// in the [Default] trait implementation.
 pub struct Config {
     /// Location of the default file where tasks are stored.
     pub path: String,
-    /// If true, allows dropping tasks without them being checked.
+    /// If `true`, allows dropping tasks without them being checked.
     pub force_drop: bool,
-    /// If true, allows overwriting files on copy if they already exist.
+    /// If `true`, allows overwriting files on copy if they already exist.
     pub force_copy: bool,
-    /// If true, drops files after copying.
+    /// If `true`, drops files after copying.
     pub drop_after_copy: bool,
 }
 
@@ -34,7 +37,7 @@ impl Default for Config {
 }
 
 impl Config {
-    /// Manages 
+    /// Manages the `postit.toml` file using a `ConfigOptions` instance.
     pub fn manage(option: ConfigOptions) {
         match option {
             ConfigOptions::Init => Self::init(),
@@ -97,8 +100,8 @@ impl Config {
     }
 
     /// If the value of path is:
-    /// - Some: returns itself.
-    /// - None: returns the path stored in the config file.
+    /// - `Some`: returns itself.
+    /// - `None`: returns the path stored in the config file.
     pub fn resolve_path(path: Option<String>) -> String {
         path.unwrap_or_else(|| Config::load().path)
     }

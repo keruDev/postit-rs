@@ -2,7 +2,7 @@ use std::ffi::OsStr;
 use std::fs;
 
 use postit::persisters::fs::{Csv, Json};
-use postit::persisters::base::SaveFile;
+use postit::persisters::SaveFile;
 
 use crate::mocks::MockPath;
 
