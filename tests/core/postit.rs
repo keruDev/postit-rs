@@ -1,9 +1,11 @@
+use std::path::Path;
+
 use postit::Postit;
-use postit::args::{Arguments, Command};
+use postit::args::{Arguments, Command, ConfigOptions};
 use postit::models::{Task, Todo};
 use postit::persisters::SaveFile;
 
-use crate::mocks::MockPath;
+use crate::mocks::{MockConfig, MockPath};
 
 
 fn fakes(mock: &MockPath) -> (SaveFile, Todo) {
@@ -96,8 +98,12 @@ fn uncheck() {
 }
 
 #[test]
-fn drop() {
-    let mock = MockPath::csv("postit_drop");
+fn drop_no_force_drop() {
+    let mut mock_config = MockConfig::new();
+    mock_config.config.force_drop = false;
+    mock_config.update();
+
+    let mock = MockPath::csv("postit_drop_no_force");
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
@@ -110,6 +116,31 @@ fn drop() {
 
     let (expected_file, expected_todo) = expected(&mock);
     
+    assert_eq!(todo, expected_todo);
+    assert_eq!(file.read(), expected_file.read());
+}
+
+#[test]
+fn drop_force() {
+    let mut mock_config = MockConfig::new();
+    mock_config.config.force_drop = true;
+    mock_config.update();
+
+    let mock = MockPath::csv("postit_drop_force");
+    let ids = vec![2, 3];
+
+    let (file, mut todo) = fakes(&mock);
+    let args = Arguments { command: Command::Drop { path: Some(mock.to_string()), ids: ids.to_owned() } };
+
+    Postit::run(args);
+
+    todo.check(&ids);
+    file.write(&todo);
+
+    let (expected_file, expected_todo) = expected(&mock);
+    
+    println!("{expected_todo:?}");
+
     assert_eq!(todo, expected_todo);
     assert_eq!(file.read(), expected_file.read());
 }
@@ -129,4 +160,16 @@ fn copy() {
 
     assert_eq!(old_file.tasks(), new_file.tasks());
     assert_eq!(old_todo, new_todo);
+}
+
+#[test]
+fn config() {
+    let mock = MockConfig::new();
+    let args = Arguments { command: Command::Config { option: ConfigOptions::Init } };
+    
+    std::env::set_var("POSTIT_CONFIG_PATH", mock.path());
+
+    Postit::run(args);
+
+    assert!(Path::new(&mock.path()).exists());
 }

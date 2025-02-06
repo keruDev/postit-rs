@@ -116,7 +116,9 @@ impl SaveFile {
         assert!(old != new, "{}", FileError::SamePaths);
         assert!(Path::new(old).exists(), "{}", FileError::NoOldPath);
 
-        if !Config::load().force_copy {
+        let config = Config::load();
+
+        if !config.force_copy {
             assert!(!Path::new(new).exists(), "{}", FileError::PathExists);
         }
 
@@ -125,8 +127,8 @@ impl SaveFile {
 
         new_file.write(&Todo::from(&old_file));
 
-        if Config::load().drop_after_copy {
-            fs::remove_file(&old)
+        if config.drop_after_copy {
+            fs::remove_file(old)
                 .expect("Should have been able to delete file after copying");
         }
     }

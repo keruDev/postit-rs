@@ -4,6 +4,7 @@ run-types = ["Tests"]
 ignore-tests = false
 verbose = true
 line = true
+jobs = 1
 fail-under = 90
 
 [report]

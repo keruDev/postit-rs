@@ -7,8 +7,6 @@ use serde::{Deserialize, Serialize};
 
 use super::args::ConfigOptions;
 
-const CONFIG_PATH: &str = "postit.toml";
-
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// Contains the configuration used to run `postit`.
 /// 
@@ -37,8 +35,18 @@ impl Default for Config {
 }
 
 impl Config {
+    /// Returns the path of the config file in the `POSTIT_CONFIG_PATH` env var.
+    pub fn path() -> String {
+        std::env::var("POSTIT_CONFIG_PATH").unwrap_or_else(|_| String::from("postit.toml"))
+    }
+
+    /// Returns the editor in the `EDITOR` env var.
+    pub fn editor() -> String {
+        std::env::var("EDITOR").unwrap_or_else(|_| String::from("nano"))
+    }
+
     /// Manages the `postit.toml` file using a `ConfigOptions` instance.
-    pub fn manage(option: ConfigOptions) {
+    pub fn manage(option: &ConfigOptions) {
         match option {
             ConfigOptions::Init => Self::init(),
             ConfigOptions::Edit => Self::edit(),
@@ -47,10 +55,17 @@ impl Config {
     }
 
     /// Creates the config file from the default values.
+    /// 
+    /// # Panics
+    /// If there is any error while creating, reading or writing the config file.
     pub fn init() {
-        let path = Path::new(CONFIG_PATH);
+        let config_path = &Self::path();
+        let path = Path::new(config_path);
 
-        if path.exists() { return; } 
+        if path.exists() {
+            println!("Config file already exists at '{}'", path.to_str().unwrap());
+            return;
+        } 
 
         let mut file = File::create(path).unwrap();
         let content = toml::to_string_pretty(&Self::default())
@@ -58,11 +73,17 @@ impl Config {
 
         file.write_all(content.as_bytes())
             .expect("Failed to write default config to file");
+
+        println!("Config file created at '{}'", path.to_str().unwrap());
     }
 
-    /// Reads a file that contains the config info.
+    /// Loads the config from a file or creates it if it doesn't exist.
+    /// 
+    /// # Panics
+    /// If the config file can't be loaded.
     pub fn load() -> Self {
-        let path = Path::new(CONFIG_PATH);
+        let config_path = &Self::path();
+        let path = Path::new(config_path);
 
         if !path.exists() {
             Self::init();
@@ -75,27 +96,34 @@ impl Config {
     }
 
     /// Edits the config file.
+    /// 
+    /// # Panics
+    /// If the config file can't be opened
     pub fn edit() {
-        if !Path::new(CONFIG_PATH).exists() {
+        let config_path = &Self::path();
+        
+        if !Path::new(config_path).exists() {
             Self::init();
         }
 
-        let editor = std::env::var("EDITOR").unwrap_or("nano".to_string());
+        let editor = Self::editor();
 
         Command::new(editor)
-            .arg(CONFIG_PATH)
+            .arg(config_path)
             .status()
-            .expect("Error al abrir el archivo de configuración");
+            .expect("Error opening config file");
     }
 
     /// Deletes the config file.
+    /// 
+    /// # Panics
+    /// If the config file can't be deleted.
     pub fn drop() {
-        if !Path::new(CONFIG_PATH).exists() {
-            eprintln!("Config file doesn't exist.");
-            return;
-        }
+        let config_path = &Self::path();
+        
+        assert!(Path::new(config_path).exists(), "Config file doesn't exist.");
 
-        fs::remove_file(CONFIG_PATH)
+        fs::remove_file(config_path)
             .expect("Config file couldn't be deleted.");
     }
 
@@ -103,6 +131,6 @@ impl Config {
     /// - `Some`: returns itself.
     /// - `None`: returns the path stored in the config file.
     pub fn resolve_path(path: Option<String>) -> String {
-        path.unwrap_or_else(|| Config::load().path)
+        path.unwrap_or_else(|| Self::load().path)
     }
 }

@@ -82,6 +82,6 @@ impl Postit {
 
     /// Manages the configuration file.   
     fn config(option: ConfigOptions) {
-        Config::manage(option);
+        Config::manage(&option);
     }
 }
