@@ -3,7 +3,7 @@ use std::io::Read;
 
 use postit::models::{Priority, Task};
 use postit::persisters::fs::{Csv, Json};
-use postit::persisters::base::SaveFile;
+use postit::persisters::SaveFile;
 use postit::persisters::traits::Persister;
 
 use crate::mocks::MockPath;

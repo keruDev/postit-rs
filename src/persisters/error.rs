@@ -1,3 +1,5 @@
+//! Errors related to the File management.
+
 use std::fmt;
 
 #[derive(Debug)]

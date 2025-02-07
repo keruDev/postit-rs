@@ -1,8 +1,8 @@
-use postit::Handler;
+use postit::Postit;
 use postit::args::Arguments;
 
 use clap::Parser as _;
 
 fn main() {
-    Handler::run(Arguments::parse());
+    Postit::run(Arguments::parse());
 }

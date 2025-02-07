@@ -1,6 +1,7 @@
 //! Collection of existing tasks. This is where major task management is made.
 
-use crate::persisters::base::SaveFile;
+use crate::persisters::SaveFile;
+use crate::Config;
 
 use super::task::Task;
 
@@ -79,12 +80,21 @@ impl Todo {
 
     /// Drops a task from the list.
     pub fn drop(&mut self, ids: &[u128]) {
+        let force_drop = Config::load().force_drop;
+
         self.tasks.retain(|task| {
-            if ids.contains(&task.id) && !task.checked {
-                eprintln!("Task {} can't be dropped; must be checked first", &task.id);
+            let id_exists = ids.contains(&task.id);
+            
+            if id_exists {
+                if force_drop { return false; }
+    
+                if !task.checked {
+                    eprintln!("Task {} can't be dropped; must be checked first", &task.id);
+                    return true;
+                }
             }
 
-            !(ids.contains(&task.id) && task.checked)
+            !(id_exists && task.checked)
         });
     }
 }

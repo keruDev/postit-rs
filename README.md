@@ -1,11 +1,44 @@
 # 📝 postit-rs
 
-[![Crates.io](https://img.shields.io/badge/crates.io-blue.svg?style=flat&label=docs)](https://crates.io/crates/postit)
-[![Current Version](https://img.shields.io/crates/v/postit.svg?label=version)](https://crates.io/crates/postit)
+[![Current Crates.io Version](https://img.shields.io/crates/v/postit.svg)](https://crates.io/crates/postit)
+[![Docs.rs](https://img.shields.io/badge/postit-blue.svg?label=docs.rs)](https://docs.rs/postit/latest/postit/)
+
+Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
 
 Postit is a CLI utility aimed to help you complete your tasks.
-
 You can also save your tasks to keep track of them later.
+
+## Features
+
+Although `postit` is still in early development and it is limited in features,
+it effectively serves its intended purpose.
+
+Customization:
+- Configuration file (more info in the [Configuration](#configuration) section).
+- Set your own configuration path using the `POSTIT_CONFIG_PATH` environment variable 
+  (by default and convention, `postit.toml`).
+
+Supported file formats:
+- csv
+- json
+
+Display:
+- Checked tasks appear crossed out.
+- Different colors depending on priority.
+  - `high`: red
+  - `med`: yellow
+  - `low`: blue
+  - `none`: white
+
+## Configuration
+
+postit's behavior can be changed using the `postit.toml` file.
+
+You can check out its possible fields in the [docs](https://docs.rs/postit/latest/postit/struct.Config.html) or down below:
+- `path`: location of the default file where tasks are stored (the `-p` or `--path` flag can override this).
+- `force_drop`: if true, allows dropping tasks without them being checked.
+- `force_copy`: if true, allows overwriting files on copy if they already exist.
+- `drop_after_copy`: if true, drops files after copying.
 
 ## Usage
 
@@ -16,15 +49,11 @@ The commands currently available are:
 - [`uncheck`](#uncheck)
 - [`drop`](#drop)
 - [`copy`](#copy)
+- [`config`](#config)
 
 You can also use the `--help` flag for additional help on every command.
 
-The `-p` or `--path` flag (default: `tasks.csv`) can be used on any command to
-specify the path of the file used to manage tasks.
-
 ## Examples
-
-Keep in mind every command uses `-p tasks.csv` by default.
 
 Here is a sample of tasks so you try `postit`.
 
@@ -41,7 +70,8 @@ Here is a sample of tasks so you try `postit`.
 
 Syntax: `postit view`
 
-Shows the list of current tasks:
+Takes the `path` config defined at `postit.toml` (or the `-p` flag, if provided)
+to show the list of current tasks:
 
 ```csv
 postit view
@@ -107,13 +137,24 @@ postit uncheck 2,3
 
 Syntax: `postit drop <IDS>`
 
-Note tasks must be checked to be dropped:
+By default, tasks must be checked to be dropped.
 
 ```csv
 postit drop 2,3
 
 1,Task,low,false
 2,Task,med,false        (not dropped)
+// 3,Task,high,true     (dropped)
+4,Task,none,true
+```
+
+You can set the `force_drop` config to `true` to drop tasks wether they are checked or not.
+
+```csv
+postit drop 2,3
+
+1,Task,low,false
+// 2,Task,med,false     (dropped)
 // 3,Task,high,true     (dropped)
 4,Task,none,true
 ```
@@ -128,22 +169,41 @@ Copies a file's contents into another:
 postit copy "tasks.csv" "tasks.json"
 ```
 
-## Features
+By default, if the file at `<NEW_PATH>` exists, `postit` will refuse to
+overwrite that file in case you are using that file as a backup or you simply
+don't want to overwrite it.
 
-`postit` is still in early development, so its features are currently limited.
+You can set the `force_copy` config to `true` to overwrite it anyways.
 
-Supported file formats:
-- csv
-- json
+In the other hand, if you want to copy your file and delete the old one, you can
+do it by setting the `drop_after_copy` config to `true`. This will delete the file
+located at `<OLD_PATH>`.
 
-Display:
-- Checked tasks appear crossed out.
-- Different colors depending on priority.
-  - `high`: red
-  - `med`: yellow
-  - `low`: blue
-  - `none`: white
+### config
 
-## Licenses
+Syntax: `postit config <COMMAND>`
 
-Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
+Used to manage the config file. These are the available commands:
+- `init`: creates the `postit.toml` file.
+- `edit`: opens the default editor to change configs.
+- `drop`: deletes the config file (default values will be used at runtime).
+
+You can also check the [Configuration](#configuration) section where each config
+field is explained and there is a link to the official docs.
+
+## Testing
+
+To run postit's tests, use this command:
+```sh
+cargo test -- --test-threads=1
+```
+
+You can also use `tarpaulin`, configured in the `tarpaulin.toml` file.
+It is slower, but shows line coverage (not branch coverage):
+```sh
+cargo tarpaulin
+```
+
+The reason why tests are run synchronously is to not overwrite existing files,
+control the execution flow (creation and cleanup of temp files) and keep them
+as lightweight as possible, as they don't use external dependencies.

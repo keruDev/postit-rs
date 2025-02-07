@@ -12,7 +12,14 @@
 //! 
 //! To get more info, run `postit -h` or take a look to the README file.
 
-#![warn(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, missing_docs)]
+#![warn(
+    clippy::all,
+    clippy::cargo,
+    clippy::nursery,
+    clippy::pedantic,
+    clippy::missing_docs_in_private_items,
+    missing_docs
+)]
 
 #![allow(
     clippy::module_name_repetitions,
@@ -23,6 +30,7 @@
 mod core;
 pub mod persisters;
 
-pub use core::Handler;
+pub use core::Postit;
+pub use core::Config;
 pub use core::args;
 pub use core::models;
