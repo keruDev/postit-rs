@@ -1,3 +1,8 @@
+//! Contains the `Postit` struct, which is used as a handler that manages the
+//! commands received in the passed arguments.
+//! 
+//! For more info about the available commands, check [`Command`][`crate::args::Command`].
+
 use crate::persisters::SaveFile;
 
 use super::args::{Arguments, Command, ConfigOptions};

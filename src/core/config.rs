@@ -1,3 +1,5 @@
+//! Contains the `Config` struct, which has properties to specify or override behaviors. 
+
 use std::fs::{self, File};
 use std::io::Write as _;
 use std::path::Path;
@@ -8,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use super::args::ConfigOptions;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-/// Contains the configuration used to run `postit`.
+/// Contains the configuration used while running `postit`.
 /// 
 /// If the configuration file doesn't exist, it uses the default values defined
 /// in the [Default] trait implementation.

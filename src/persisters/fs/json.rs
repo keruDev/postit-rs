@@ -13,6 +13,7 @@ use crate::persisters::traits::Persister;
 /// Representation of a JSON file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Json {
+    /// Location of the JSON file.
     path: PathBuf
 }
 
@@ -41,7 +42,7 @@ impl Persister for Json {
         other
             .as_any()
             .downcast_ref::<Self>()
-            .map_or(false, |persister| self.path == persister.path)
+            .is_some_and(|persister| self.path == persister.path)
     }
 
     fn default(&self) -> String {

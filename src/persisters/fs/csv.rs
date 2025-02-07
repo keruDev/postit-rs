@@ -10,9 +10,10 @@ use crate::core::models::{Priority, Task, Todo};
 use crate::persisters::traits::Persister;
 
 
-/// Representation of a Csv file.
+/// Representation of a CSV file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Csv {
+    /// Location of the CSV file.
     path: PathBuf
 }
 
@@ -51,7 +52,7 @@ impl Persister for Csv {
         other
             .as_any()
             .downcast_ref::<Self>()
-            .map_or(false, |persister| self.path == persister.path)
+            .is_some_and(|persister| self.path == persister.path)
     }
 
     fn default(&self) -> String {
