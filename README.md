@@ -14,7 +14,9 @@ Although `postit` is still in early development and it is limited in features,
 it effectively serves its intended purpose.
 
 Customization:
-- Configuration file `postit.toml` (more info in the [Configuration](#configuration) section).
+- Configuration file (more info in the [Configuration](#configuration) section).
+- Set your own configuration path using the `POSTIT_CONFIG_PATH` environment variable 
+  (by default and convention, `postit.toml`).
 
 Supported file formats:
 - csv
@@ -188,3 +190,20 @@ Used to manage the config file. These are the available commands:
 
 You can also check the [Configuration](#configuration) section where each config
 field is explained and there is a link to the official docs.
+
+## Testing
+
+To run postit's tests, use this command:
+```sh
+cargo test -- --test-threads=1
+```
+
+You can also use `tarpaulin`, configured in the `tarpaulin.toml` file.
+It is slower, but shows line coverage (not branch coverage):
+```sh
+cargo tarpaulin
+```
+
+The reason why tests are run synchronously is to not overwrite existing files,
+control the execution flow (creation and cleanup of temp files) and keep them
+as lightweight as possible, as they don't use external dependencies.
