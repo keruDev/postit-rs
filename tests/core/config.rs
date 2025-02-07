@@ -1,5 +1,3 @@
-// src/core/config.rs: 46-47, 91-92, 94-95, 98, 100, 110-111, 113-114, 118
-
 use postit::args::ConfigOptions;
 use postit::Config;
 
@@ -89,7 +87,6 @@ fn resolve_path_some() {
     let result = Config::resolve_path(path.clone());
 
     assert_eq!(result, path.unwrap())
-
 }
 
 #[test]
