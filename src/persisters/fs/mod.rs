@@ -1,5 +1,5 @@
-//! Module for all the supported file formats. 
-//! 
+//! Module for all the supported file formats.
+//!
 //! The currently supported formats are:
 //! - csv
 //! - json

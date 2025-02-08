@@ -1,4 +1,4 @@
-group_imports = "One"
+group_imports = "StdExternalCrate"
 imports_granularity = "Module"
 single_line_let_else_max_width = 80
 reorder_imports = true

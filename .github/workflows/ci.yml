@@ -26,7 +26,7 @@ jobs:
       id: toolchain
       with:
         toolchain: stable
-        components: rust-src
+        components: rust-src, clippy, rustfmt
 
     - name: Check code
       run: cargo check --verbose
@@ -41,4 +41,4 @@ jobs:
       run: cargo build --verbose
 
     - name: Run tests
-      run: cargo test --verbose --test-threads=1
+      run: cargo test --verbose -- --test-threads=1

@@ -1,15 +1,14 @@
 //! Module for file management using persisters like [Csv] or [Json].
 
-use crate::Config;
+use std::ffi::OsStr;
+use std::path::{Path, PathBuf};
+use std::{fmt, fs};
+
 use crate::models::{Task, Todo};
 use crate::persisters::error::FileError;
 use crate::persisters::fs::{Csv, Json};
 use crate::persisters::traits::Persister;
-
-use std::ffi::OsStr;
-use std::{fmt, fs};
-use std::path::{Path, PathBuf};
-
+use crate::Config;
 
 /// Representation of a file that is used to manage .
 pub struct SaveFile {
@@ -41,7 +40,7 @@ impl SaveFile {
     pub fn from(path: &str) -> Self {
         let mut path = Path::new(path).to_owned();
         path = Self::check_file_name(path);
-        
+
         let persister = Self::get_persister(path);
 
         Self::check_file_content(&*persister);
@@ -51,11 +50,13 @@ impl SaveFile {
 
     /// Checks the persister's contents. If the persister is empty or its path
     /// doesn't exists, the persister will get populated by the default contents.
-    /// 
+    ///
     /// # Panics
     /// In case the persister can't be populated with the default contents.
     pub fn check_file_content(persister: &dyn Persister) {
-        if persister.exists() && !persister.is_empty() { return };
+        if persister.exists() && !persister.is_empty() {
+            return;
+        }
 
         println!("Creating {:?}", persister.path());
 
@@ -73,12 +74,18 @@ impl SaveFile {
 
         let mut parts: Vec<&str> = file_name.split('.').collect();
 
-        let first = if parts[0].is_empty() { "tasks" } else { parts[0] };
+        let first = if parts[0].is_empty() {
+            "tasks"
+        } else {
+            parts[0]
+        };
         parts[0] = first;
 
         parts.retain(|part| !part.is_empty() || part == &first);
 
-        if parts.len() == 1 { parts.push("csv") }
+        if parts.len() == 1 {
+            parts.push("csv");
+        }
 
         path.set_file_name(parts.join("."));
 
@@ -86,15 +93,11 @@ impl SaveFile {
     }
 
     /// Returns a struct that implements the `Persister` trait based on the file extension.
-    /// 
+    ///
     /// # Panics
     /// In case the file extension can't be converted to `&str`.
     pub fn get_persister(path: PathBuf) -> Box<dyn Persister> {
-        let ext = path
-            .extension()
-            .unwrap()
-            .to_str()
-            .unwrap();
+        let ext = path.extension().unwrap().to_str().unwrap();
 
         match ext {
             "csv" => Box::new(Csv::new(path)),
@@ -107,7 +110,7 @@ impl SaveFile {
     }
 
     /// Copies the contents of a file to another.
-    /// 
+    ///
     /// # Panics
     /// - `FileError::SamePaths` => If old path is the same as new path.
     /// - `FileError::NoOldPath` => If old path doesn't exist.
@@ -128,8 +131,7 @@ impl SaveFile {
         new_file.write(&Todo::from(&old_file));
 
         if config.drop_after_copy {
-            fs::remove_file(old)
-                .expect("Should have been able to delete file after copying");
+            fs::remove_file(old).expect("Should have been able to delete file after copying");
         }
     }
 

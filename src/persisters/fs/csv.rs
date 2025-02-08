@@ -1,5 +1,5 @@
 //! Utilities to handle CSV files.
-//! 
+//!
 //! The `Csv` struct implements the [`Persister`] trait.
 
 use std::any::Any;
@@ -9,12 +9,11 @@ use std::path::PathBuf;
 use crate::core::models::{Priority, Task, Todo};
 use crate::persisters::traits::Persister;
 
-
 /// Representation of a CSV file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Csv {
     /// Location of the CSV file.
-    path: PathBuf
+    path: PathBuf,
 }
 
 impl Csv {
@@ -40,12 +39,12 @@ impl Csv {
 }
 
 impl Persister for Csv {
-    fn as_any(&self) -> &dyn Any { self }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 
     fn is_empty(&self) -> bool {
-        self.path
-            .metadata()
-            .map_or(true, |meta| meta.len() == 0)
+        self.path.metadata().map_or(true, |meta| meta.len() == 0)
     }
 
     fn is_equal(&self, other: &dyn Persister) -> bool {
@@ -68,8 +67,7 @@ impl Persister for Csv {
     }
 
     fn open(&self) -> fs::File {
-        fs::File::open(&self.path)
-            .expect("Should have been able to create the file")
+        fs::File::open(&self.path).expect("Should have been able to create the file")
     }
 
     fn read(&self) -> Vec<String> {
@@ -88,14 +86,12 @@ impl Persister for Csv {
 
         bytes.append(&mut tasks);
 
-        fs::write(&self.path, bytes)
-            .expect("Should have been able to write into the CSV file");
+        fs::write(&self.path, bytes).expect("Should have been able to write into the CSV file");
     }
 
     /// Transforms a csv file into tasks.
     fn tasks(&self) -> Vec<Task> {
-        self
-            .read()
+        self.read()
             .iter()
             .skip(1)
             .map(|line| {

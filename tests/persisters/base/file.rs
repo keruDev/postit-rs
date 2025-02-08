@@ -36,9 +36,7 @@ fn check_file_name_ok() {
 
     let checked_path = SaveFile::check_file_name(mock.path());
 
-    let result = checked_path
-        .file_name()
-        .unwrap();
+    let result = checked_path.file_name().unwrap();
     let expected = OsStr::new(path);
 
     assert_eq!(result, expected);
@@ -76,9 +74,7 @@ fn check_file_name_no_name() {
     let checked_path = SaveFile::check_file_name(mock.path());
     let expected_path = format!("tasks{path}");
 
-    let result = checked_path
-        .file_name()
-        .unwrap();
+    let result = checked_path.file_name().unwrap();
     let expected = OsStr::new(&expected_path);
 
     assert_eq!(result, expected);
@@ -92,9 +88,7 @@ fn check_file_name_no_ext() {
     let checked_path = SaveFile::check_file_name(mock.path());
     let expected_path = format!("{path}.csv");
 
-    let result = checked_path
-        .file_name()
-        .unwrap();
+    let result = checked_path.file_name().unwrap();
     let expected = OsStr::new(&expected_path);
 
     assert_eq!(result, expected);
@@ -104,11 +98,9 @@ fn check_file_name_no_ext() {
 fn check_file_name_empty() {
     let path = ".";
     let mock = MockPath::new(path);
-    
-    let checked_path = SaveFile::check_file_name(mock.path());   
-    let result = checked_path
-        .file_name()
-        .unwrap();
+
+    let checked_path = SaveFile::check_file_name(mock.path());
+    let result = checked_path.file_name().unwrap();
     let expected = OsStr::new("tasks.csv");
 
     assert_eq!(result, expected);
