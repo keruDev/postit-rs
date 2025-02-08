@@ -4,14 +4,14 @@ use postit::persisters::SaveFile;
 use crate::mocks::MockPath;
 
 fn fakes(mock: &MockPath) -> Todo {
-    Todo::from(&SaveFile::from(mock.to_str()))
+    Todo::from(&SaveFile::from(&mock.to_string()))
 }
 
 #[test]
 fn read() {
     let mock = MockPath::csv("todo_read");
 
-    let file = SaveFile::from(mock.to_str());
+    let file = SaveFile::from(&mock.to_string());
     let todo = Todo::from(&file);
     
     assert_eq!(todo.tasks, file.tasks());

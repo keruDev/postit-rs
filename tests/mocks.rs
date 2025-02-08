@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fmt, fs};
 use std::io::Write;
 use std::ops::Deref;
 use std::path::PathBuf;
@@ -29,7 +29,7 @@ impl MockPath {
         Self { path }
     }
 
-    pub fn default() -> Todo {
+    pub fn sample() -> Todo {
         Todo { tasks: vec![
             Task::from("1,Test,low,false"),
             Task::from("2,Test,med,false"),
@@ -46,7 +46,7 @@ impl MockPath {
         let path = PathBuf::from(format!("test_{name}.csv"));
         let csv = Csv::new(path.clone());
 
-        csv.write(&Self::default());
+        csv.write(&Self::sample());
         
         Self { path }
     }
@@ -55,18 +55,15 @@ impl MockPath {
         let path = PathBuf::from(format!("test_{name}.json"));
         let json = Json::new(path.clone());
 
-        json.write(&Self::default());
+        json.write(&Self::sample());
         
         Self { path }
     }
+}
 
-    pub fn to_str(&self) -> &str {
-        &self.path.to_str().unwrap()
-    }
-
-    /// Converts the `MockPath` value to a `String`.
-    pub fn to_string(&self) -> String {
-        self.to_str().to_owned()
+impl fmt::Display for MockPath {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.path.to_str().unwrap())
     }
 }
 
@@ -86,7 +83,6 @@ impl Drop for MockPath {
     }
 }
 
-
 /// The temporary representation of the Config file.
 /// 
 /// Implements the `Deref` and `Drop` traits
@@ -99,7 +95,7 @@ pub struct MockConfig {
 impl MockConfig {
     /// Constructor of the MockConfig struct.
     pub fn new() -> Self {
-        let path = PathBuf::from(format!("test_postit.toml"));
+        let path = PathBuf::from("test_postit.toml".to_string());
         std::env::set_var("POSTIT_CONFIG_PATH", &path);
         
         if !path.exists() {
@@ -130,14 +126,17 @@ impl MockConfig {
     pub fn path(&self) -> PathBuf {
         self.path.clone()
     }
+}
 
-    pub fn to_str(&self) -> &str {
-        &self.path.to_str().unwrap()
+impl Default for MockConfig {
+    fn default() -> Self {
+        Self::new()
     }
+}
 
-    /// Converts the `MockConfig` value to a `String`.
-    pub fn to_string(&self) -> String {
-        self.to_str().to_owned()
+impl fmt::Display for MockConfig {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.path.to_str().unwrap())
     }
 }
 

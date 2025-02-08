@@ -23,7 +23,7 @@ fn fmt_debug() {
 fn from() {
     let mock = MockPath::csv("savefile_from");
     
-    let result = SaveFile::from(mock.to_str());
+    let result = SaveFile::from(&mock.to_string());
     let expected = SaveFile::new(Box::new(Csv::new(mock.path())));
 
     assert_eq!(result, expected);
@@ -171,7 +171,7 @@ fn copy_no_old_path() {
 
     let new = MockPath::json("test_copy_no_old_path");
 
-    SaveFile::copy(old.to_str(), new.to_str());
+    SaveFile::copy(&old.to_string(), &new.to_string());
 }
 
 #[test]
@@ -182,7 +182,7 @@ fn copy_path_exists() {
     let old = MockPath::csv("test_copy_path_exists");
     let new: MockPath = MockPath::json("test_copy_path_exists");
 
-    SaveFile::copy(old.to_str(), new.to_str());
+    SaveFile::copy(&old.to_string(), &new.to_string());
 }
 
 #[test]
@@ -194,7 +194,7 @@ fn copy_drop_after_copy() {
     let old = MockPath::csv("test_copy_drop_after_copy");
     let new_path = "test_copy_drop_after_copy.json";
 
-    SaveFile::copy(old.to_str(), new_path);
+    SaveFile::copy(&old.to_string(), new_path);
     MockPath::new(new_path);
 
     assert!(!old.path().exists());

@@ -80,7 +80,7 @@ fn format() {
 fn read() {
     let mock = MockPath::csv("csv_read");
 
-    let file = SaveFile::from(mock.to_str());
+    let file = SaveFile::from(&mock.to_string());
     let header = Csv::header().replace("\n", "");
 
     let result = file.read();

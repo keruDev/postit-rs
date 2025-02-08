@@ -16,7 +16,7 @@ it effectively serves its intended purpose.
 Customization:
 - Configuration file (more info in the [Configuration](#configuration) section).
 - Set your own configuration path using the `POSTIT_CONFIG_PATH` environment variable 
-  (by default and convention, `postit.toml`).
+  (by default and convention, `.postit.toml` or `postit.toml`).
 
 Supported file formats:
 - csv
@@ -32,7 +32,8 @@ Display:
 
 ## Configuration
 
-postit's behavior can be changed using the `postit.toml` file.
+postit's behavior can be changed using the `.postit.toml` or `postit.toml` file
+(the first one is preferred over the second one).
 
 You can check out its possible fields in the [docs](https://docs.rs/postit/latest/postit/struct.Config.html) or down below:
 - `path`: location of the default file where tasks are stored (the `-p` or `--path` flag can override this).
@@ -184,7 +185,7 @@ located at `<OLD_PATH>`.
 Syntax: `postit config <COMMAND>`
 
 Used to manage the config file. These are the available commands:
-- `init`: creates the `postit.toml` file.
+- `init`: creates the `.postit.toml` file.
 - `edit`: opens the default editor to change configs.
 - `drop`: deletes the config file (default values will be used at runtime).
 

@@ -39,7 +39,15 @@ impl Default for Config {
 impl Config {
     /// Returns the path of the config file in the `POSTIT_CONFIG_PATH` env var.
     pub fn path() -> String {
-        std::env::var("POSTIT_CONFIG_PATH").unwrap_or_else(|_| String::from("postit.toml"))
+        std::env::var("POSTIT_CONFIG_PATH").unwrap_or_else(|_| {
+            let mut path = ".tarpaulin.toml";
+
+            if !Path::new(path).exists() {
+                path = "tarpaulin.toml";
+            }
+
+            String::from(path)
+        })
     }
 
     /// Returns the editor in the `EDITOR` env var.
