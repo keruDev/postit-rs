@@ -3,10 +3,10 @@
 //!
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
-use super::args::{Arguments, Command, ConfigOptions};
-use super::models::{Task, Todo};
-use super::Config;
+use crate::args::{Arguments, Command, ConfigOptions};
+use crate::models::{Task, Todo};
 use crate::persisters::SaveFile;
+use crate::Config;
 
 /// Entry point where all operations are executed.
 ///

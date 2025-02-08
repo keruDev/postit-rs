@@ -2,8 +2,8 @@
 
 use clap::{Parser, Subcommand, ValueEnum};
 
-#[derive(Subcommand, Clone, Copy, Debug, ValueEnum)]
 /// Options for managing something.
+#[derive(Subcommand, Clone, Copy, Debug, ValueEnum)]
 pub enum ConfigOptions {
     /// Creates the config file.
     Init,
@@ -13,8 +13,8 @@ pub enum ConfigOptions {
     Drop,
 }
 
-#[derive(Subcommand, Debug)]
 /// Contains the different commands available.
+#[derive(Subcommand, Debug)]
 pub enum Command {
     /// Shows a list of the current tasks.
     View {
@@ -80,9 +80,9 @@ pub enum Command {
     },
 }
 
+/// Manages the `Arguments` received by console.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, next_line_help = false)]
-/// Manages the `Arguments` received by console.
 pub struct Arguments {
     /// Command to execute
     #[command(subcommand)]

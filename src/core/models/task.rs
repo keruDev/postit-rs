@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::core::error::TaskError;
 
+/// Priority of the Task, which is used to define the task's color and importance.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-/// Priority of the Task, which is used to define the task's color and importance.
 pub enum Priority {
     /// High priority tasks are colored red.
     High,
@@ -44,9 +44,9 @@ impl fmt::Display for Priority {
     }
 }
 
+/// Representation of a Task.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-/// Representation of a Task.
 pub struct Task {
     /// Identifier of the task.
     pub id: u128,

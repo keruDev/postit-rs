@@ -7,13 +7,13 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
-use super::args::ConfigOptions;
+use crate::args::ConfigOptions;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// Contains the configuration used while running `postit`.
 ///
 /// If the configuration file doesn't exist, it uses the default values defined
 /// in the [Default] trait implementation.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Config {
     /// Location of the default file where tasks are stored.
     pub path: String,

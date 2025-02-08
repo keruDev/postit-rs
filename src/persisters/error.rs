@@ -2,8 +2,8 @@
 
 use std::fmt;
 
-#[derive(Debug)]
 /// Errors related to file and path management.
+#[derive(Debug)]
 pub enum FileError {
     /// Used for file format related issues.
     UnsupportedFormat,
