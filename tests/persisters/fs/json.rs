@@ -3,7 +3,6 @@ use postit::persisters::traits::Persister;
 
 use crate::mocks::MockPath;
 
-
 #[test]
 fn is_empty_returns_true() {
     let mock = MockPath::new("is_empty.json");

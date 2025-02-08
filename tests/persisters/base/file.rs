@@ -22,7 +22,7 @@ fn fmt_debug() {
 #[test]
 fn from() {
     let mock = MockPath::csv("savefile_from");
-    
+
     let result = SaveFile::from(&mock.to_string());
     let expected = SaveFile::new(Box::new(Csv::new(mock.path())));
 
@@ -33,7 +33,7 @@ fn from() {
 fn check_file_name_ok() {
     let path = "temp_file.csv";
     let mock = MockPath::new(path);
-    
+
     let checked_path = SaveFile::check_file_name(mock.path());
 
     let result = checked_path
@@ -47,7 +47,7 @@ fn check_file_name_ok() {
 #[test]
 fn check_file_content_empty() {
     let mock = MockPath::new("check_file_content_exists.csv");
-    
+
     let persister = SaveFile::get_persister(mock.path());
     SaveFile::check_file_content(&*persister);
 
@@ -59,7 +59,7 @@ fn check_file_content_empty() {
 #[test]
 fn check_file_content_exists() {
     let mock = MockPath::csv("check_file_content_empty");
-    
+
     let persister = SaveFile::get_persister(mock.path());
     SaveFile::check_file_content(&*persister);
 
@@ -72,7 +72,7 @@ fn check_file_content_exists() {
 fn check_file_name_no_name() {
     let path = ".csv";
     let mock = MockPath::new(path);
-    
+
     let checked_path = SaveFile::check_file_name(mock.path());
     let expected_path = format!("tasks{path}");
 
@@ -89,7 +89,7 @@ fn check_file_name_no_ext() {
     let path = "tasks";
     let mock = MockPath::new(path);
 
-    let checked_path = SaveFile::check_file_name(mock.path());   
+    let checked_path = SaveFile::check_file_name(mock.path());
     let expected_path = format!("{path}.csv");
 
     let result = checked_path
@@ -117,7 +117,7 @@ fn check_file_name_empty() {
 #[test]
 fn get_persister_csv() {
     let mock = MockPath::csv("get_persister");
-    
+
     let result = SaveFile::get_persister(mock.path());
     let expected = Box::new(Csv::new(mock.path()));
 
@@ -127,7 +127,7 @@ fn get_persister_csv() {
 #[test]
 fn get_persister_json() {
     let mock = MockPath::json("get_persister");
-    
+
     let result = SaveFile::get_persister(mock.path());
     let expected = Box::new(Json::new(mock.path()));
 
@@ -137,7 +137,7 @@ fn get_persister_json() {
 #[test]
 fn get_persister_txt() {
     let mock = MockPath::new("test_get_persister.txt");
-    
+
     let result = SaveFile::get_persister(mock.path());
     let expected = Box::new(Csv::new(mock.path()));
 
@@ -147,7 +147,7 @@ fn get_persister_txt() {
 #[test]
 fn get_persister_any() {
     let mock = MockPath::new("test_get_persister.toml");
-    
+
     let result = SaveFile::get_persister(mock.path());
     let expected = Box::new(Csv::new(mock.path()));
 
@@ -178,7 +178,7 @@ fn copy_no_old_path() {
 #[should_panic]
 fn copy_path_exists() {
     let _mock_config = MockConfig::new();
-    
+
     let old = MockPath::csv("test_copy_path_exists");
     let new: MockPath = MockPath::json("test_copy_path_exists");
 
@@ -203,9 +203,9 @@ fn copy_drop_after_copy() {
 #[test]
 fn file_persister_eq() {
     let mock = MockPath::csv("file_persister_eq");
-    
+
     let left = SaveFile::get_persister(mock.path());
     let right = SaveFile::get_persister(mock.path());
 
-    assert!(left == right); 
+    assert!(left == right);
 }

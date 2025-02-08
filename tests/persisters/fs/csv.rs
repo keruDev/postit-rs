@@ -8,7 +8,6 @@ use postit::persisters::traits::Persister;
 
 use crate::mocks::MockPath;
 
-
 #[test]
 fn is_equal_same_persisters() {
     let mock = MockPath::new("is_equal_same_persisters.csv");

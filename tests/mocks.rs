@@ -86,7 +86,7 @@ impl Drop for MockPath {
 /// The temporary representation of the Config file.
 /// 
 /// Implements the `Deref` and `Drop` traits
-/// to delete the temporary path when the test ends. 
+/// to delete the temporary path when the test ends.
 pub struct MockConfig {
     pub path: PathBuf,
     pub config: Config,
@@ -97,7 +97,7 @@ impl MockConfig {
     pub fn new() -> Self {
         let path = PathBuf::from("test_postit.toml".to_string());
         std::env::set_var("POSTIT_CONFIG_PATH", &path);
-        
+
         if !path.exists() {
             fs::File::create(&path).expect("Failed to create temp file");
         }
