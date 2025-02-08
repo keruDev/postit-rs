@@ -10,9 +10,7 @@ use crate::mocks::{MockConfig, MockPath};
 fn fakes(mock: &MockPath) -> (SaveFile, Todo) {
     let path = mock.to_string();
     let file = SaveFile::from(&path);
-    let todo = Todo {
-        tasks: file.tasks(),
-    };
+    let todo = Todo { tasks: file.tasks() };
 
     (file, todo)
 }
@@ -32,9 +30,7 @@ fn view() {
 
     let (file, todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::View {
-            path: Some(mock.to_string()),
-        },
+        command: Command::View { path: Some(mock.to_string()) },
     };
 
     Postit::run(args);
@@ -201,9 +197,7 @@ fn copy() {
 fn config() {
     let mock = MockConfig::new();
     let args = Arguments {
-        command: Command::Config {
-            option: ConfigOptions::Init,
-        },
+        command: Command::Config { option: ConfigOptions::Init },
     };
 
     std::env::set_var("POSTIT_CONFIG_PATH", mock.path());

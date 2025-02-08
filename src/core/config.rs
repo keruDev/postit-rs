@@ -130,10 +130,7 @@ impl Config {
     pub fn drop() {
         let config_path = &Self::path();
 
-        assert!(
-            Path::new(config_path).exists(),
-            "Config file doesn't exist."
-        );
+        assert!(Path::new(config_path).exists(), "Config file doesn't exist.");
 
         fs::remove_file(config_path).expect("Config file couldn't be deleted.");
     }

@@ -60,10 +60,7 @@ fn format() {
     let task = fake_task_unchecked();
 
     let result = task.format();
-    let expected = format!(
-        "{},{},{},{}",
-        task.id, task.content, task.priority, task.checked,
-    );
+    let expected = format!("{},{},{},{}", task.id, task.content, task.priority, task.checked,);
 
     assert_eq!(result, expected);
 }

@@ -111,10 +111,7 @@ impl MockConfig {
         file.write_all(content.as_bytes())
             .expect("Failed to write default config to file");
 
-        Self {
-            path,
-            config: Config::default(),
-        }
+        Self { path, config: Config::default() }
     }
 
     pub fn update(&mut self) {

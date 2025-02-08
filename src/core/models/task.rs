@@ -71,11 +71,7 @@ impl fmt::Display for Task {
 
         let bold = colored.bold();
 
-        let styled = if self.checked {
-            bold.strikethrough()
-        } else {
-            bold
-        };
+        let styled = if self.checked { bold.strikethrough() } else { bold };
 
         write!(f, "{styled}")
     }
@@ -84,12 +80,7 @@ impl fmt::Display for Task {
 impl Task {
     /// Constructor of the Task struct.
     pub const fn new(id: u128, content: String, priority: Priority, checked: bool) -> Self {
-        Self {
-            id,
-            content,
-            priority,
-            checked,
-        }
+        Self { id, content, priority, checked }
     }
 
     /// Transforms a line with the format `id,content,priority,checked` to a Task.

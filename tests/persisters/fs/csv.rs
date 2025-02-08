@@ -67,10 +67,7 @@ fn format() {
     ];
 
     let result = Csv::format(&tasks);
-    let expected = vec![
-        String::from("1,Test,high,true"),
-        String::from("2,Test,med,false"),
-    ];
+    let expected = vec![String::from("1,Test,high,true"), String::from("2,Test,med,false")];
 
     assert_eq!(result, expected);
 }

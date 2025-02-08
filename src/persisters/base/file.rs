@@ -74,11 +74,7 @@ impl SaveFile {
 
         let mut parts: Vec<&str> = file_name.split('.').collect();
 
-        let first = if parts[0].is_empty() {
-            "tasks"
-        } else {
-            parts[0]
-        };
+        let first = if parts[0].is_empty() { "tasks" } else { parts[0] };
         parts[0] = first;
 
         parts.retain(|part| !part.is_empty() || part == &first);
