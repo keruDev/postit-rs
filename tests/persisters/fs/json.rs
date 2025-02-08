@@ -3,7 +3,6 @@ use postit::persisters::traits::Persister;
 
 use crate::mocks::MockPath;
 
-
 #[test]
 fn is_empty_returns_true() {
     let mock = MockPath::new("is_empty.json");
@@ -55,7 +54,7 @@ fn tasks() {
     let mock = MockPath::json("is_empty");
 
     let result = Json::new(mock.path()).tasks();
-    let expected = MockPath::default().tasks;
+    let expected = MockPath::sample().tasks;
 
     assert_eq!(result, expected);
 }

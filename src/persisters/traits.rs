@@ -7,9 +7,9 @@ use std::{fmt, fs};
 use crate::core::models::{Task, Todo};
 
 /// The `Persister` trait includes basic methods for data management.
-/// 
+///
 /// It also implements the standard `Any`, `Debug` and `PartialEq` traits
-/// to be able to compare with other persisters. 
+/// to be able to compare with other persisters.
 pub trait Persister: Any + fmt::Debug {
     /// Returns the current persister as `Any`.
     fn as_any(&self) -> &dyn Any;

@@ -1,18 +1,17 @@
 //! Contains the `Postit` struct, which is used as a handler that manages the
 //! commands received in the passed arguments.
-//! 
+//!
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
+use crate::args::{Arguments, Command, ConfigOptions};
+use crate::models::{Task, Todo};
 use crate::persisters::SaveFile;
-
-use super::args::{Arguments, Command, ConfigOptions};
-use super::models::{Task, Todo};
-use super::Config;
+use crate::Config;
 
 /// Entry point where all operations are executed.
-/// 
+///
 /// Handles operations via commands.
-/// 
+///
 /// The [`Todo`] instance is loaded using the desired [`Persister`][`crate::persisters::traits::Persister`]
 /// instance, which is modified when the `Postit` finishes working.
 pub struct Postit;

@@ -1,19 +1,19 @@
-//! Contains the `Config` struct, which has properties to specify or override behaviors. 
+//! Contains the `Config` struct, which has properties to specify or override behaviors.
 
-use std::fs::{self, File};
+use std::fs;
 use std::io::Write as _;
 use std::path::Path;
 use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
-use super::args::ConfigOptions;
+use crate::args::ConfigOptions;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// Contains the configuration used while running `postit`.
-/// 
+///
 /// If the configuration file doesn't exist, it uses the default values defined
 /// in the [Default] trait implementation.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Config {
     /// Location of the default file where tasks are stored.
     pub path: String,
@@ -39,7 +39,15 @@ impl Default for Config {
 impl Config {
     /// Returns the path of the config file in the `POSTIT_CONFIG_PATH` env var.
     pub fn path() -> String {
-        std::env::var("POSTIT_CONFIG_PATH").unwrap_or_else(|_| String::from("postit.toml"))
+        std::env::var("POSTIT_CONFIG_PATH").unwrap_or_else(|_| {
+            let mut path = ".postit.toml";
+
+            if !Path::new(path).exists() {
+                path = "postit.toml";
+            }
+
+            String::from(path)
+        })
     }
 
     /// Returns the editor in the `EDITOR` env var.
@@ -57,7 +65,7 @@ impl Config {
     }
 
     /// Creates the config file from the default values.
-    /// 
+    ///
     /// # Panics
     /// If there is any error while creating, reading or writing the config file.
     pub fn init() {
@@ -67,11 +75,11 @@ impl Config {
         if path.exists() {
             println!("Config file already exists at '{}'", path.to_str().unwrap());
             return;
-        } 
+        }
 
-        let mut file = File::create(path).unwrap();
-        let content = toml::to_string_pretty(&Self::default())
-            .expect("Failed to serialize config to TOML");
+        let mut file = fs::File::create(path).unwrap();
+        let content =
+            toml::to_string_pretty(&Self::default()).expect("Failed to serialize config to TOML");
 
         file.write_all(content.as_bytes())
             .expect("Failed to write default config to file");
@@ -80,7 +88,7 @@ impl Config {
     }
 
     /// Loads the config from a file or creates it if it doesn't exist.
-    /// 
+    ///
     /// # Panics
     /// If the config file can't be loaded.
     pub fn load() -> Self {
@@ -89,21 +97,20 @@ impl Config {
 
         if !path.exists() {
             Self::init();
-        } 
+        }
 
-        let content = fs::read_to_string(path)
-            .expect("Failed to read config file");
+        let content = fs::read_to_string(path).expect("Failed to read config file");
 
         toml::from_str(&content).expect("TOML was not well-formatted")
     }
 
     /// Edits the config file.
-    /// 
+    ///
     /// # Panics
     /// If the config file can't be opened
     pub fn edit() {
         let config_path = &Self::path();
-        
+
         if !Path::new(config_path).exists() {
             Self::init();
         }
@@ -117,16 +124,15 @@ impl Config {
     }
 
     /// Deletes the config file.
-    /// 
+    ///
     /// # Panics
     /// If the config file can't be deleted.
     pub fn drop() {
         let config_path = &Self::path();
-        
+
         assert!(Path::new(config_path).exists(), "Config file doesn't exist.");
 
-        fs::remove_file(config_path)
-            .expect("Config file couldn't be deleted.");
+        fs::remove_file(config_path).expect("Config file couldn't be deleted.");
     }
 
     /// If the value of path is:

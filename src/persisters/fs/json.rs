@@ -1,5 +1,5 @@
 //! Utilities to handle JSON files with [serde] and [`serde_json`].
-//! 
+//!
 //! The `Json` struct implements the [Persister] trait.
 
 use std::any::Any;
@@ -9,12 +9,11 @@ use std::path::PathBuf;
 use crate::core::models::{Task, Todo};
 use crate::persisters::traits::Persister;
 
-
 /// Representation of a JSON file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Json {
     /// Location of the JSON file.
-    path: PathBuf
+    path: PathBuf,
 }
 
 impl Json {
@@ -30,14 +29,14 @@ impl Json {
 }
 
 impl Persister for Json {
-    fn as_any(&self) -> &dyn Any { self }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 
     fn is_empty(&self) -> bool {
-        self.path
-            .metadata()
-            .map_or(true, |meta| meta.len() == 0)
+        self.path.metadata().map_or(true, |meta| meta.len() == 0)
     }
-    
+
     fn is_equal(&self, other: &dyn Persister) -> bool {
         other
             .as_any()
@@ -56,7 +55,7 @@ impl Persister for Json {
     fn path(&self) -> PathBuf {
         self.path.clone()
     }
-    
+
     fn open(&self) -> fs::File {
         fs::OpenOptions::new()
             .write(true)
@@ -81,7 +80,6 @@ impl Persister for Json {
     }
 
     fn tasks(&self) -> Vec<Task> {
-        serde_json::from_str(&self.read().join(""))
-            .expect("JSON was not well-formatted")
+        serde_json::from_str(&self.read().join("")).expect("JSON was not well-formatted")
     }
 }

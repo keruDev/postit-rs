@@ -3,8 +3,8 @@
 pub mod args;
 mod config;
 pub mod error;
-mod postit;
 pub mod models;
+mod postit;
 
-pub use postit::Postit;
 pub use config::Config;
+pub use postit::Postit;

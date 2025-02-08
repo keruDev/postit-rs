@@ -3,11 +3,10 @@ use std::io::Read;
 
 use postit::models::{Priority, Task};
 use postit::persisters::fs::{Csv, Json};
-use postit::persisters::SaveFile;
 use postit::persisters::traits::Persister;
+use postit::persisters::SaveFile;
 
 use crate::mocks::MockPath;
-
 
 #[test]
 fn is_equal_same_persisters() {
@@ -68,10 +67,7 @@ fn format() {
     ];
 
     let result = Csv::format(&tasks);
-    let expected = vec![
-        String::from("1,Test,high,true"),
-        String::from("2,Test,med,false"),
-    ];
+    let expected = vec![String::from("1,Test,high,true"), String::from("2,Test,med,false")];
 
     assert_eq!(result, expected);
 }
@@ -80,7 +76,7 @@ fn format() {
 fn read() {
     let mock = MockPath::csv("csv_read");
 
-    let file = SaveFile::from(mock.to_str());
+    let file = SaveFile::from(&mock.to_string());
     let header = Csv::header().replace("\n", "");
 
     let result = file.read();

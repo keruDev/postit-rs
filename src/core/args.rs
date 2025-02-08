@@ -2,8 +2,8 @@
 
 use clap::{Parser, Subcommand, ValueEnum};
 
-#[derive(Subcommand, Clone, Copy, Debug, ValueEnum)]
 /// Options for managing something.
+#[derive(Subcommand, Clone, Copy, Debug, ValueEnum)]
 pub enum ConfigOptions {
     /// Creates the config file.
     Init,
@@ -13,8 +13,8 @@ pub enum ConfigOptions {
     Drop,
 }
 
-#[derive(Subcommand, Debug)]
 /// Contains the different commands available.
+#[derive(Subcommand, Debug)]
 pub enum Command {
     /// Shows a list of the current tasks.
     View {
@@ -47,13 +47,13 @@ pub enum Command {
         /// Used to read from and save tasks to.
         #[arg(long, short, value_name = "PATH")]
         path: Option<String>,
-        
+
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to uncheck")]
         ids: Vec<u128>,
     },
     /// Deletes a task from the list.
-    Drop{
+    Drop {
         /// Used to read from and save tasks to.
         #[arg(long, short, value_name = "PATH")]
         path: Option<String>,
@@ -62,7 +62,7 @@ pub enum Command {
         #[arg(value_name = "IDS", help = "Tasks to drop")]
         ids: Vec<u128>,
     },
-    /// Creates a copy of a file (supports other formats, e.g.: csv -> json). 
+    /// Creates a copy of a file (supports other formats, e.g.: csv -> json).
     Copy {
         /// Where the file is.
         #[arg(value_name = "OLD_PATH", help = "Old path of the tasks file.")]
@@ -70,19 +70,19 @@ pub enum Command {
 
         /// Where the contents will be copied to.
         #[arg(value_name = "NEW_PATH", help = "New path of the tasks file.")]
-        new: String, 
+        new: String,
     },
     /// Manages the configuration file.
     Config {
         #[command(subcommand)]
         /// The option the `Config` command will use.
         option: ConfigOptions,
-    }
+    },
 }
 
+/// Manages the `Arguments` received by console.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, next_line_help = false)]
-/// Manages the `Arguments` received by console.
 pub struct Arguments {
     /// Command to execute
     #[command(subcommand)]

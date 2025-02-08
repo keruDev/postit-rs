@@ -1,0 +1,9 @@
+group_imports = "StdExternalCrate"
+imports_granularity = "Module"
+reorder_imports = true
+use_small_heuristics = "Max"
+max_width = 100
+single_line_let_else_max_width = 80
+struct_variant_width = 60
+struct_lit_width = 40
+chain_width = 60

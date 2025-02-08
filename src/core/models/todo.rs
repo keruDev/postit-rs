@@ -1,9 +1,8 @@
 //! Collection of existing tasks. This is where major task management is made.
 
+use crate::models::task::Task;
 use crate::persisters::SaveFile;
 use crate::Config;
-
-use super::task::Task;
 
 /// Contains all the Tasks.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -33,9 +32,7 @@ impl Todo {
 
     /// Shows the current list of tasks.
     pub fn view(&mut self) {
-        self.tasks
-            .iter_mut()
-            .for_each(|task| println!("{task}"));
+        self.tasks.iter_mut().for_each(|task| println!("{task}"));
     }
 
     /// Adds a task to the task list.
@@ -44,14 +41,9 @@ impl Todo {
 
         if ids.contains(&task.id) {
             if let (Some(&start), Some(&end)) = (ids.first(), ids.iter().max()) {
-                let new_id = (start..=end)
-                    .find(|n| !ids.contains(n))
-                    .unwrap_or(end + 1);
+                let new_id = (start..=end).find(|n| !ids.contains(n)).unwrap_or(end + 1);
 
-                eprintln!(
-                    "ID {} is already used; using {} as an ID",
-                    &task.id, new_id
-                );
+                eprintln!("ID {} is already used; using {} as an ID", &task.id, new_id);
 
                 task.id = new_id;
             }
@@ -84,10 +76,12 @@ impl Todo {
 
         self.tasks.retain(|task| {
             let id_exists = ids.contains(&task.id);
-            
+
             if id_exists {
-                if force_drop { return false; }
-    
+                if force_drop {
+                    return false;
+                }
+
                 if !task.checked {
                     eprintln!("Task {} can't be dropped; must be checked first", &task.id);
                     return true;

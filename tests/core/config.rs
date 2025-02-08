@@ -40,9 +40,9 @@ fn default() {
     let config = Config::default();
 
     assert_eq!(config.path, "tasks.csv");
-    assert_eq!(config.force_drop, false);
-    assert_eq!(config.force_copy, false);
-    assert_eq!(config.drop_after_copy, false);
+    assert!(!config.force_drop);
+    assert!(!config.force_copy);
+    assert!(!config.drop_after_copy);
 }
 
 #[test]
@@ -83,10 +83,10 @@ fn load_default() {
 
 #[test]
 fn resolve_path_some() {
-    let path = Some(String::from("test_path"));
-    let result = Config::resolve_path(path.clone());
+    let path = String::from("test_path");
+    let result = Config::resolve_path(Some(path.clone()));
 
-    assert_eq!(result, path.unwrap())
+    assert_eq!(result, path)
 }
 
 #[test]

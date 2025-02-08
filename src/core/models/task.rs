@@ -5,12 +5,11 @@ use std::fmt;
 use colored::Colorize as _;
 use serde::{Deserialize, Serialize};
 
-use crate::core::error::{self, TaskError};
+use crate::core::error::TaskError;
 
-
+/// Priority of the Task, which is used to define the task's color and importance.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-/// Priority of the Task, which is used to define the task's color and importance.
 pub enum Priority {
     /// High priority tasks are colored red.
     High,
@@ -45,9 +44,9 @@ impl fmt::Display for Priority {
     }
 }
 
+/// Representation of a Task.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-/// Representation of a Task.
 pub struct Task {
     /// Identifier of the task.
     pub id: u128,
@@ -108,9 +107,7 @@ impl Task {
             .get(2)
             .map_or(Priority::Med, |&s| Priority::from(s.trim()));
 
-        let checked = list
-            .get(3)
-            .is_some_and(|&s| matches!(s.trim(), "true"));
+        let checked = list.get(3).is_some_and(|&s| matches!(s.trim(), "true"));
 
         (id, content, priority, checked)
     }
@@ -130,7 +127,7 @@ impl Task {
     ///
     /// # Errors
     /// If the task is already checked, an error will be returned.
-    pub fn check(&mut self) -> Result<&Self, error::TaskError> {
+    pub const fn check(&mut self) -> Result<&Self, TaskError> {
         if self.checked {
             Err(TaskError::AlreadyChecked)
         } else {
@@ -143,7 +140,7 @@ impl Task {
     ///
     /// # Errors
     /// If the task is already unchecked, an error will be returned.
-    pub fn uncheck(&mut self) -> Result<&Self, error::TaskError> {
+    pub const fn uncheck(&mut self) -> Result<&Self, TaskError> {
         if self.checked {
             self.checked = false;
             Ok(self)

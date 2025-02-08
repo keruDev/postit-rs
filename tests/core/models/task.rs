@@ -1,4 +1,4 @@
-use postit::models::{Task, Priority};
+use postit::models::{Priority, Task};
 
 fn fake_task_unchecked() -> Task {
     Task::new(1, String::from("Test"), Priority::Med, false)
@@ -60,13 +60,7 @@ fn format() {
     let task = fake_task_unchecked();
 
     let result = task.format();
-    let expected = format!(
-        "{},{},{},{}",
-        task.id,
-        task.content,
-        task.priority,
-        task.checked,
-    );
+    let expected = format!("{},{},{},{}", task.id, task.content, task.priority, task.checked,);
 
     assert_eq!(result, expected);
 }
