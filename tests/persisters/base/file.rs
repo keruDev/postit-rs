@@ -14,7 +14,7 @@ fn fmt_debug() {
     let file = SaveFile::new(persister);
 
     let debug_output = format!("{:?}", file);
-    let expected_output = r#"SaveFile { persister: "Box<dyn Persister>" }"#;
+    let expected_output = r#"SaveFile { persister: "Box<dyn FilePersister>" }"#;
 
     assert_eq!(debug_output, expected_output);
 }

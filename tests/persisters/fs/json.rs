@@ -1,5 +1,5 @@
 use postit::persisters::fs::{Csv, Json};
-use postit::persisters::traits::Persister;
+use postit::persisters::traits::FilePersister;
 
 use crate::mocks::MockPath;
 
