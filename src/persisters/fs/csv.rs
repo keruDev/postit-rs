@@ -1,13 +1,13 @@
 //! Utilities to handle CSV files.
 //!
-//! The `Csv` struct implements the [`Persister`] trait.
+//! The `Csv` struct implements the [`FilePersister`] trait.
 
 use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
 use crate::core::models::{Priority, Task, Todo};
-use crate::persisters::traits::Persister;
+use crate::persisters::traits::FilePersister;
 
 /// Representation of a CSV file.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -38,7 +38,7 @@ impl Csv {
     }
 }
 
-impl Persister for Csv {
+impl FilePersister for Csv {
     fn as_any(&self) -> &dyn Any {
         self
     }
@@ -47,7 +47,7 @@ impl Persister for Csv {
         self.path.metadata().map_or(true, |meta| meta.len() == 0)
     }
 
-    fn is_equal(&self, other: &dyn Persister) -> bool {
+    fn is_equal(&self, other: &dyn FilePersister) -> bool {
         other
             .as_any()
             .downcast_ref::<Self>()

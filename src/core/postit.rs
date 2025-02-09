@@ -12,7 +12,7 @@ use crate::Config;
 ///
 /// Handles operations via commands.
 ///
-/// The [`Todo`] instance is loaded using the desired [`Persister`][`crate::persisters::traits::Persister`]
+/// The [`Todo`] instance is loaded using the desired [`FilePersister`][`crate::persisters::traits::FilePersister`]
 /// instance, which is modified when the `Postit` finishes working.
 pub struct Postit;
 

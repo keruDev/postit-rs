@@ -7,13 +7,13 @@ use std::{fmt, fs};
 use crate::models::{Task, Todo};
 use crate::persisters::error::FileError;
 use crate::persisters::fs::{Csv, Json};
-use crate::persisters::traits::Persister;
+use crate::persisters::traits::FilePersister;
 use crate::Config;
 
 /// Representation of a file that is used to manage .
 pub struct SaveFile {
-    /// File that implements the `Persister` trait.
-    persister: Box<dyn Persister>,
+    /// File that implements the `FilePersister` trait.
+    persister: Box<dyn FilePersister>,
 }
 
 impl PartialEq for SaveFile {
@@ -25,14 +25,14 @@ impl PartialEq for SaveFile {
 impl fmt::Debug for SaveFile {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SaveFile")
-            .field("persister", &"Box<dyn Persister>")
+            .field("persister", &"Box<dyn FilePersister>")
             .finish()
     }
 }
 
 impl SaveFile {
     /// Constructor of the `SaveFile` struct.
-    pub const fn new(persister: Box<dyn Persister>) -> Self {
+    pub const fn new(persister: Box<dyn FilePersister>) -> Self {
         Self { persister }
     }
 
@@ -53,7 +53,7 @@ impl SaveFile {
     ///
     /// # Panics
     /// In case the persister can't be populated with the default contents.
-    pub fn check_file_content(persister: &dyn Persister) {
+    pub fn check_file_content(persister: &dyn FilePersister) {
         if persister.exists() && !persister.is_empty() {
             return;
         }
@@ -88,11 +88,11 @@ impl SaveFile {
         path
     }
 
-    /// Returns a struct that implements the `Persister` trait based on the file extension.
+    /// Returns a struct that implements the `FilePersister` trait based on the file extension.
     ///
     /// # Panics
     /// In case the file extension can't be converted to `&str`.
-    pub fn get_persister(path: PathBuf) -> Box<dyn Persister> {
+    pub fn get_persister(path: PathBuf) -> Box<dyn FilePersister> {
         let ext = path.extension().unwrap().to_str().unwrap();
 
         match ext {

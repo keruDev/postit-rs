@@ -6,16 +6,16 @@ use std::{fmt, fs};
 
 use crate::core::models::{Task, Todo};
 
-/// The `Persister` trait includes basic methods for data management.
+/// The `FilePersister` trait includes basic methods for data management.
 ///
 /// It also implements the standard `Any`, `Debug` and `PartialEq` traits
 /// to be able to compare with other persisters.
-pub trait Persister: Any + fmt::Debug {
+pub trait FilePersister: Any + fmt::Debug {
     /// Returns the current persister as `Any`.
     fn as_any(&self) -> &dyn Any;
 
-    /// Compares two different objects that implement the `Persister` trait.
-    fn is_equal(&self, other: &dyn Persister) -> bool;
+    /// Compares two different objects that implement the `FilePersister` trait.
+    fn is_equal(&self, other: &dyn FilePersister) -> bool;
 
     /// Checks if the file is empty.
     fn is_empty(&self) -> bool;
@@ -42,7 +42,7 @@ pub trait Persister: Any + fmt::Debug {
     fn tasks(&self) -> Vec<Task>;
 }
 
-impl PartialEq for Box<dyn Persister> {
+impl PartialEq for Box<dyn FilePersister> {
     fn eq(&self, other: &Self) -> bool {
         self.is_equal(other.as_ref())
     }

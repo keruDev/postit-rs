@@ -1,13 +1,13 @@
 //! Utilities to handle JSON files with [serde] and [`serde_json`].
 //!
-//! The `Json` struct implements the [Persister] trait.
+//! The `Json` struct implements the [FilePersister] trait.
 
 use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
 use crate::core::models::{Task, Todo};
-use crate::persisters::traits::Persister;
+use crate::persisters::traits::FilePersister;
 
 /// Representation of a JSON file.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -28,7 +28,7 @@ impl Json {
     }
 }
 
-impl Persister for Json {
+impl FilePersister for Json {
     fn as_any(&self) -> &dyn Any {
         self
     }
@@ -37,7 +37,7 @@ impl Persister for Json {
         self.path.metadata().map_or(true, |meta| meta.len() == 0)
     }
 
-    fn is_equal(&self, other: &dyn Persister) -> bool {
+    fn is_equal(&self, other: &dyn FilePersister) -> bool {
         other
             .as_any()
             .downcast_ref::<Self>()

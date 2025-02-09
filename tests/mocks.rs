@@ -5,7 +5,7 @@ use std::{fmt, fs};
 
 use postit::models::{Task, Todo};
 use postit::persisters::fs::{Csv, Json};
-use postit::persisters::traits::Persister as _;
+use postit::persisters::traits::FilePersister as _;
 use postit::Config;
 
 /// A temporary path used for testing purposes.
