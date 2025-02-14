@@ -40,7 +40,7 @@ pub enum Command {
 
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to check")]
-        ids: Vec<u128>,
+        ids: Vec<u32>,
     },
     /// Marks a task as unchecked.
     Uncheck {
@@ -50,7 +50,7 @@ pub enum Command {
 
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to uncheck")]
-        ids: Vec<u128>,
+        ids: Vec<u32>,
     },
     /// Deletes a task from the list.
     Drop {
@@ -60,7 +60,7 @@ pub enum Command {
 
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to drop")]
-        ids: Vec<u128>,
+        ids: Vec<u32>,
     },
     /// Creates a copy of a file (supports other formats, e.g.: csv -> json).
     Copy {

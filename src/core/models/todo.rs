@@ -23,7 +23,7 @@ impl Todo {
     }
 
     /// Returns tasks based on the ids passed.
-    pub fn get(&mut self, ids: &[u128]) -> Vec<&mut Task> {
+    pub fn get(&mut self, ids: &[u32]) -> Vec<&mut Task> {
         self.tasks
             .iter_mut()
             .filter(|task| ids.contains(&task.id))
@@ -37,7 +37,7 @@ impl Todo {
 
     /// Adds a task to the task list.
     pub fn add(&mut self, mut task: Task) {
-        let ids: Vec<u128> = self.tasks.iter().map(|task| task.id).collect();
+        let ids: Vec<u32> = self.tasks.iter().map(|task| task.id).collect();
 
         if ids.contains(&task.id) {
             if let (Some(&start), Some(&end)) = (ids.first(), ids.iter().max()) {
@@ -53,7 +53,7 @@ impl Todo {
     }
 
     /// Marks a task as checked.
-    pub fn check(&mut self, ids: &[u128]) {
+    pub fn check(&mut self, ids: &[u32]) {
         for task in self.get(ids) {
             if let Err(e) = task.check() {
                 eprintln!("{e}");
@@ -62,7 +62,7 @@ impl Todo {
     }
 
     /// Marks a task as unchecked.
-    pub fn uncheck(&mut self, ids: &[u128]) {
+    pub fn uncheck(&mut self, ids: &[u32]) {
         for task in self.get(ids) {
             if let Err(e) = task.uncheck() {
                 eprintln!("{e}");
@@ -71,7 +71,7 @@ impl Todo {
     }
 
     /// Drops a task from the list.
-    pub fn drop(&mut self, ids: &[u128]) {
+    pub fn drop(&mut self, ids: &[u32]) {
         let force_drop = Config::load().force_drop;
 
         self.tasks.retain(|task| {

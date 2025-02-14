@@ -47,7 +47,7 @@ impl Postit {
     }
 
     /// Checks the tasks based on the ids passed.
-    fn check(path: Option<String>, ids: &[u128]) {
+    fn check(path: Option<String>, ids: &[u32]) {
         let file = SaveFile::from(&Config::resolve_path(path));
         let mut todo = Todo::from(&file);
 
@@ -58,7 +58,7 @@ impl Postit {
     }
 
     /// Unchecks the tasks based on the ids passed.
-    fn uncheck(path: Option<String>, ids: &[u128]) {
+    fn uncheck(path: Option<String>, ids: &[u32]) {
         let file = SaveFile::from(&Config::resolve_path(path));
         let mut todo = Todo::from(&file);
 
@@ -69,7 +69,7 @@ impl Postit {
     }
 
     /// Drops tasks from the list based on the ids passed.
-    fn drop(path: Option<String>, ids: &[u128]) {
+    fn drop(path: Option<String>, ids: &[u32]) {
         let file = SaveFile::from(&Config::resolve_path(path));
         let mut todo = Todo::from(&file);
 
