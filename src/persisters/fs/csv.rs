@@ -23,7 +23,7 @@ impl Csv {
     }
 
     /// Parses a line into `Task` values.
-    pub fn parse(line: &str) -> (u128, String, Priority, bool) {
+    pub fn parse(line: &str) -> (u32, String, Priority, bool) {
         Task::unpack(line)
     }
 

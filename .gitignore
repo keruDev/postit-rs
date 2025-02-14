@@ -12,3 +12,4 @@ build_rs_cov.profraw
 *postit.toml
 *.csv
 *.json
+*.db

@@ -1,6 +1,7 @@
 //! The core unit for task management.
 
 use std::fmt;
+use std::ops::Deref;
 
 use colored::Colorize as _;
 use serde::{Deserialize, Serialize};
@@ -31,6 +32,15 @@ impl Priority {
             _ => Self::Med,
         }
     }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Priority::High => "high",
+            Priority::Med => "med",
+            Priority::Low => "low",
+            Priority::None => "none",
+        }
+    }
 }
 
 impl fmt::Display for Priority {
@@ -44,12 +54,20 @@ impl fmt::Display for Priority {
     }
 }
 
+impl Deref for Priority {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_str()
+    }
+}
+
 /// Representation of a Task.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct Task {
     /// Identifier of the task.
-    pub id: u128,
+    pub id: u32,
     /// Text content of the task.
     pub content: String,
     /// Priority of the task.
@@ -79,7 +97,7 @@ impl fmt::Display for Task {
 
 impl Task {
     /// Constructor of the Task struct.
-    pub const fn new(id: u128, content: String, priority: Priority, checked: bool) -> Self {
+    pub const fn new(id: u32, content: String, priority: Priority, checked: bool) -> Self {
         Self { id, content, priority, checked }
     }
 
@@ -94,7 +112,7 @@ impl Task {
     /// # Panics
     /// If the `id` field can't be obtained from the first index or there is an error parsing.
     /// If the `content` field can't be obtained from the second index.
-    pub fn unpack(line: &str) -> (u128, String, Priority, bool) {
+    pub fn unpack(line: &str) -> (u32, String, Priority, bool) {
         let list: Vec<&str> = line.split(',').collect();
 
         let id = list[0]
@@ -113,7 +131,7 @@ impl Task {
     }
 
     /// Returns the fields of the Task instance.
-    pub const fn fields(&self) -> (&u128, &String, &Priority, &bool) {
+    pub const fn fields(&self) -> (&u32, &String, &Priority, &bool) {
         (&self.id, &self.content, &self.priority, &self.checked)
     }
 
