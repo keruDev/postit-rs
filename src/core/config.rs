@@ -2,12 +2,14 @@
 
 use std::fs;
 use std::io::Write as _;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
 use crate::args::ConfigOptions;
+use crate::persisters::traits::Persister;
+use crate::persisters::{Orm, SaveFile};
 
 /// Contains the configuration used while running `postit`.
 ///
@@ -16,7 +18,7 @@ use crate::args::ConfigOptions;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Config {
     /// Location of the default file where tasks are stored.
-    pub path: String,
+    pub persister: String,
     /// If `true`, allows dropping tasks without them being checked.
     pub force_drop: bool,
     /// If `true`, allows overwriting files on copy if they already exist.
@@ -28,7 +30,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            path: String::from("tasks.csv"),
+            persister: String::from("tasks.csv"),
             force_drop: false,
             force_copy: false,
             drop_after_copy: false,
@@ -138,7 +140,13 @@ impl Config {
     /// If the value of path is:
     /// - `Some`: returns itself.
     /// - `None`: returns the path stored in the config file.
-    pub fn resolve_path(path: Option<String>) -> String {
-        path.unwrap_or_else(|| Self::load().path)
+    pub fn resolve_persister(persister: Option<String>) -> Box<dyn Persister> {
+        let path_or_conn = persister.unwrap_or_else(|| Self::load().persister);
+
+        return if path_or_conn.contains("://") {
+            SaveFile::from(&path_or_conn).boxed()
+        } else {
+            Orm::from(&path_or_conn).boxed()
+        }
     }
 }

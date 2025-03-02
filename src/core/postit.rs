@@ -20,63 +20,64 @@ impl Postit {
     /// Runs `Postit` commands based on the args provided.
     pub fn run(args: Arguments) {
         match args.command {
-            Command::View { path } => Self::view(path),
-            Command::Add { path, task } => Self::add(path, &task),
-            Command::Check { path, ids } => Self::check(path, &ids),
-            Command::Uncheck { path, ids } => Self::uncheck(path, &ids),
-            Command::Drop { path, ids } => Self::drop(path, &ids),
+            Command::View { persister } => Self::view(persister),
+            Command::Add { persister, task } => Self::add(persister, &task),
+            Command::Check { persister, ids } => Self::check(persister, &ids),
+            Command::Uncheck { persister, ids } => Self::uncheck(persister, &ids),
+            Command::Drop { persister, ids } => Self::drop(persister, &ids),
             Command::Copy { old, new } => Self::copy(&old, &new),
             Command::Config { option } => Self::config(option),
         }
     }
 
     /// Shows the list of current tasks.
-    fn view(path: Option<String>) {
-        Todo::read(&Config::resolve_path(path)).view();
+    fn view(persister: Option<String>) {
+        let persister = Config::resolve_persister(persister);
+        Todo::from(&*persister).view();
     }
 
     /// Adds a new task to the list.
-    fn add(path: Option<String>, task: &str) {
-        let file = SaveFile::from(&Config::resolve_path(path));
-        let mut todo = Todo::from(&file);
-
+    fn add(persister: Option<String>, task: &str) {
+        let persister = Config::resolve_persister(persister);
+        let mut todo = Todo::from(&*persister);
+        
         todo.add(Task::from(task));
         todo.view();
 
-        file.write(&todo);
+        persister.save(&todo);
     }
 
     /// Checks the tasks based on the ids passed.
-    fn check(path: Option<String>, ids: &[u32]) {
-        let file = SaveFile::from(&Config::resolve_path(path));
-        let mut todo = Todo::from(&file);
+    fn check(persister: Option<String>, ids: &[u32]) {
+        let persister = Config::resolve_persister(persister);
+        let mut todo = Todo::from(&*persister);
 
         todo.check(ids);
         todo.view();
 
-        file.write(&todo);
+        persister.save(&todo);
     }
 
     /// Unchecks the tasks based on the ids passed.
-    fn uncheck(path: Option<String>, ids: &[u32]) {
-        let file = SaveFile::from(&Config::resolve_path(path));
-        let mut todo = Todo::from(&file);
+    fn uncheck(persister: Option<String>, ids: &[u32]) {
+        let persister = Config::resolve_persister(persister);
+        let mut todo = Todo::from(&*persister);
 
         todo.uncheck(ids);
         todo.view();
 
-        file.write(&todo);
+        persister.save(&todo);
     }
 
     /// Drops tasks from the list based on the ids passed.
-    fn drop(path: Option<String>, ids: &[u32]) {
-        let file = SaveFile::from(&Config::resolve_path(path));
-        let mut todo = Todo::from(&file);
+    fn drop(persister: Option<String>, ids: &[u32]) {
+        let persister = Config::resolve_persister(persister);
+        let mut todo = Todo::from(&*persister);
 
         todo.drop(ids);
         todo.view();
 
-        file.write(&todo);
+        persister.save(&todo);
     }
 
     /// Copies the contents of a file to another.

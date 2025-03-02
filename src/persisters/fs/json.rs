@@ -2,7 +2,7 @@
 //!
 //! The `Json` struct implements the [FilePersister] trait.
 
-use std::any::Any;
+// use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
@@ -29,31 +29,27 @@ impl Json {
 }
 
 impl FilePersister for Json {
-    fn as_any(&self) -> &dyn Any {
-        self
+    // fn as_any(&self) -> &dyn Any {
+    //     self
+    // }
+
+    // fn is_equal(&self, other: &dyn FilePersister) -> bool {
+    //     other
+    //         .as_any()
+    //         .downcast_ref::<Self>()
+    //         .is_some_and(|persister| self.path == persister.path)
+    // }
+
+    fn path(&self) -> PathBuf {
+        self.path.clone()
     }
 
-    fn is_empty(&self) -> bool {
-        self.path.metadata().map_or(true, |meta| meta.len() == 0)
-    }
-
-    fn is_equal(&self, other: &dyn FilePersister) -> bool {
-        other
-            .as_any()
-            .downcast_ref::<Self>()
-            .is_some_and(|persister| self.path == persister.path)
+    fn boxed(self) -> Box<dyn FilePersister> {
+        Box::new(self)
     }
 
     fn default(&self) -> String {
         Self::array()
-    }
-
-    fn exists(&self) -> bool {
-        self.path.exists()
-    }
-
-    fn path(&self) -> PathBuf {
-        self.path.clone()
     }
 
     fn open(&self) -> fs::File {

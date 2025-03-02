@@ -42,6 +42,10 @@ You can check out its possible fields in the [docs](https://docs.rs/postit/lates
 - `force_copy`: if true, allows overwriting files on copy if they already exist.
 - `drop_after_copy`: if true, drops files after copying.
 
+
+## Environment variables
+- `POSTIT_CONFIG_PATH`: specifies where the `.postit.toml` or `postit.toml` is located.
+
 ## Usage
 
 The commands currently available are:

@@ -19,14 +19,14 @@ pub enum Command {
     /// Shows a list of the current tasks.
     View {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PATH")]
-        path: Option<String>,
+        #[arg(long, short, value_name = "PERSISTER")]
+        persister: Option<String>,
     },
     /// Adds a new task to the list.
     Add {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PATH")]
-        path: Option<String>,
+        #[arg(long, short, value_name = "PERSISTER")]
+        persister: Option<String>,
 
         /// Full task structure (id,content,priority,checked).
         #[arg(value_name = "TASK", help = "Structure: 'id,content,priority,checked'")]
@@ -35,8 +35,8 @@ pub enum Command {
     /// Marks a task as checked.
     Check {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PATH")]
-        path: Option<String>,
+        #[arg(long, short, value_name = "PERSISTER")]
+        persister: Option<String>,
 
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to check")]
@@ -45,8 +45,8 @@ pub enum Command {
     /// Marks a task as unchecked.
     Uncheck {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PATH")]
-        path: Option<String>,
+        #[arg(long, short, value_name = "PERSISTER")]
+        persister: Option<String>,
 
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to uncheck")]
@@ -55,8 +55,8 @@ pub enum Command {
     /// Deletes a task from the list.
     Drop {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PATH")]
-        path: Option<String>,
+        #[arg(long, short, value_name = "PERSISTER")]
+        persister: Option<String>,
 
         /// Identifiers of tasks.
         #[arg(value_name = "IDS", help = "Tasks to drop")]
