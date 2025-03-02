@@ -25,3 +25,22 @@ impl fmt::Display for FileError {
         }
     }
 }
+
+
+/// Errors related to databases and connection strings.
+#[derive(Debug)]
+pub enum DbError {
+    /// Used when the provided connection string is not supported.
+    UnsupportedDatabase,
+    /// Used when the provided connection string is incorrect.
+    IncorrectConnectionString,
+}
+
+impl fmt::Display for DbError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::UnsupportedDatabase => write!(f, "Unsupported database; defaulting to Sqlite"),
+            Self::IncorrectConnectionString => write!(f, "The provided connection string is incorrect"),
+        }
+    }
+}

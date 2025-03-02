@@ -2,7 +2,6 @@
 //!
 //! The `Csv` struct implements the [`FilePersister`] trait.
 
-use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
@@ -39,31 +38,16 @@ impl Csv {
 }
 
 impl FilePersister for Csv {
-    fn as_any(&self) -> &dyn Any {
-        self
+    fn path(&self) -> PathBuf {
+        self.path.clone()
     }
 
-    fn is_empty(&self) -> bool {
-        self.path.metadata().map_or(true, |meta| meta.len() == 0)
-    }
-
-    fn is_equal(&self, other: &dyn FilePersister) -> bool {
-        other
-            .as_any()
-            .downcast_ref::<Self>()
-            .is_some_and(|persister| self.path == persister.path)
+    fn boxed(self) -> Box<dyn FilePersister> {
+        Box::new(self)
     }
 
     fn default(&self) -> String {
-        Self::header()
-    }
-
-    fn exists(&self) -> bool {
-        self.path.exists()
-    }
-
-    fn path(&self) -> PathBuf {
-        self.path.clone()
+        Self::header()   
     }
 
     fn open(&self) -> fs::File {
@@ -81,7 +65,7 @@ impl FilePersister for Csv {
 
     fn write(&self, todo: &Todo) {
         let sep = if cfg!(windows) { "\r\n" } else { "\n" };
-        let mut bytes = self.default().into_bytes();
+        let mut bytes = Self::header().into_bytes();
         let mut tasks = Self::format(&todo.tasks).join(sep).into_bytes();
 
         bytes.append(&mut tasks);

@@ -1,7 +1,7 @@
 //! Collection of existing tasks. This is where major task management is made.
 
 use crate::models::task::Task;
-use crate::persisters::SaveFile;
+use crate::persisters::traits::Persister;
 use crate::Config;
 
 /// Contains all the Tasks.
@@ -13,13 +13,8 @@ pub struct Todo {
 
 impl Todo {
     /// Creates a `Todo` instance from a file's contents.
-    pub fn from(file: &SaveFile) -> Self {
-        Self { tasks: file.tasks() }
-    }
-
-    /// Reads a file and loads the `Todo` instance.
-    pub fn read(path: &str) -> Self {
-        Self::from(&SaveFile::from(path))
+    pub fn from(persister: &dyn Persister) -> Self {
+        Self { tasks: persister.tasks() }
     }
 
     /// Returns tasks based on the ids passed.
