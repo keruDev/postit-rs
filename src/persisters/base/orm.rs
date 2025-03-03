@@ -11,7 +11,7 @@ pub struct Orm {
 
 impl fmt::Debug for Orm {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("SaveFile")
+        f.debug_struct("Orm")
             .field("db", &"Box<dyn DbPersister>")
             .finish()
     }

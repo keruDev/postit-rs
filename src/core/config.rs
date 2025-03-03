@@ -2,14 +2,14 @@
 
 use std::fs;
 use std::io::Write as _;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
 use crate::args::ConfigOptions;
 use crate::persisters::traits::Persister;
-use crate::persisters::{Orm, SaveFile};
+use crate::persisters::{Orm, File};
 
 /// Contains the configuration used while running `postit`.
 ///
@@ -144,7 +144,7 @@ impl Config {
         let path_or_conn = persister.unwrap_or_else(|| Self::load().persister);
 
         return if path_or_conn.contains("://") {
-            SaveFile::from(&path_or_conn).boxed()
+            File::from(&path_or_conn).boxed()
         } else {
             Orm::from(&path_or_conn).boxed()
         }

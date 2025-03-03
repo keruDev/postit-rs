@@ -11,26 +11,26 @@ use crate::persisters::traits::{FilePersister, Persister};
 use crate::Config;
 
 /// Representation of a file that is used to manage .
-pub struct SaveFile {
+pub struct File {
     /// File that implements the `FilePersister` trait.
     file: Box<dyn FilePersister>,
 }
 
-impl fmt::Debug for SaveFile {
+impl fmt::Debug for File {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("SaveFile")
+        f.debug_struct("File")
             .field("file", &"Box<dyn FilePersister>")
             .finish()
     }
 }
 
-impl SaveFile {
-    /// Constructor of the `SaveFile` struct.
+impl File {
+    /// Constructor of the `File` struct.
     pub const fn new(persister: Box<dyn FilePersister>) -> Self {
         Self { file: persister }
     }
 
-    /// Creates a `SaveFile` instance from a path.
+    /// Creates a `File` instance from a path.
     pub fn from(path: &str) -> Self {
         let mut path = Path::new(path).to_owned();
         path = Self::check_name(path);
@@ -129,7 +129,7 @@ impl SaveFile {
     }
 }
 
-impl Persister for SaveFile {
+impl Persister for File {
     fn boxed(self) -> Box<dyn Persister> {
         Box::new(self)
     }

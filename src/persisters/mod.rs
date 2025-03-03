@@ -6,5 +6,5 @@ pub mod fs;
 pub mod db;
 pub mod traits;
 
-pub use base::SaveFile;
+pub use base::File;
 pub use base::Orm;

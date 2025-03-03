@@ -2,23 +2,23 @@ use std::path::Path;
 
 use postit::args::{Arguments, Command, ConfigOptions};
 use postit::models::{Task, Todo};
-use postit::persisters::SaveFile;
+use postit::persisters::File;
 use postit::Postit;
 
 use crate::mocks::{MockConfig, MockPath};
 
-fn fakes(mock: &MockPath) -> (SaveFile, Todo) {
+fn fakes(mock: &MockPath) -> (File, Todo) {
     let path = mock.to_string();
-    let file = SaveFile::from(&path);
+    let file = File::from(&path);
     let todo = Todo { tasks: file.tasks() };
 
     (file, todo)
 }
 
-fn expected(mock: &MockPath) -> (SaveFile, Todo) {
+fn expected(mock: &MockPath) -> (File, Todo) {
     let path = mock.path.display().to_string();
 
-    let file = SaveFile::from(&path);
+    let file = File::from(&path);
     let todo = Todo::from(&file);
 
     (file, todo)
