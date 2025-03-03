@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use sqlite::{Connection, State};
+use sqlite::{Connection, State, Statement};
 
 use crate::models::{Task, Todo};
 use crate::persisters::traits::DbPersister;
@@ -37,6 +37,20 @@ impl Sqlite {
             connection: sqlite::open(conn).unwrap()
         }
     }
+
+    /// Reads one row from the current statement.
+    /// 
+    /// # Panics
+    /// If a value can't be unwrapped.
+    pub fn read_row(&self, statement: &Statement) -> String {
+        format!(
+            "{},{},{},{}",
+            statement.read::<i64, _>("id").unwrap(),
+            statement.read::<String, _>("content").unwrap(),
+            statement.read::<String, _>("priority").unwrap(),
+            statement.read::<String, _>("checked").unwrap()
+        )
+    }
 }
 
 impl DbPersister for Sqlite {
@@ -60,17 +74,15 @@ impl DbPersister for Sqlite {
     }
 
     fn select(&self) -> Vec<String> {
-        let query = String::from("SELECT * FROM tasks");
-        let mut statement = self.connection.prepare(query).unwrap();
+        let mut stmt = self.connection.prepare("SELECT * FROM tasks").unwrap();
 
-        while matches!(statement.next(), Ok(State::Row)) {
-            println!("id = {}", statement.read::<i64, _>("id").unwrap());
-            println!("content = {}", statement.read::<String, _>("content").unwrap());
-            println!("priority = {}", statement.read::<String, _>("priority").unwrap());
-            println!("checked = {}", statement.read::<String, _>("checked").unwrap());
+        let mut result = vec![];
+
+        while matches!(stmt.next(), Ok(State::Row)) {
+            result.push(self.read_row(&stmt));
         }
 
-        vec![String::new()]
+        result
     }
 
     fn insert(&self, todo: &Todo) {
@@ -92,6 +104,26 @@ impl DbPersister for Sqlite {
             }
         });
     }
+
+    fn update(&self, ids: &[u32]) {
+        todo!()
+        // let mut stmt  = self.connection.prepare(format!("
+        //     UPDATE tasks
+        //     SET checked = {}
+        //     WHERE id
+        //     IN (?)
+        // ", )).unwrap();
+
+        // stmt.bind(&[
+        //     &*format!("{ids:?}")
+        //         .replace('[', "(")
+        //         .replace(']', ")")
+        // ][..]).unwrap();
+
+        // if let Err(e) = stmt.next() {
+        //     eprintln!("Error while updating value: {e}");
+        // }
+    }
     
     fn drop(&self, ids: &[u32]) {
         let mut stmt  = self.connection.prepare("
@@ -112,6 +144,6 @@ impl DbPersister for Sqlite {
     }
 
     fn tasks(&self) -> Vec<Task> {
-        todo!()
+        self.select().iter().map(|row| Task::from(row)).collect()
     }
 }
