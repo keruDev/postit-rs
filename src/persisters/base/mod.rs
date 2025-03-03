@@ -3,5 +3,5 @@
 mod file;
 mod orm;
 
-pub use file::SaveFile;
+pub use file::File;
 pub use orm::Orm;

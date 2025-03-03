@@ -4,7 +4,7 @@ use std::io::Read;
 use postit::models::{Priority, Task};
 use postit::persisters::fs::{Csv, Json};
 use postit::persisters::traits::FilePersister;
-use postit::persisters::SaveFile;
+use postit::persisters::File;
 
 use crate::mocks::MockPath;
 
@@ -76,7 +76,7 @@ fn format() {
 fn read() {
     let mock = MockPath::csv("csv_read");
 
-    let file = SaveFile::from(&mock.to_string());
+    let file = File::from(&mock.to_string());
     let header = Csv::header().replace("\n", "");
 
     let result = file.read();

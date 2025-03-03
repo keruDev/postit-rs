@@ -44,6 +44,7 @@ You can check out its possible fields in the [docs](https://docs.rs/postit/lates
 
 
 ## Environment variables
+
 - `POSTIT_CONFIG_PATH`: specifies where the `.postit.toml` or `postit.toml` is located.
 
 ## Usage

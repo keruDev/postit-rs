@@ -5,7 +5,7 @@
 
 use crate::args::{Arguments, Command, ConfigOptions};
 use crate::models::{Task, Todo};
-use crate::persisters::SaveFile;
+use crate::persisters::File;
 use crate::Config;
 
 /// Entry point where all operations are executed.
@@ -82,7 +82,7 @@ impl Postit {
 
     /// Copies the contents of a file to another.
     fn copy(old: &str, new: &str) {
-        SaveFile::copy(old, new);
+        File::copy(old, new);
     }
 
     /// Manages the configuration file.   
