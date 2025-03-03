@@ -8,6 +8,8 @@ use crate::models::{Task, Todo};
 use crate::persisters::File;
 use crate::Config;
 
+use super::args::TaskArgs;
+
 /// Entry point where all operations are executed.
 ///
 /// Handles operations via commands.
@@ -22,9 +24,9 @@ impl Postit {
         match args.command {
             Command::View { persister } => Self::view(persister),
             Command::Add { persister, task } => Self::add(persister, &task),
-            Command::Check { persister, ids } => Self::check(persister, &ids),
-            Command::Uncheck { persister, ids } => Self::uncheck(persister, &ids),
-            Command::Drop { persister, ids } => Self::drop(persister, &ids),
+            Command::Check(args) => Self::check(args),
+            Command::Uncheck(args) => Self::uncheck(args),
+            Command::Drop(args) => Self::drop(args),
             Command::Copy { old, new } => Self::copy(&old, &new),
             Command::Config { option } => Self::config(option),
         }
@@ -48,36 +50,36 @@ impl Postit {
     }
 
     /// Checks the tasks based on the ids passed.
-    fn check(persister: Option<String>, ids: &[u32]) {
-        let persister = Config::resolve_persister(persister);
+    fn check(args: TaskArgs) {
+        let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
-        todo.check(ids);
+        todo.check(&args.ids);
         todo.view();
 
-        persister.save(&todo);
+        persister.check(&args.ids);
     }
 
     /// Unchecks the tasks based on the ids passed.
-    fn uncheck(persister: Option<String>, ids: &[u32]) {
-        let persister = Config::resolve_persister(persister);
+    fn uncheck(args: TaskArgs) {
+        let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
-        todo.uncheck(ids);
+        todo.uncheck(&args.ids);
         todo.view();
 
-        persister.save(&todo);
+        persister.uncheck(&args.ids);
     }
 
     /// Drops tasks from the list based on the ids passed.
-    fn drop(persister: Option<String>, ids: &[u32]) {
-        let persister = Config::resolve_persister(persister);
+    fn drop(args: TaskArgs) {
+        let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
-        todo.drop(ids);
+        todo.drop(&args.ids);
         todo.view();
 
-        persister.save(&todo);
+        persister.delete(&args.ids);
     }
 
     /// Copies the contents of a file to another.

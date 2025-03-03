@@ -30,7 +30,7 @@ impl Orm {
 
     /// Creates a `Orm` instance from a connection string.
     pub fn from(conn: &str) -> Self {
-        let persister =Self::get_persister(conn);
+        let persister = Self::get_persister(conn);
         Self::new(persister)
     }
 
@@ -68,6 +68,18 @@ impl Persister for Orm {
 
     fn save(&self, todo: &Todo) {
         self.db.insert(todo);
+    }
+
+    fn check(&self, ids: &[u32]) {
+        todo!()
+    }
+
+    fn uncheck(&self, ids: &[u32]) {
+        todo!()
+    }
+
+    fn delete(&self, ids: &[u32]) {
+        todo!()
     }
 
     fn tasks(&self) -> Vec<Task> {

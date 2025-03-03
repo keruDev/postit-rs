@@ -35,6 +35,10 @@ pub trait Persister: fmt::Debug {
     
     /// Saves a Todo instance as the persister's content.
     fn save(&self, todo: &Todo);
+
+    fn check(&self, ids: &[u32]);
+    fn uncheck(&self, ids: &[u32]);
+    fn delete(&self, ids: &[u32]);
 }
 
 // impl PartialEq for Box<dyn Persister> {
@@ -87,6 +91,9 @@ pub trait DbPersister {
     
     /// Inserts data into a table.
     fn insert(&self, todo: &Todo);
+    
+    /// Updates data from a table.
+    fn update(&self, ids: &[u32]);
     
     /// Drops data from a table.
     fn drop(&self, ids: &[u32]);

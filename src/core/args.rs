@@ -1,6 +1,6 @@
 //! Argument parsing utilities with [clap].
 
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 
 /// Options for managing something.
 #[derive(Subcommand, Clone, Copy, Debug, ValueEnum)]
@@ -11,6 +11,23 @@ pub enum ConfigOptions {
     Edit,
     /// Deletes the config
     Drop,
+}
+
+pub enum TaskAction {
+    Check,
+    Uncheck,
+    Drop,
+}
+
+#[derive(Args, Debug)]
+pub struct TaskArgs {
+    /// Used to read from and save tasks to.
+    #[arg(long, short, value_name = "PERSISTER")]
+    pub persister: Option<String>,
+
+    /// Identifiers of tasks.
+    #[arg(value_name = "IDS", help = "Task IDs")]
+    pub ids: Vec<u32>,
 }
 
 /// Contains the different commands available.
@@ -33,35 +50,14 @@ pub enum Command {
         task: String,
     },
     /// Marks a task as checked.
-    Check {
-        /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PERSISTER")]
-        persister: Option<String>,
-
-        /// Identifiers of tasks.
-        #[arg(value_name = "IDS", help = "Tasks to check")]
-        ids: Vec<u32>,
-    },
+    Check(TaskArgs),
+    
     /// Marks a task as unchecked.
-    Uncheck {
-        /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PERSISTER")]
-        persister: Option<String>,
-
-        /// Identifiers of tasks.
-        #[arg(value_name = "IDS", help = "Tasks to uncheck")]
-        ids: Vec<u32>,
-    },
+    Uncheck(TaskArgs),
+    
     /// Deletes a task from the list.
-    Drop {
-        /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PERSISTER")]
-        persister: Option<String>,
+    Drop(TaskArgs),
 
-        /// Identifiers of tasks.
-        #[arg(value_name = "IDS", help = "Tasks to drop")]
-        ids: Vec<u32>,
-    },
     /// Creates a copy of a file (supports other formats, e.g.: csv -> json).
     Copy {
         /// Where the file is.
@@ -72,7 +68,7 @@ pub enum Command {
         #[arg(value_name = "NEW_PATH", help = "New path of the tasks file.")]
         new: String,
     },
-    /// Manages the configuration file.
+    /// Manages the configuration file (.postit.toml or postit.toml).
     Config {
         #[command(subcommand)]
         /// The option the `Config` command will use.
