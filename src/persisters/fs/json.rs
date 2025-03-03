@@ -1,6 +1,6 @@
 //! Utilities to handle JSON files with [serde] and [`serde_json`].
 //!
-//! The `Json` struct implements the [FilePersister] trait.
+//! The `Json` struct implements the [`FilePersister`] trait.
 
 // use std::any::Any;
 use std::fs;

@@ -1,3 +1,7 @@
+//! Utilities to handle `SQLite` files.
+//!
+//! The `Sqlite` struct implements the [`DbPersister`] trait.
+
 use std::fmt;
 
 use sqlite::{Connection, State};
@@ -5,9 +9,11 @@ use sqlite::{Connection, State};
 use crate::models::{Task, Todo};
 use crate::persisters::traits::DbPersister;
 
-
+/// Representation of a `SQLite` database.
 pub struct Sqlite {
+    /// Connection string used to connect to the `SQLite` file.
     conn_str: String,
+    /// Connection to the `SQLite` file.
     connection: Connection
 }
 
@@ -15,11 +21,16 @@ impl fmt::Debug for Sqlite {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Sqlite")
             .field("conn_str", &self.conn_str)
+            .field("connection", &self.conn_str)
             .finish()
     }
 }
 
 impl Sqlite {
+    /// Creates a `Sqlite` instance from a connection string.
+    /// 
+    /// # Panics
+    /// If a connection to the `SQLite` file can't be opened.
     pub fn from(conn: &str) -> Self {
         Self {
             conn_str: String::from(conn),
@@ -49,10 +60,10 @@ impl DbPersister for Sqlite {
     }
 
     fn select(&self) -> Vec<String> {
-        let query = format!("SELECT * FROM tasks");
+        let query = String::from("SELECT * FROM tasks");
         let mut statement = self.connection.prepare(query).unwrap();
 
-        while let Ok(State::Row) = statement.next() {
+        while matches!(statement.next(), Ok(State::Row)) {
             println!("id = {}", statement.read::<i64, _>("id").unwrap());
             println!("content = {}", statement.read::<String, _>("content").unwrap());
             println!("priority = {}", statement.read::<String, _>("priority").unwrap());
@@ -72,16 +83,13 @@ impl DbPersister for Sqlite {
             stmt.bind(&[
                 &task.content,
                 task.priority.as_str(),
-                &*(task.checked as i32).to_string()
+                &*i32::from(task.checked).to_string()
             ][..]).unwrap();
 
-            match stmt.next() {
-                Ok(state) => {
-                    println!("{:?}", state);
-                    ()
-                },
-                Err(e) => panic!("{e}")
-            };
+
+            if let Err(e) = stmt.next() {
+                eprintln!("Error while inserting value: {e}");
+            }
         });
     }
     
@@ -93,12 +101,14 @@ impl DbPersister for Sqlite {
         ").unwrap();
 
         stmt.bind(&[
-            &*format!("{:?}", ids)
+            &*format!("{ids:?}")
                 .replace('[', "(")
                 .replace(']', ")")
         ][..]).unwrap();
 
-        stmt.next();
+        if let Err(e) = stmt.next() {
+            eprintln!("Error while dropping value: {e}");
+        }
     }
 
     fn tasks(&self) -> Vec<Task> {

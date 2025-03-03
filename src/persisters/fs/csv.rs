@@ -5,7 +5,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-use crate::core::models::{Priority, Task, Todo};
+use crate::models::{Priority, Task, Todo};
 use crate::persisters::traits::FilePersister;
 
 /// Representation of a CSV file.

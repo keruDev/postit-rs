@@ -10,9 +10,9 @@ use crate::persisters::fs::{Csv, Json};
 use crate::persisters::traits::{FilePersister, Persister};
 use crate::Config;
 
-/// Representation of a file that is used to manage .
+/// Representation of a file that is used to manage a [`Todo`] structure.
 pub struct File {
-    /// File that implements the `FilePersister` trait.
+    /// File that implements the [`FilePersister`] trait.
     file: Box<dyn FilePersister>,
 }
 
@@ -25,7 +25,8 @@ impl fmt::Debug for File {
 }
 
 impl File {
-    /// Constructor of the `File` struct.
+    /// Constructor of the `File` struct, which controls instances of structs
+    /// that implement the [`FilePersister`] trait.
     pub const fn new(persister: Box<dyn FilePersister>) -> Self {
         Self { file: persister }
     }
@@ -55,7 +56,7 @@ impl File {
             return;
         }
 
-        println!("Creating {:?}", path);
+        println!("Creating {path:?}");
 
         fs::write(path, self.file.default())
             .expect("Should have been able to create the file");
