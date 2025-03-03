@@ -1,8 +1,8 @@
-mod sqlite;
+//! Module for all the supported databases.
+//!
+//! The currently supported databases are:
+//! - sqlite
 
-pub enum Batch {
-    One,
-    Many
-}
+mod sqlite;
 
 pub use sqlite::Sqlite;

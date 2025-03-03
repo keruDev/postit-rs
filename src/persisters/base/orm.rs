@@ -1,3 +1,5 @@
+//! Module for database management using persisters like [Sqlite].
+
 use std::fmt;
 
 use crate::models::{Task, Todo};
@@ -5,7 +7,9 @@ use crate::persisters::db::Sqlite;
 use crate::persisters::error::DbError;
 use crate::persisters::traits::{Persister, DbPersister};
 
+/// Abstraction of database actions, used to manage a [`Todo`] structure.
 pub struct Orm {
+    /// Database that implements the [`DbPersister`] trait.
     db: Box<dyn DbPersister>
 }
 
@@ -18,20 +22,25 @@ impl fmt::Debug for Orm {
 }
 
 impl Orm {
+    /// Constructor of the `Orm` struct, which controls instances of structs
+    /// that implement the [`DbPersister`] trait.
     pub const fn new(persister: Box<dyn DbPersister>) -> Self {
         Self { db: persister }
     }
 
+    /// Creates a `Orm` instance from a connection string.
     pub fn from(conn: &str) -> Self {
         let persister =Self::get_persister(conn);
         Self::new(persister)
     }
 
+    /// Returns a struct that implements the [`DbPersister`] trait based on
+    /// a connection string.
     pub fn get_persister(conn: &str) -> Box<dyn DbPersister> {
         let conn = String::from(conn);
         let parts: Vec<&str> = conn.split("://").collect();
 
-        if parts.len() == 0 {
+        if parts.is_empty() {
             eprintln!("{}", DbError::IncorrectConnectionString);
             return Sqlite::from(&conn).boxed();
         }

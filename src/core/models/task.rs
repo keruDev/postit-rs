@@ -33,12 +33,13 @@ impl Priority {
         }
     }
 
-    pub fn as_str(&self) -> &'static str {
+    /// Returns the `Priority` value as its string representation.
+    pub const fn as_str(&self) -> &'static str {
         match self {
-            Priority::High => "high",
-            Priority::Med => "med",
-            Priority::Low => "low",
-            Priority::None => "none",
+            Self::High => "high",
+            Self::Med => "med",
+            Self::Low => "low",
+            Self::None => "none",
         }
     }
 }
