@@ -1,11 +1,56 @@
 //! Module for database management using persisters like [Sqlite].
 
 use std::fmt;
+use std::ops::Deref;
 
+use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::persisters::db::Sqlite;
 use crate::persisters::error::DbError;
 use crate::persisters::traits::{Persister, DbPersister};
+
+/// A database protocol.
+pub enum Protocol {
+    /// An Sqlite database (associated persister: [`Sqlite`]).
+    Sqlite,
+}
+
+impl Protocol {
+    /// Transforms a string slice into a `Protocol` variant.
+    pub fn from(s: &str) -> Self {
+        match s {
+            "sqlite:///" => Self::Sqlite,
+            _ => {
+                eprintln!("{}", DbError::UnsupportedDatabase);
+                Self::Sqlite
+            },
+        }
+    }
+
+    /// Returns the `Priority` value as its string representation.
+    pub const fn to_str(&self) -> &'static str {
+        match self {
+            Self::Sqlite => "sqlite",
+        }
+    }
+}
+
+impl fmt::Display for Protocol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            Self::Sqlite => write!(f, "sqlite"),
+        }
+    }
+}
+
+impl Deref for Protocol {
+    type Target = str;
+
+    fn deref(&self) -> &'static Self::Target {
+        self.to_str()
+    }
+}
+
 
 /// Abstraction of database actions, used to manage a [`Todo`] structure.
 pub struct Orm {
@@ -45,14 +90,8 @@ impl Orm {
             return Sqlite::from(&conn).boxed();
         }
 
-        let protocol = parts[0];
-
-        match protocol {
-            "sqlite:///" => Sqlite::from(&conn).boxed(),
-            _ => {
-                eprintln!("{}", DbError::UnsupportedDatabase);
-                Sqlite::from(&conn).boxed()
-            }
+        match Protocol::from(parts[0]) {
+            Protocol::Sqlite => Sqlite::from(&conn).boxed(),
         }
     }
 }
@@ -70,16 +109,8 @@ impl Persister for Orm {
         self.db.insert(todo);
     }
 
-    fn check(&self, ids: &[u32]) {
-        todo!()
-    }
-
-    fn uncheck(&self, ids: &[u32]) {
-        todo!()
-    }
-
-    fn delete(&self, ids: &[u32]) {
-        todo!()
+    fn edit(&self, ids: &[u32], action: Action) {
+        self.db.update(ids, action);
     }
 
     fn tasks(&self) -> Vec<Task> {

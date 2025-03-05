@@ -16,7 +16,7 @@ pub struct Csv {
 }
 
 impl Csv {
-    /// Constructor of the `Json` struct.
+    /// Constructor of the `Csv` struct.
     pub const fn new(path: PathBuf) -> Self {
         Self { path }
     }

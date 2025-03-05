@@ -23,7 +23,7 @@ pub enum Priority {
 }
 
 impl Priority {
-    /// Transforms a string slice into a `Priority` value.
+    /// Transforms a string slice into a `Priority` variant.
     pub fn from(s: &str) -> Self {
         match s {
             "high" => Self::High,
@@ -34,7 +34,7 @@ impl Priority {
     }
 
     /// Returns the `Priority` value as its string representation.
-    pub const fn as_str(&self) -> &'static str {
+    pub const fn to_str(&self) -> &'static str {
         match self {
             Self::High => "high",
             Self::Med => "med",
@@ -59,7 +59,7 @@ impl Deref for Priority {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
-        self.as_str()
+        self.to_str()
     }
 }
 
@@ -97,7 +97,7 @@ impl fmt::Display for Task {
 }
 
 impl Task {
-    /// Constructor of the Task struct.
+    /// Constructor of the `Task` struct.
     pub const fn new(id: u32, content: String, priority: Priority, checked: bool) -> Self {
         Self { id, content, priority, checked }
     }

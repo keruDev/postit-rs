@@ -6,6 +6,7 @@ use std::fmt;
 
 use sqlite::{Connection, State, Statement};
 
+use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::persisters::traits::DbPersister;
 
@@ -94,7 +95,7 @@ impl DbPersister for Sqlite {
 
             stmt.bind(&[
                 &task.content,
-                task.priority.as_str(),
+                &*task.priority,
                 &*i32::from(task.checked).to_string()
             ][..]).unwrap();
 
@@ -105,27 +106,36 @@ impl DbPersister for Sqlite {
         });
     }
 
-    fn update(&self, ids: &[u32]) {
-        todo!()
-        // let mut stmt  = self.connection.prepare(format!("
-        //     UPDATE tasks
-        //     SET checked = {}
-        //     WHERE id
-        //     IN (?)
-        // ", )).unwrap();
+    fn update(&self, ids: &[u32], action: Action) {
+        if matches!(action, Action::Drop) {
+            return self.delete(ids);
+        }
 
-        // stmt.bind(&[
-        //     &*format!("{ids:?}")
-        //         .replace('[', "(")
-        //         .replace(']', ")")
-        // ][..]).unwrap();
+        let value = match action {
+            Action::Check => true,
+            Action::Uncheck => false,
+            _ => unreachable!(),
+        };
 
-        // if let Err(e) = stmt.next() {
-        //     eprintln!("Error while updating value: {e}");
-        // }
+        let mut stmt  = self.connection.prepare(format!("
+            UPDATE tasks
+            SET checked = {value}
+            WHERE id
+            IN (?)
+        ")).unwrap();
+
+        stmt.bind(&[
+            &*format!("{ids:?}")
+                .replace('[', "(")
+                .replace(']', ")")
+        ][..]).unwrap();
+
+        if let Err(e) = stmt.next() {
+            eprintln!("Error while updating value: {e}");
+        }
     }
     
-    fn drop(&self, ids: &[u32]) {
+    fn delete(&self, ids: &[u32]) {
         let mut stmt  = self.connection.prepare("
             DELETE FROM tasks
             WHERE id

@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use postit::args::{Arguments, Command, ConfigOptions};
+use postit::args::{Arguments, Command, ConfigCommand};
 use postit::models::{Task, Todo};
 use postit::persisters::File;
 use postit::Postit;
@@ -197,7 +197,7 @@ fn copy() {
 fn config() {
     let mock = MockConfig::new();
     let args = Arguments {
-        command: Command::Config { option: ConfigOptions::Init },
+        command: Command::Config { option: ConfigCommand::Init },
     };
 
     std::env::set_var("POSTIT_CONFIG_PATH", mock.path());

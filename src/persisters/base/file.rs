@@ -1,14 +1,63 @@
 //! Module for file management using persisters like [Csv] or [Json].
 
 use std::ffi::OsStr;
+use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::{fmt, fs};
 
+use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::persisters::error::FileError;
 use crate::persisters::fs::{Csv, Json};
 use crate::persisters::traits::{FilePersister, Persister};
 use crate::Config;
+
+/// Possible file formats.
+pub enum Format {
+    /// A CSV file (associated persister: [`Csv`]).
+    Csv,
+    /// A JSON file (associated persister: [`Json`]).
+    Json,
+}
+
+impl Format {
+    /// Transforms a string slice into a `Format` variant.
+    pub fn from(s: &str) -> Self {
+        match s {
+            "json" => Self::Json,
+            _ => {
+                eprintln!("{}", FileError::UnsupportedFormat);
+                Self::Csv
+            },
+        }
+    }
+
+    /// Returns the `Priority` value as its string representation.
+    pub const fn to_str(&self) -> &'static str {
+        match self {
+            Self::Csv => "csv",
+            Self::Json => "json",
+        }
+    }
+}
+
+impl fmt::Display for Format {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            Self::Csv => write!(f, "csv"),
+            Self::Json => write!(f, "json"),
+        }
+    }
+}
+
+impl Deref for Format {
+    type Target = str;
+
+    fn deref(&self) -> &'static Self::Target {
+        self.to_str()
+    }
+}
+
 
 /// Representation of a file that is used to manage a [`Todo`] structure.
 pub struct File {
@@ -93,13 +142,9 @@ impl File {
     pub fn get_persister(path: PathBuf) -> Box<dyn FilePersister> {
         let ext = path.extension().unwrap().to_str().unwrap();
 
-        match ext {
-            "csv" => Csv::new(path).boxed(),
-            "json" => Json::new(path).boxed(),
-            _ => {
-                eprintln!("{}", FileError::UnsupportedFormat);
-                Csv::new(path).boxed()
-            }
+        match Format::from(ext) {
+            Format::Csv => Csv::new(path).boxed(),
+            Format::Json => Json::new(path).boxed(),
         }
     }
 
@@ -135,17 +180,18 @@ impl Persister for File {
         Box::new(self)
     }
 
-    /// Returns the raw contents of a file (including escape characters) in a single `String`.
     fn read(&self) -> Vec<String> {
         self.file.read()
     }
 
-    /// Writes the contents of the Todo instance into a file.
     fn save(&self, todo: &Todo) {
         self.file.write(todo);
     }
 
-    /// Returns a vector of tasks from the contents of the file.
+    fn edit(&self, _ids: &[u32], _action: Action) {
+        self.file.write(&Todo::from(self));
+    }
+
     fn tasks(&self) -> Vec<Task> {
         self.file.tasks()
     }

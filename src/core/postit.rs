@@ -3,12 +3,22 @@
 //!
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
-use crate::args::{Arguments, Command, ConfigOptions};
+use crate::args::{Arguments, Command, ConfigCommand};
 use crate::models::{Task, Todo};
 use crate::persisters::File;
 use crate::Config;
 
 use super::args::TaskArgs;
+
+/// Possible actions taken when editing a persister's contents.
+pub enum Action {
+    /// Used to check tasks.
+    Check,
+    /// Used to uncheck tasks.
+    Uncheck,
+    /// Used to drop tasks.
+    Drop,
+}
 
 /// Entry point where all operations are executed.
 ///
@@ -24,9 +34,9 @@ impl Postit {
         match args.command {
             Command::View { persister } => Self::view(persister),
             Command::Add { persister, task } => Self::add(persister, &task),
-            Command::Check(args) => Self::check(args),
-            Command::Uncheck(args) => Self::uncheck(args),
-            Command::Drop(args) => Self::drop(args),
+            Command::Check(args) => Self::edit(args, Action::Check),
+            Command::Uncheck(args) => Self::edit(args, Action::Uncheck),
+            Command::Drop(args) => Self::edit(args, Action::Drop),
             Command::Copy { old, new } => Self::copy(&old, &new),
             Command::Config { option } => Self::config(option),
         }
@@ -49,37 +59,20 @@ impl Postit {
         persister.save(&todo);
     }
 
-    /// Checks the tasks based on the ids passed.
-    fn check(args: TaskArgs) {
+    /// Edits tasks based on the action passed.
+    fn edit(args: TaskArgs, action: Action) {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
-        todo.check(&args.ids);
+        match action {
+            Action::Check => todo.check(&args.ids),
+            Action::Uncheck => todo.uncheck(&args.ids),
+            Action::Drop => todo.drop(&args.ids),
+        }
+        
         todo.view();
 
-        persister.check(&args.ids);
-    }
-
-    /// Unchecks the tasks based on the ids passed.
-    fn uncheck(args: TaskArgs) {
-        let persister = Config::resolve_persister(args.persister);
-        let mut todo = Todo::from(&*persister);
-
-        todo.uncheck(&args.ids);
-        todo.view();
-
-        persister.uncheck(&args.ids);
-    }
-
-    /// Drops tasks from the list based on the ids passed.
-    fn drop(args: TaskArgs) {
-        let persister = Config::resolve_persister(args.persister);
-        let mut todo = Todo::from(&*persister);
-
-        todo.drop(&args.ids);
-        todo.view();
-
-        persister.delete(&args.ids);
+        persister.edit(&args.ids, action);
     }
 
     /// Copies the contents of a file to another.
@@ -88,7 +81,7 @@ impl Postit {
     }
 
     /// Manages the configuration file.   
-    fn config(option: ConfigOptions) {
+    fn config(option: ConfigCommand) {
         Config::manage(&option);
     }
 }
