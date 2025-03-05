@@ -104,8 +104,16 @@ impl Orm {
 
     /// Creates a `Orm` instance from a connection string.
     pub fn from(conn: &str) -> Self {
-        let persister = Self::get_persister(conn);
-        Self::new(persister)
+        Self::new(Self::get_persister(conn))
+    }
+
+    /// Checks if the passed connection string has an Sqlite format. 
+    pub fn is_sqlite(conn: &str) -> bool {
+        let path = std::path::Path::new(conn);
+
+        path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("db"))
+        || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case(".sqlite3"))
+        || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case(".sqlite"))
     }
 
     /// Returns a struct that implements the [`DbPersister`] trait based on

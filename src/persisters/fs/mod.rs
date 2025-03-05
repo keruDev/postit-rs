@@ -63,6 +63,7 @@ impl Format {
     pub fn from(s: &str) -> Self {
         match s {
             "json" => Self::Json,
+            "csv" => Self::Csv,
             _ => {
                 eprintln!("{}", error::Error::UnsupportedFormat);
                 Self::Csv
