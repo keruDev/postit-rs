@@ -7,7 +7,7 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
-use crate::args::ConfigOptions;
+use crate::args::ConfigCommand;
 use crate::persisters::traits::Persister;
 use crate::persisters::{Orm, File};
 
@@ -58,11 +58,11 @@ impl Config {
     }
 
     /// Manages the `postit.toml` file using a `ConfigOptions` instance.
-    pub fn manage(option: &ConfigOptions) {
+    pub fn manage(option: &ConfigCommand) {
         match option {
-            ConfigOptions::Init => Self::init(),
-            ConfigOptions::Edit => Self::edit(),
-            ConfigOptions::Drop => Self::drop(),
+            ConfigCommand::Init => Self::init(),
+            ConfigCommand::Edit => Self::edit(),
+            ConfigCommand::Drop => Self::drop(),
         }
     }
 

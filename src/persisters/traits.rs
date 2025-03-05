@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use std::{fmt, fs};
 
 use crate::core::models::{Task, Todo};
+use crate::core::Action;
 
 /// The `Persister` trait serves as a base for structures that store instances
 /// of other structs that contain either the [`FilePersister`] trait or the
@@ -33,12 +34,11 @@ pub trait Persister: fmt::Debug {
     /// Reads the persister's content and returns its lines.
     fn read(&self) -> Vec<String>;
     
+    /// Edits a persister by managing an [`Action`] variant.
+    fn edit(&self, ids: &[u32], action: Action);
+
     /// Saves a Todo instance as the persister's content.
     fn save(&self, todo: &Todo);
-
-    fn check(&self, ids: &[u32]);
-    fn uncheck(&self, ids: &[u32]);
-    fn delete(&self, ids: &[u32]);
 }
 
 // impl PartialEq for Box<dyn Persister> {
@@ -93,8 +93,8 @@ pub trait DbPersister {
     fn insert(&self, todo: &Todo);
     
     /// Updates data from a table.
-    fn update(&self, ids: &[u32]);
+    fn update(&self, ids: &[u32], action: Action);
     
     /// Drops data from a table.
-    fn drop(&self, ids: &[u32]);
+    fn delete(&self, ids: &[u32]);
 }

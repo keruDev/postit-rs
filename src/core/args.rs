@@ -4,7 +4,7 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 
 /// Options for managing something.
 #[derive(Subcommand, Clone, Copy, Debug, ValueEnum)]
-pub enum ConfigOptions {
+pub enum ConfigCommand {
     /// Creates the config file.
     Init,
     /// Opens the default editor to edit the file.
@@ -13,13 +13,8 @@ pub enum ConfigOptions {
     Drop,
 }
 
-pub enum TaskAction {
-    Check,
-    Uncheck,
-    Drop,
-}
-
 #[derive(Args, Debug)]
+/// Defines common arguments for some commands.
 pub struct TaskArgs {
     /// Used to read from and save tasks to.
     #[arg(long, short, value_name = "PERSISTER")]
@@ -72,7 +67,7 @@ pub enum Command {
     Config {
         #[command(subcommand)]
         /// The option the `Config` command will use.
-        option: ConfigOptions,
+        option: ConfigCommand,
     },
 }
 

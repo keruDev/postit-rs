@@ -1,4 +1,4 @@
-use postit::args::ConfigOptions;
+use postit::args::ConfigCommand;
 use postit::Config;
 
 use crate::mocks::MockConfig;
@@ -7,7 +7,7 @@ use crate::mocks::MockConfig;
 fn manage_init() {
     let mock = MockConfig::new();
 
-    Config::manage(&ConfigOptions::Init);
+    Config::manage(&ConfigCommand::Init);
 
     let result = Config::load();
     let expected = Config::default();
@@ -23,8 +23,8 @@ fn manage_init() {
 fn manage_drop() {
     let mock = MockConfig::new();
 
-    Config::manage(&ConfigOptions::Init);
-    Config::manage(&ConfigOptions::Drop);
+    Config::manage(&ConfigCommand::Init);
+    Config::manage(&ConfigCommand::Drop);
 
     assert!(!mock.path().exists());
 }
@@ -32,7 +32,7 @@ fn manage_drop() {
 #[test]
 #[should_panic]
 fn manage_drop_panics() {
-    Config::manage(&ConfigOptions::Drop);
+    Config::manage(&ConfigCommand::Drop);
 }
 
 #[test]

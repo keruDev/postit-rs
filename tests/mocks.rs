@@ -17,7 +17,7 @@ pub struct MockPath {
 }
 
 impl MockPath {
-    /// Constructor of the MockPath struct.
+    /// Constructor of the `MockPath` struct.
     pub fn new(path: &str) -> Self {
         let path = PathBuf::from(path);
 
@@ -94,7 +94,7 @@ pub struct MockConfig {
 }
 
 impl MockConfig {
-    /// Constructor of the MockConfig struct.
+    /// Constructor of the `MockConfig` struct.
     pub fn new() -> Self {
         let path = PathBuf::from("test_postit.toml".to_string());
         std::env::set_var("POSTIT_CONFIG_PATH", &path);

@@ -21,6 +21,7 @@
     missing_docs
 )]
 #![allow(
+    clippy::match_wildcard_for_single_variants,
     clippy::module_name_repetitions,
     clippy::must_use_candidate,
     clippy::return_self_not_must_use
