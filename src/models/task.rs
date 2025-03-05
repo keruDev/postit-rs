@@ -6,7 +6,28 @@ use std::ops::Deref;
 use colored::Colorize as _;
 use serde::{Deserialize, Serialize};
 
-use crate::core::error::TaskError;
+/// Defines errors related to task management.
+pub mod error {
+    use std::fmt;
+
+    /// Errors related to task management.
+    pub enum Error {
+        /// Thrown when `task.checked == true` and the user checks it again.
+        AlreadyChecked,
+        /// Thrown when `task.checked == false` and the user unchecks it again.
+        AlreadyUnchecked,
+    }
+    
+    impl fmt::Display for Error {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                Self::AlreadyChecked => write!(f, "Task was already checked"),
+                Self::AlreadyUnchecked => write!(f, "Task was already unchecked"),
+            }
+        }
+    }
+}
+
 
 /// Priority of the Task, which is used to define the task's color and importance.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -146,9 +167,9 @@ impl Task {
     ///
     /// # Errors
     /// If the task is already checked, an error will be returned.
-    pub const fn check(&mut self) -> Result<&Self, TaskError> {
+    pub const fn check(&mut self) -> Result<&Self, error::Error> {
         if self.checked {
-            Err(TaskError::AlreadyChecked)
+            Err(error::Error::AlreadyChecked)
         } else {
             self.checked = true;
             Ok(self)
@@ -159,12 +180,12 @@ impl Task {
     ///
     /// # Errors
     /// If the task is already unchecked, an error will be returned.
-    pub const fn uncheck(&mut self) -> Result<&Self, TaskError> {
+    pub const fn uncheck(&mut self) -> Result<&Self, error::Error> {
         if self.checked {
             self.checked = false;
             Ok(self)
         } else {
-            Err(TaskError::AlreadyUnchecked)
+            Err(error::Error::AlreadyUnchecked)
         }
     }
 }

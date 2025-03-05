@@ -28,6 +28,7 @@
 )]
 
 mod core;
+pub mod models;
 pub mod persisters;
 
-pub use core::{args, models, Config, Postit};
+pub use core::{args, Config, Postit};
