@@ -2,8 +2,6 @@
 
 pub mod args;
 mod config;
-pub mod error;
-pub mod models;
 mod postit;
 
 pub use config::Config;

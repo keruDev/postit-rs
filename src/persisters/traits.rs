@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 use std::{fmt, fs};
 
-use crate::core::models::{Task, Todo};
+use crate::models::{Task, Todo};
 use crate::core::Action;
 
 /// The `Persister` trait serves as a base for structures that store instances

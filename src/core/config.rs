@@ -2,7 +2,7 @@
 
 use std::fs;
 use std::io::Write as _;
-use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 
 use serde::{Deserialize, Serialize};
@@ -40,16 +40,18 @@ impl Default for Config {
 
 impl Config {
     /// Returns the path of the config file in the `POSTIT_CONFIG_PATH` env var.
-    pub fn path() -> String {
-        std::env::var("POSTIT_CONFIG_PATH").unwrap_or_else(|_| {
-            let mut path = ".postit.toml";
+    pub fn path() -> PathBuf {
+        let config_path = std::env::var("POSTIT_CONFIG_PATH").unwrap_or_else(|_| {
+            let mut file = ".postit.toml";
 
-            if !Path::new(path).exists() {
-                path = "postit.toml";
+            if !PathBuf::from(file).exists() {
+                file = "postit.toml";
             }
 
-            String::from(path)
-        })
+            String::from(file)
+        });
+
+        PathBuf::from(config_path)
     }
 
     /// Returns the editor in the `EDITOR` env var.
@@ -71,8 +73,7 @@ impl Config {
     /// # Panics
     /// If there is any error while creating, reading or writing the config file.
     pub fn init() {
-        let config_path = &Self::path();
-        let path = Path::new(config_path);
+        let path = &Self::path();
 
         if path.exists() {
             println!("Config file already exists at '{}'", path.to_str().unwrap());
@@ -94,8 +95,7 @@ impl Config {
     /// # Panics
     /// If the config file can't be loaded.
     pub fn load() -> Self {
-        let config_path = &Self::path();
-        let path = Path::new(config_path);
+        let path = &Self::path();
 
         if !path.exists() {
             Self::init();
@@ -111,16 +111,16 @@ impl Config {
     /// # Panics
     /// If the config file can't be opened
     pub fn edit() {
-        let config_path = &Self::path();
+        let path = &Self::path();
 
-        if !Path::new(config_path).exists() {
+        if !path.exists() {
             Self::init();
         }
 
         let editor = Self::editor();
 
         Command::new(editor)
-            .arg(config_path)
+            .arg(path)
             .status()
             .expect("Error opening config file");
     }
@@ -130,11 +130,11 @@ impl Config {
     /// # Panics
     /// If the config file can't be deleted.
     pub fn drop() {
-        let config_path = &Self::path();
+        let path = &Self::path();
 
-        assert!(Path::new(config_path).exists(), "Config file doesn't exist.");
+        assert!(path.exists(), "Config file doesn't exist.");
 
-        fs::remove_file(config_path).expect("Config file couldn't be deleted.");
+        fs::remove_file(path).expect("Config file couldn't be deleted.");
     }
 
     /// If the value of path is:

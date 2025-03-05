@@ -6,7 +6,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-use crate::core::models::{Task, Todo};
+use crate::models::{Task, Todo};
 use crate::persisters::traits::FilePersister;
 
 /// Representation of a JSON file.
