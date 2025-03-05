@@ -143,10 +143,10 @@ impl Config {
     pub fn resolve_persister(persister: Option<String>) -> Box<dyn Persister> {
         let path_or_conn = persister.unwrap_or_else(|| Self::load().persister);
 
-        if path_or_conn.contains("://") {
-            File::from(&path_or_conn).boxed()
-        } else {
+        if path_or_conn.contains("://") || Orm::is_sqlite(&path_or_conn) {
             Orm::from(&path_or_conn).boxed()
+        } else {
+            File::from(&path_or_conn).boxed()
         }
     }
 }

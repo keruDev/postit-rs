@@ -31,19 +31,7 @@ impl Todo {
     }
 
     /// Adds a task to the task list.
-    pub fn add(&mut self, mut task: Task) {
-        let ids: Vec<u32> = self.tasks.iter().map(|task| task.id).collect();
-
-        if ids.contains(&task.id) {
-            if let (Some(&start), Some(&end)) = (ids.first(), ids.iter().max()) {
-                let new_id = (start..=end).find(|n| !ids.contains(n)).unwrap_or(end + 1);
-
-                eprintln!("ID {} is already used; using {} as an ID", &task.id, new_id);
-
-                task.id = new_id;
-            }
-        }
-
+    pub fn add(&mut self, task: Task) {
         self.tasks.push(task);
     }
 

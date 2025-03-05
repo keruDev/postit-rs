@@ -40,8 +40,8 @@ pub enum Command {
         #[arg(long, short, value_name = "PERSISTER")]
         persister: Option<String>,
 
-        /// Full task structure (id,content,priority,checked).
-        #[arg(value_name = "TASK", help = "Structure: 'id,content,priority,checked'")]
+        /// Task structure needed to create a task.
+        #[arg(value_name = "TASK", help = "Structure: 'content,priority'")]
         task: String,
     },
     /// Marks a task as checked.

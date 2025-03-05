@@ -52,8 +52,12 @@ impl Postit {
     fn add(persister: Option<String>, task: &str) {
         let persister = Config::resolve_persister(persister);
         let mut todo = Todo::from(&*persister);
-        
-        todo.add(Task::from(task));
+
+        let id = todo.tasks.last().map_or(1, |last| last.id + 1);
+
+        let line = format!("{},{},{}", id, task, false);
+
+        todo.add(Task::from(&line));
         todo.view();
 
         persister.save(&todo);
@@ -69,7 +73,7 @@ impl Postit {
             Action::Uncheck => todo.uncheck(&args.ids),
             Action::Drop => todo.drop(&args.ids),
         }
-        
+
         todo.view();
 
         persister.edit(&args.ids, action);

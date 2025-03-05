@@ -33,10 +33,14 @@ impl Sqlite {
     /// # Panics
     /// If a connection to the `SQLite` file can't be opened.
     pub fn from(conn: &str) -> Self {
-        Self {
+        let instance = Self {
             conn_str: String::from(conn),
             connection: sqlite::open(conn).unwrap()
-        }
+        };
+
+        instance.create();
+
+        instance
     }
 
     /// Reads one row from the current statement.
@@ -65,7 +69,7 @@ impl DbPersister for Sqlite {
 
     fn create(&self) {
         self.connection.execute("
-            CRATE TABLE IF NOT EXISTS tasks (
+            CREATE TABLE IF NOT EXISTS tasks (
                 id          INTEGER PRIMARY KEY,
                 content     TEXT NOT NULL,
                 priority    TEXT NOT NULL,
