@@ -31,6 +31,9 @@ pub trait Persister: fmt::Debug {
     // /// Checks if the path exists.
     // fn exists(&self) -> bool;
 
+    /// The value that created the `Persister` instance.
+    fn to_string(&self) -> String;
+
     /// Returns the kind of persister used.
     fn kind(&self) -> PersisterKind;
 
@@ -44,11 +47,11 @@ pub trait Persister: fmt::Debug {
     fn save(&self, todo: &Todo);
 }
 
-// impl PartialEq for Box<dyn Persister> {
-//     fn eq(&self, other: &Self) -> bool {
-//         self.is_equal(other.as_ref())
-//     }
-// }
+impl PartialEq for Box<dyn Persister> {
+    fn eq(&self, other: &Self) -> bool {
+        (self.to_string() == other.to_string()) && (self.tasks() == other.tasks())
+    }
+}
 
 /// Includes basic methods for data management in a file.
 pub trait FilePersister {
@@ -74,6 +77,11 @@ pub trait FilePersister {
     fn write(&self, todo: &Todo);
 }
 
+impl PartialEq for dyn FilePersister {
+    fn eq(&self, other: &Self) -> bool {
+        (self.path() == other.path()) && (self.tasks() == other.tasks())
+    }
+}
 
 /// Includes basic methods for data management in a database.
 pub trait DbPersister {
@@ -100,4 +108,10 @@ pub trait DbPersister {
     
     /// Drops data from a table.
     fn delete(&self, ids: &[u32]);
+}
+
+impl PartialEq for dyn DbPersister {
+    fn eq(&self, other: &Self) -> bool {
+        (self.conn() == other.conn()) && (self.tasks() == other.tasks())
+    }
 }

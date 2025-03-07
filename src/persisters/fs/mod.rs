@@ -221,6 +221,10 @@ impl Persister for File {
         PersisterKind::Db
     }
 
+    fn to_string(&self) -> String {
+        self.file.path().to_str().unwrap().to_owned()
+    }
+
     fn read(&self) -> Vec<String> {
         self.file.read()
     }

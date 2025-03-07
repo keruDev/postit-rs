@@ -39,7 +39,7 @@ fn manage_drop_panics() {
 fn default() {
     let config = Config::default();
 
-    assert_eq!(config.path, "tasks.csv");
+    assert_eq!(config.persister, "tasks.csv");
     assert!(!config.force_drop);
     assert!(!config.force_copy);
     assert!(!config.drop_after_copy);
@@ -48,14 +48,14 @@ fn default() {
 #[test]
 fn path_custom() {
     std::env::set_var("POSTIT_CONFIG_PATH", "test_postit.toml");
-    assert_eq!(Config::path(), String::from("test_postit.toml"));
+    assert_eq!(Config::path().to_str().unwrap(), "test_postit.toml");
 
     std::env::set_var("POSTIT_CONFIG_PATH", "postit.toml");
 }
 
 #[test]
 fn path_default() {
-    assert_eq!(Config::path(), String::from("postit.toml"));
+    assert_eq!(Config::path().to_str().unwrap(), "postit.toml");
 }
 
 #[test]
@@ -82,17 +82,24 @@ fn load_default() {
 }
 
 #[test]
-fn resolve_path_some() {
-    let path = String::from("test_path");
-    let result = Config::resolve_path(Some(path.clone()));
+fn resolve_persister_file() {
+    let path = String::from("tasks.csv");
+    let persister = Config::resolve_persister(Some(path.clone()));
 
-    assert_eq!(result, path)
+    assert_eq!(persister.to_string(), path)
 }
 
 #[test]
-fn resolve_path_none() {
-    let path = None;
-    let result = Config::resolve_path(path);
+fn resolve_persister_db() {
+    let conn = String::from("tasks.db");
+    let persister = Config::resolve_persister(Some(conn.clone()));
 
-    assert_eq!(result, Config::load().path)
+    assert_eq!(persister.to_string(), conn)
+}
+
+#[test]
+fn resolve_persister_none() {
+    let persister = Config::resolve_persister(None).to_string();
+
+    assert_eq!(persister.to_string(), Config::load().persister)
 }

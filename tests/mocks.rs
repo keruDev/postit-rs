@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::{fmt, fs};
 
 use postit::models::{Task, Todo};
-use postit::persisters::fs::{Csv, Json};
+use postit::persisters::fs::{Csv, Format, Json};
 use postit::persisters::traits::FilePersister as _;
 use postit::Config;
 
@@ -41,6 +41,15 @@ impl MockPath {
 
     pub fn path(&self) -> PathBuf {
         self.path.clone()
+    }
+
+    pub fn create(format: Format) -> Self {
+        let name = "file";
+
+        match format {
+            Format::Csv => Self::csv(name),
+            Format::Json => Self::json(name),
+        }
     }
 
     pub fn csv(name: &str) -> Self {

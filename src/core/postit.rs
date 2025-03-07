@@ -8,7 +8,7 @@ use crate::models::{Task, Todo};
 use crate::persisters::File;
 use crate::Config;
 
-use super::args::TaskArgs;
+use super::args::EditTaskArgs;
 use super::{Action, PersisterKind};
 
 /// Entry point where all operations are executed.
@@ -61,7 +61,7 @@ impl Postit {
     }
 
     /// Edits tasks based on the action passed.
-    fn edit(args: TaskArgs, action: Action) {
+    fn edit(args: EditTaskArgs, action: Action) {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 

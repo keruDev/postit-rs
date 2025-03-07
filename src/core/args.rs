@@ -15,7 +15,7 @@ pub enum ConfigCommand {
 
 #[derive(Args, Debug)]
 /// Defines common arguments for some commands.
-pub struct TaskArgs {
+pub struct EditTaskArgs {
     /// Used to read from and save tasks to.
     #[arg(long, short, value_name = "PERSISTER")]
     pub persister: Option<String>,
@@ -45,13 +45,13 @@ pub enum Command {
         task: String,
     },
     /// Marks a task as checked.
-    Check(TaskArgs),
+    Check(EditTaskArgs),
     
     /// Marks a task as unchecked.
-    Uncheck(TaskArgs),
+    Uncheck(EditTaskArgs),
     
     /// Deletes a task from the list.
-    Drop(TaskArgs),
+    Drop(EditTaskArgs),
 
     /// Creates a copy of a file (supports other formats, e.g.: csv -> json).
     Copy {

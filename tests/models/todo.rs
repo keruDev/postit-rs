@@ -9,7 +9,7 @@ fn fakes(mock: &MockPath) -> Todo {
 
 #[test]
 fn read() {
-    let mock = MockPath::csv("todo_read");
+    let mock = MockPath::create(Format::Csv);
 
     let file = File::from(&mock.to_string());
     let todo = Todo::from(&file);
@@ -19,7 +19,7 @@ fn read() {
 
 #[test]
 fn get() {
-    let mock = MockPath::csv("todo_get");
+    let mock = MockPath::create(Format::Csv);
 
     let mut todo = fakes(&mock);
     let clone = todo.clone();
@@ -36,7 +36,7 @@ fn get() {
 
 #[test]
 fn add_ok() {
-    let mock = MockPath::csv("todo_add_ok");
+    let mock = MockPath::create(Format::Csv);
 
     let mut todo = fakes(&mock);
     let mut expected = todo.clone();
@@ -51,7 +51,7 @@ fn add_ok() {
 
 #[test]
 fn add_repeated_id() {
-    let mock = MockPath::csv("todo_add_repeated_id");
+    let mock = MockPath::create(Format::Csv);
 
     let mut todo = fakes(&mock);
     let mut expected = todo.clone();
@@ -67,7 +67,7 @@ fn add_repeated_id() {
 
 #[test]
 fn check_ok() {
-    let mock = MockPath::csv("todo_check_ok");
+    let mock = MockPath::create(Format::Csv);
 
     let mut todo = fakes(&mock);
     let mut expected = todo.clone();
@@ -82,7 +82,7 @@ fn check_ok() {
 
 #[test]
 fn uncheck_ok() {
-    let mock = MockPath::csv("todo_uncheck_ok");
+    let mock = MockPath::create(Format::Csv);
 
     let mut todo = fakes(&mock);
     let mut expected = todo.clone();

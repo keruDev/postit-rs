@@ -146,6 +146,10 @@ impl Persister for Orm {
         PersisterKind::Db
     }
 
+    fn to_string(&self) -> String {
+        self.db.conn()
+    }
+
     fn read(&self) -> Vec<String> {
         self.db.select()
     }
