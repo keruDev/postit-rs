@@ -2,9 +2,8 @@ use std::fs;
 use std::io::Read;
 
 use postit::models::{Priority, Task};
-use postit::persisters::fs::{Csv, Json};
+use postit::persisters::fs::{Csv, Format, Json};
 use postit::persisters::traits::FilePersister;
-use postit::persisters::File;
 
 use crate::mocks::MockPath;
 
@@ -15,7 +14,7 @@ fn is_equal_same_persisters() {
     let left = Csv::new(mock.path());
     let right = Csv::new(mock.path());
 
-    assert!(left.is_equal(&right));
+    assert_eq!(left, right);
 }
 
 #[test]
@@ -26,7 +25,7 @@ fn is_equal_same_persisters_different_path() {
     let left = Csv::new(mock_left.path());
     let right = Csv::new(mock_right.path());
 
-    assert!(!left.is_equal(&right));
+    assert_ne!(left, right);
 }
 
 #[test]
@@ -37,12 +36,13 @@ fn is_equal_different_type_persisters() {
     let left = Csv::new(mock_left.path());
     let right = Json::new(mock_right.path());
 
-    assert!(!left.is_equal(&right));
+    assert_ne!(left.path(), right.path());
+    assert_eq!(left.tasks(), right.tasks());
 }
 
 #[test]
 fn parse() {
-    MockPath::csv("csv_parse");
+    MockPath::create(Format::Csv);
 
     let (id, content, priority, checked) = Csv::parse("1,Test,med,false");
 
@@ -59,7 +59,7 @@ fn parse() {
 
 #[test]
 fn format() {
-    MockPath::csv("csv_format");
+    MockPath::create(Format::Csv);
 
     let tasks = vec![
         Task::new(1, String::from("Test"), Priority::High, true),
@@ -74,9 +74,9 @@ fn format() {
 
 #[test]
 fn read() {
-    let mock = MockPath::csv("csv_read");
+    let mock = MockPath::create(Format::Csv);
 
-    let file = File::from(&mock.to_string());
+    let file = Csv::new(mock.path());
     let header = Csv::header().replace("\n", "");
 
     let result = file.read();
@@ -93,7 +93,7 @@ fn read() {
 
 #[test]
 fn open() {
-    let mock = MockPath::csv("csv_open");
+    let mock = MockPath::create(Format::Csv);
 
     let mut csv = Csv::new(mock.path()).open();
     let mut file = fs::File::open(mock.path()).unwrap();

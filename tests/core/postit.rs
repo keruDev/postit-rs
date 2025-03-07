@@ -1,18 +1,19 @@
 use std::path::Path;
 
-use postit::args::{Arguments, Command, ConfigCommand};
+use postit::args::{Arguments, Command, ConfigCommand, EditTaskArgs};
 use postit::models::{Task, Todo};
+use postit::persisters::fs::Format;
+use postit::persisters::traits::Persister;
 use postit::persisters::File;
-use postit::Postit;
+use postit::{Config, Postit};
 
 use crate::mocks::{MockConfig, MockPath};
 
-fn fakes(mock: &MockPath) -> (File, Todo) {
-    let path = mock.to_string();
-    let file = File::from(&path);
-    let todo = Todo { tasks: file.tasks() };
+fn fakes(mock: &MockPath) -> (Box<dyn Persister>, Todo) {
+    let persister = Config::resolve_persister(Some(mock.to_string()));
+    let todo = Todo { tasks: persister.tasks() };
 
-    (file, todo)
+    (persister, todo)
 }
 
 fn expected(mock: &MockPath) -> (File, Todo) {
@@ -26,11 +27,11 @@ fn expected(mock: &MockPath) -> (File, Todo) {
 
 #[test]
 fn view() {
-    let mock = MockPath::csv("postit_view");
+    let mock = MockPath::create(Format::Csv);
 
     let (file, todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::View { path: Some(mock.to_string()) },
+        command: Command::View { persister: Some(file.to_string()) },
     };
 
     Postit::run(args);
@@ -43,13 +44,13 @@ fn view() {
 
 #[test]
 fn add() {
-    let mock = MockPath::csv("postit_add");
+    let mock = MockPath::create(Format::Csv);
     let task = "5,Test,med,false";
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
         command: Command::Add {
-            path: Some(mock.to_string()),
+            persister: Some(mock.to_string()),
             task: String::from(task),
         },
     };
@@ -57,7 +58,7 @@ fn add() {
     Postit::run(args);
 
     todo.add(Task::from(task));
-    file.write(&todo);
+    file.save(&todo);
 
     let (expected_file, expected_todo) = expected(&mock);
 
@@ -67,21 +68,23 @@ fn add() {
 
 #[test]
 fn check() {
-    let mock = MockPath::csv("postit_check");
+    let mock = MockPath::create(Format::Csv);
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::Check {
-            path: Some(mock.to_string()),
-            ids: ids.to_owned(),
-        },
+        command: Command::Check(
+            EditTaskArgs {
+                persister: Some(file.to_string()),
+                ids: ids.to_owned()
+            }
+        )
     };
 
     Postit::run(args);
 
     todo.check(&ids);
-    file.write(&todo);
+    file.save(&todo);
 
     let (expected_file, expected_todo) = expected(&mock);
 
@@ -91,21 +94,23 @@ fn check() {
 
 #[test]
 fn uncheck() {
-    let mock = MockPath::csv("postit_uncheck");
+    let mock = MockPath::create(Format::Csv);
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::Uncheck {
-            path: Some(mock.to_string()),
-            ids: ids.to_owned(),
-        },
+        command: Command::Uncheck(
+            EditTaskArgs {
+                persister: Some(file.to_string()),
+                ids: ids.to_owned()
+            }
+        )
     };
 
     Postit::run(args);
 
     todo.check(&ids);
-    file.write(&todo);
+    file.save(&todo);
 
     let (expected_file, expected_todo) = expected(&mock);
 
@@ -119,21 +124,23 @@ fn drop_no_force_drop() {
     mock_config.config.force_drop = false;
     mock_config.update();
 
-    let mock = MockPath::csv("postit_drop_no_force");
+    let mock = MockPath::create(Format::Csv);
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::Drop {
-            path: Some(mock.to_string()),
-            ids: ids.to_owned(),
-        },
+        command: Command::Drop(
+            EditTaskArgs {
+                persister: Some(file.to_string()),
+                ids: ids.to_owned()
+            }
+        )
     };
 
     Postit::run(args);
 
     todo.check(&ids);
-    file.write(&todo);
+    file.save(&todo);
 
     let (expected_file, expected_todo) = expected(&mock);
 
@@ -147,25 +154,26 @@ fn drop_force() {
     mock_config.config.force_drop = true;
     mock_config.update();
 
-    let mock = MockPath::csv("postit_drop_force");
+    let mock = MockPath::create(Format::Csv);
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
+
     let args = Arguments {
-        command: Command::Drop {
-            path: Some(mock.to_string()),
-            ids: ids.to_owned(),
-        },
+        command: Command::Drop(
+            EditTaskArgs {
+                persister: Some(file.to_string()),
+                ids: ids.to_owned()
+            }
+        )
     };
 
     Postit::run(args);
 
     todo.check(&ids);
-    file.write(&todo);
+    file.save(&todo);
 
     let (expected_file, expected_todo) = expected(&mock);
-
-    println!("{expected_todo:?}");
 
     assert_eq!(todo, expected_todo);
     assert_eq!(file.read(), expected_file.read());
@@ -173,7 +181,7 @@ fn drop_force() {
 
 #[test]
 fn copy() {
-    let mock_old = MockPath::csv("postit_copy");
+    let mock_old = MockPath::create(Format::Csv);
     let new_path = "postit_copy.json";
 
     let args = Arguments {

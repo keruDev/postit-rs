@@ -8,7 +8,7 @@ use crate::mocks::{MockConfig, MockPath};
 
 #[test]
 fn fmt_debug() {
-    let mock = MockPath::csv("savefile_debug");
+    let mock = MockPath::create(Format::Csv);
 
     let persister = File::get_persister(mock.path());
     let file = File::new(persister);
@@ -21,7 +21,7 @@ fn fmt_debug() {
 
 #[test]
 fn from() {
-    let mock = MockPath::csv("savefile_from");
+    let mock = MockPath::create(Format::Csv);
 
     let result = File::from(&mock.to_string());
     let expected = File::new(Box::new(Csv::new(mock.path())));
@@ -56,7 +56,7 @@ fn check_file_content_empty() {
 
 #[test]
 fn check_file_content_exists() {
-    let mock = MockPath::csv("check_file_content_empty");
+    let mock = MockPath::create(Format::Csv);
 
     let persister = File::get_persister(mock.path());
     File::check_file_content(&*persister);
@@ -108,7 +108,7 @@ fn check_file_name_empty() {
 
 #[test]
 fn get_persister_csv() {
-    let mock = MockPath::csv("get_persister");
+    let mock = MockPath::create(Format::Csv);
 
     let result = File::get_persister(mock.path());
     let expected = Box::new(Csv::new(mock.path()));
@@ -118,7 +118,7 @@ fn get_persister_csv() {
 
 #[test]
 fn get_persister_json() {
-    let mock = MockPath::json("get_persister");
+    let mock = MockPath::create(Format::Json);
 
     let result = File::get_persister(mock.path());
     let expected = Box::new(Json::new(mock.path()));
@@ -158,10 +158,10 @@ fn copy_same_paths() {
 #[test]
 #[should_panic]
 fn copy_no_old_path() {
-    let old = MockPath::csv("test_copy_no_old_path");
+    let old = MockPath::create(Format::Csv);
     fs::remove_file(old.path()).unwrap();
 
-    let new = MockPath::json("test_copy_no_old_path");
+    let new = MockPath::create(Format::Json);
 
     File::copy(&old.to_string(), &new.to_string());
 }
@@ -171,8 +171,8 @@ fn copy_no_old_path() {
 fn copy_path_exists() {
     let _mock_config = MockConfig::new();
 
-    let old = MockPath::csv("test_copy_path_exists");
-    let new: MockPath = MockPath::json("test_copy_path_exists");
+    let old = MockPath::create(Format::Csv);
+    let new: MockPath = MockPath::create(Format::Json);
 
     File::copy(&old.to_string(), &new.to_string());
 }
@@ -183,7 +183,7 @@ fn copy_drop_after_copy() {
     mock_config.config.drop_after_copy = true;
     mock_config.update();
 
-    let old = MockPath::csv("test_copy_drop_after_copy");
+    let old = MockPath::create(Format::Csv);
     let new_path = "test_copy_drop_after_copy.json";
 
     File::copy(&old.to_string(), new_path);
@@ -194,7 +194,7 @@ fn copy_drop_after_copy() {
 
 #[test]
 fn file_persister_eq() {
-    let mock = MockPath::csv("file_persister_eq");
+    let mock = MockPath::create(Format::Csv);
 
     let left = File::get_persister(mock.path());
     let right = File::get_persister(mock.path());
