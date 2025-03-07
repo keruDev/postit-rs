@@ -10,7 +10,7 @@ pub use sqlite::Sqlite;
 use std::fmt;
 use std::ops::Deref;
 
-use crate::core::Action;
+use crate::core::{Action, PersisterKind};
 use crate::models::{Task, Todo};
 use super::traits::{Persister, DbPersister};
 
@@ -47,13 +47,10 @@ pub enum Protocol {
 impl Protocol {
     /// Transforms a string slice into a `Protocol` variant.
     pub fn from(s: &str) -> Self {
-        match s {
-            "sqlite:///" => Self::Sqlite,
-            _ => {
-                eprintln!("{}", error::Error::UnsupportedDatabase);
-                Self::Sqlite
-            },
+        if s != "sqlite:///" {
+            eprintln!("{}", error::Error::UnsupportedDatabase);
         }
+        Self::Sqlite
     }
 
     /// Returns the `Priority` value as its string representation.
@@ -111,7 +108,8 @@ impl Orm {
     pub fn is_sqlite(conn: &str) -> bool {
         let path = std::path::Path::new(conn);
 
-        path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("db"))
+        conn.eq(":memory:")
+        || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("db"))
         || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case(".sqlite3"))
         || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case(".sqlite"))
     }
@@ -127,7 +125,13 @@ impl Orm {
             return Sqlite::from(&conn).boxed();
         }
 
-        match Protocol::from(parts[0]) {
+        let protocol = parts[0];
+
+        if Self::is_sqlite(protocol) {
+            return Sqlite::from(&conn).boxed();
+        }
+
+        match Protocol::from(protocol) {
             Protocol::Sqlite => Sqlite::from(&conn).boxed(),
         }
     }
@@ -136,6 +140,10 @@ impl Orm {
 impl Persister for Orm {
     fn boxed(self) -> Box<dyn Persister> {
         Box::new(self)
+    }
+
+    fn kind(&self) -> PersisterKind {
+        PersisterKind::Db
     }
 
     fn read(&self) -> Vec<String> {

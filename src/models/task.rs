@@ -147,7 +147,7 @@ impl Task {
             .get(2)
             .map_or(Priority::Med, |&s| Priority::from(s.trim()));
 
-        let checked = list.get(3).is_some_and(|&s| matches!(s.trim(), "true"));
+        let checked = list.get(3).is_some_and(|&s| matches!(s.trim(), "true" | "1"));
 
         (id, content, priority, checked)
     }

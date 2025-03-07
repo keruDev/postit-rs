@@ -38,9 +38,40 @@ impl Sqlite {
             connection: sqlite::open(conn).unwrap()
         };
 
-        instance.create();
+        if !instance.exists() {
+            instance.create();
+        }
 
         instance
+    }
+
+    /// Checks if a table exists.
+    /// 
+    /// # Panics
+    /// In case the statement can't be prepared.
+    pub fn exists(&self) -> bool {
+        let mut stmt = self.connection.prepare("
+            SELECT *
+            FROM sqlite_master
+            WHERE type='table'
+              AND name='tasks'
+        ").unwrap();
+
+        let mut result = vec![];
+
+        while matches!(stmt.next(), Ok(State::Row)) {
+            result.push(stmt.read::<String, _>("name").unwrap().to_string());
+        };
+
+        !result.is_empty()
+    }
+
+    /// Returns the desired ids format to be used in a query.
+    pub fn format_ids(&self, ids: &[u32]) -> String {
+        ids.iter()
+            .map(|&n| n.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
     }
 
     /// Reads one row from the current statement.
@@ -68,9 +99,11 @@ impl DbPersister for Sqlite {
     }
 
     fn create(&self) {
+        println!("creating");
+
         self.connection.execute("
             CREATE TABLE IF NOT EXISTS tasks (
-                id          INTEGER PRIMARY KEY,
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
                 content     TEXT NOT NULL,
                 priority    TEXT NOT NULL,
                 checked     BOOLEAN NOT NULL CHECK (checked IN (0, 1))
@@ -103,14 +136,13 @@ impl DbPersister for Sqlite {
                 &*i32::from(task.checked).to_string()
             ][..]).unwrap();
 
-
             if let Err(e) = stmt.next() {
                 eprintln!("Error while inserting value: {e}");
             }
         });
     }
 
-    fn update(&self, ids: &[u32], action: Action) {
+    fn update(&self, ids: &[u32], action: Action) {        
         if matches!(action, Action::Drop) {
             return self.delete(ids);
         }
@@ -121,36 +153,28 @@ impl DbPersister for Sqlite {
             _ => unreachable!(),
         };
 
-        let mut stmt  = self.connection.prepare(format!("
+        let query = format!("
             UPDATE tasks
             SET checked = {value}
             WHERE id
-            IN (?)
-        ")).unwrap();
+            IN ({})
+        ", self.format_ids(ids));
 
-        stmt.bind(&[
-            &*format!("{ids:?}")
-                .replace('[', "(")
-                .replace(']', ")")
-        ][..]).unwrap();
+        let mut stmt  = self.connection.prepare(query).unwrap();
 
         if let Err(e) = stmt.next() {
             eprintln!("Error while updating value: {e}");
         }
     }
-    
+
     fn delete(&self, ids: &[u32]) {
-        let mut stmt  = self.connection.prepare("
+        let query = format!("
             DELETE FROM tasks
             WHERE id
-            IN (?)
-        ").unwrap();
+            IN ({})
+        ", self.format_ids(ids));
 
-        stmt.bind(&[
-            &*format!("{ids:?}")
-                .replace('[', "(")
-                .replace(']', ")")
-        ][..]).unwrap();
+        let mut stmt  = self.connection.prepare(query).unwrap();
 
         if let Err(e) = stmt.next() {
             eprintln!("Error while dropping value: {e}");

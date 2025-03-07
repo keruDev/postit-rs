@@ -15,7 +15,7 @@ use std::ops::Deref;
 use std::path::PathBuf;
 use std::{fmt, fs};
 
-use crate::core::Action;
+use crate::core::{Action, PersisterKind};
 use crate::models::{Task, Todo};
 use super::traits::{FilePersister, Persister};
 use crate::Config;
@@ -215,6 +215,10 @@ impl File {
 impl Persister for File {
     fn boxed(self) -> Box<dyn Persister> {
         Box::new(self)
+    }
+
+    fn kind(&self) -> PersisterKind {
+        PersisterKind::Db
     }
 
     fn read(&self) -> Vec<String> {

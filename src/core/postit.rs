@@ -9,16 +9,7 @@ use crate::persisters::File;
 use crate::Config;
 
 use super::args::TaskArgs;
-
-/// Possible actions taken when editing a persister's contents.
-pub enum Action {
-    /// Used to check tasks.
-    Check,
-    /// Used to uncheck tasks.
-    Uncheck,
-    /// Used to drop tasks.
-    Drop,
-}
+use super::{Action, PersisterKind};
 
 /// Entry point where all operations are executed.
 ///
@@ -56,9 +47,15 @@ impl Postit {
         let id = todo.tasks.last().map_or(1, |last| last.id + 1);
 
         let line = format!("{},{},{}", id, task, false);
+        let task = Task::from(&line);
 
-        todo.add(Task::from(&line));
+        todo.add(task.clone());
         todo.view();
+
+        // Just saves the new task
+        if matches!(persister.kind(), PersisterKind::Db) {
+            todo = Todo::new(vec![task]);
+        }
 
         persister.save(&todo);
     }
@@ -68,15 +65,15 @@ impl Postit {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
-        match action {
+        let changed_ids = match action {
             Action::Check => todo.check(&args.ids),
             Action::Uncheck => todo.uncheck(&args.ids),
             Action::Drop => todo.drop(&args.ids),
-        }
+        };
 
         todo.view();
 
-        persister.edit(&args.ids, action);
+        persister.edit(&changed_ids, action);
     }
 
     /// Copies the contents of a file to another.

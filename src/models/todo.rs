@@ -12,6 +12,11 @@ pub struct Todo {
 }
 
 impl Todo {
+    /// Creates a `Todo` instance from a vector of tasks.
+    pub const fn new(tasks: Vec<Task>) -> Self {
+        Self { tasks }
+    }
+
     /// Creates a `Todo` instance from a file's contents.
     pub fn from(persister: &dyn Persister) -> Self {
         Self { tasks: persister.tasks() }
@@ -36,32 +41,44 @@ impl Todo {
     }
 
     /// Marks a task as checked.
-    pub fn check(&mut self, ids: &[u32]) {
+    pub fn check(&mut self, ids: &[u32]) -> Vec<u32> {
+        let mut changed_ids = Vec::<u32>::new();
+
         for task in self.get(ids) {
-            if let Err(e) = task.check() {
-                eprintln!("{e}");
+            match task.check() {
+                Ok(_) => changed_ids.push(task.id),
+                Err(e) => eprintln!("{e}"),
             }
         }
+
+        changed_ids
     }
 
     /// Marks a task as unchecked.
-    pub fn uncheck(&mut self, ids: &[u32]) {
+    pub fn uncheck(&mut self, ids: &[u32]) -> Vec<u32> {
+        let mut changed_ids = Vec::<u32>::new();
+
         for task in self.get(ids) {
-            if let Err(e) = task.uncheck() {
-                eprintln!("{e}");
+            match task.uncheck() {
+                Ok(_) => changed_ids.push(task.id),
+                Err(e) => eprintln!("{e}"),
             }
         }
+
+        changed_ids
     }
 
     /// Drops a task from the list.
-    pub fn drop(&mut self, ids: &[u32]) {
+    pub fn drop(&mut self, ids: &[u32]) -> Vec<u32> {
         let force_drop = Config::load().force_drop;
+        let mut changed_ids = Vec::<u32>::new();
 
         self.tasks.retain(|task| {
             let id_exists = ids.contains(&task.id);
 
             if id_exists {
                 if force_drop {
+                    changed_ids.push(task.id);
                     return false;
                 }
 
@@ -71,7 +88,15 @@ impl Todo {
                 }
             }
 
-            !(id_exists && task.checked)
+            let is_retained = id_exists && task.checked;
+
+            if is_retained {
+                changed_ids.push(task.id);
+            }
+
+            !is_retained
         });
+
+        changed_ids
     }
 }
