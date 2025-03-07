@@ -20,7 +20,7 @@ pub struct TaskArgs {
     #[arg(long, short, value_name = "PERSISTER")]
     pub persister: Option<String>,
 
-    /// Identifiers of tasks.
+    /// Identifiers of tasks separated by spaces.
     #[arg(value_name = "IDS", help = "Task IDs")]
     pub ids: Vec<u32>,
 }

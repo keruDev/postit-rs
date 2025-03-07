@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::{fmt, fs};
 
 use crate::models::{Task, Todo};
-use crate::core::Action;
+use crate::core::{Action, PersisterKind};
 
 /// The `Persister` trait serves as a base for structures that store instances
 /// of other structs that contain either the [`FilePersister`] trait or the
@@ -30,6 +30,9 @@ pub trait Persister: fmt::Debug {
 
     // /// Checks if the path exists.
     // fn exists(&self) -> bool;
+
+    /// Returns the kind of persister used.
+    fn kind(&self) -> PersisterKind;
 
     /// Reads the persister's content and returns its lines.
     fn read(&self) -> Vec<String>;
