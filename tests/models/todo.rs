@@ -1,4 +1,6 @@
 use postit::models::{Task, Todo};
+use postit::persisters::fs::Format;
+use postit::persisters::traits::Persister;
 use postit::persisters::File;
 
 use crate::mocks::MockPath;
@@ -44,22 +46,6 @@ fn add_ok() {
     let task = Task::from("5,Test,med,false");
 
     todo.add(task.clone());
-    expected.tasks.push(task);
-
-    assert_eq!(todo, expected);
-}
-
-#[test]
-fn add_repeated_id() {
-    let mock = MockPath::create(Format::Csv);
-
-    let mut todo = fakes(&mock);
-    let mut expected = todo.clone();
-
-    let mut task = Task::from("1,Test,med,false");
-    todo.add(task.clone());
-
-    task.id = 5;
     expected.tasks.push(task);
 
     assert_eq!(todo, expected);

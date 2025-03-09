@@ -1,11 +1,12 @@
 use std::io::Write;
-use std::ops::Deref;
 use std::path::PathBuf;
 use std::{fmt, fs};
 
 use postit::models::{Task, Todo};
+use postit::persisters::db::Protocol;
 use postit::persisters::fs::{Csv, Format, Json};
-use postit::persisters::traits::FilePersister as _;
+use postit::persisters::traits::{DbPersister, FilePersister};
+use postit::persisters::Orm;
 use postit::Config;
 
 /// A temporary path used for testing purposes.
@@ -18,7 +19,7 @@ pub struct MockPath {
 
 impl MockPath {
     /// Constructor of the `MockPath` struct.
-    pub fn new(path: &str) -> Self {
+    pub fn new(path: PathBuf) -> Self {
         let path = PathBuf::from(path);
 
         if !path.exists() {
@@ -26,6 +27,10 @@ impl MockPath {
         }
 
         Self { path }
+    }
+ 
+    pub fn from(path: &str) -> Self {
+        Self { path: PathBuf::from(path) }
     }
 
     pub fn sample() -> Todo {
@@ -42,46 +47,47 @@ impl MockPath {
     pub fn path(&self) -> PathBuf {
         self.path.clone()
     }
+    
+    pub fn to_string(&self) -> String {
+        self.path().to_str().unwrap().to_owned()
+    }
 
     pub fn create(format: Format) -> Self {
-        let name = "file";
+        let name = "sample";
 
-        match format {
+        let file = match format {
             Format::Csv => Self::csv(name),
             Format::Json => Self::json(name),
-        }
+        };
+
+        file.write(&Self::sample());
+
+        Self { path: file.path() }
     }
 
-    pub fn csv(name: &str) -> Self {
-        let path = PathBuf::from(format!("test_{name}.csv"));
-        let csv = Csv::new(path.clone());
+    pub fn blank(format: Format) -> Self {
+        let name = "blank";
 
-        csv.write(&Self::sample());
+        let file = match format {
+            Format::Csv => Self::csv(name),
+            Format::Json => Self::json(name),
+        };
 
-        Self { path }
+        Self { path: file.path() }
     }
 
-    pub fn json(name: &str) -> Self {
-        let path = PathBuf::from(format!("test_{name}.json"));
-        let json = Json::new(path.clone());
+    pub fn csv(name: &str) -> Box<dyn FilePersister> {
+        Csv::new(PathBuf::from(format!("test_{name}.csv"))).boxed()
+    }
 
-        json.write(&Self::sample());
-
-        Self { path }
+    pub fn json(name: &str) -> Box<dyn FilePersister> {
+        Json::new(PathBuf::from(format!("test_{name}.json"))).boxed()
     }
 }
 
 impl fmt::Display for MockPath {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.path.to_str().unwrap())
-    }
-}
-
-impl Deref for MockPath {
-    type Target = PathBuf;
-
-    fn deref(&self) -> &Self::Target {
-        &self.path
     }
 }
 
@@ -92,6 +98,47 @@ impl Drop for MockPath {
         }
     }
 }
+
+/// A temporary connection string used for testing purposes.
+///
+/// Implements the `Deref` and `Drop` traits
+/// to delete the temporary connection string when the test ends.
+pub struct MockConn {
+    pub instance: Box<dyn DbPersister>
+}
+
+impl MockConn {
+    /// Constructor of the `MockPath` struct.
+    pub fn new(conn: &str) -> Self {
+        Self { instance: Orm::get_persister(conn) }
+    }
+
+    pub fn conn(&self) -> String {
+        self.instance.conn()
+    }
+
+    pub fn to_string(&self) -> String {
+        self.conn()
+    }
+
+    pub fn create(protocol: Protocol) -> Self {
+        match protocol {
+            Protocol::Sqlite => Self::sqlite(),
+        }
+    }
+
+    pub fn sqlite() -> Self {
+        Self::new("test_tasks.db")
+    }
+}
+
+impl Drop for MockConn {
+    fn drop(&mut self) {
+        // TEMP
+        self.instance.drop_database();
+    }
+}
+
 
 /// The temporary representation of the Config file.
 ///
@@ -123,14 +170,14 @@ impl MockConfig {
         Self { path, config: Config::default() }
     }
 
-    pub fn update(&mut self) {
+    pub fn save(&mut self) {
         let mut file = fs::File::create(self.path()).unwrap();
 
         let content =
             toml::to_string_pretty(&self.config).expect("Failed to serialize config to TOML");
 
         file.write_all(content.as_bytes())
-            .expect("Failed to write default config to file");
+            .expect("Failed to write new config to file");
     }
 
     pub fn path(&self) -> PathBuf {
@@ -147,14 +194,6 @@ impl Default for MockConfig {
 impl fmt::Display for MockConfig {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.path.to_str().unwrap())
-    }
-}
-
-impl Deref for MockConfig {
-    type Target = PathBuf;
-
-    fn deref(&self) -> &Self::Target {
-        &self.path
     }
 }
 

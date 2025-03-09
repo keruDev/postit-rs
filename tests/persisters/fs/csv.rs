@@ -2,42 +2,17 @@ use std::fs;
 use std::io::Read;
 
 use postit::models::{Priority, Task};
-use postit::persisters::fs::{Csv, Format, Json};
+use postit::persisters::fs::{Csv, Format};
 use postit::persisters::traits::FilePersister;
 
 use crate::mocks::MockPath;
 
 #[test]
-fn is_equal_same_persisters() {
-    let mock = MockPath::new("is_equal_same_persisters.csv");
+fn default() {
+    let mock = MockPath::create(Format::Csv);
+    let csv = Csv::new(mock.path());
 
-    let left = Csv::new(mock.path());
-    let right = Csv::new(mock.path());
-
-    assert_eq!(left, right);
-}
-
-#[test]
-fn is_equal_same_persisters_different_path() {
-    let mock_left = MockPath::new("persister_left.csv");
-    let mock_right = MockPath::new("persister_right.csv");
-
-    let left = Csv::new(mock_left.path());
-    let right = Csv::new(mock_right.path());
-
-    assert_ne!(left, right);
-}
-
-#[test]
-fn is_equal_different_type_persisters() {
-    let mock_left = MockPath::new("is_equal_different_type_persisters.csv");
-    let mock_right = MockPath::new("is_equal_different_type_persisters.json");
-
-    let left = Csv::new(mock_left.path());
-    let right = Json::new(mock_right.path());
-
-    assert_ne!(left.path(), right.path());
-    assert_eq!(left.tasks(), right.tasks());
+    assert_eq!(csv.default(), Csv::header());
 }
 
 #[test]

@@ -55,7 +55,7 @@ impl Priority {
     }
 
     /// Returns the `Priority` value as its string representation.
-    pub const fn to_str(&self) -> &'static str {
+    pub const fn to_str(&self) -> &str {
         match self {
             Self::High => "high",
             Self::Med => "med",

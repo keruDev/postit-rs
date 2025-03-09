@@ -72,7 +72,7 @@ impl Format {
     }
 
     /// Returns the `Priority` value as its string representation.
-    pub const fn to_str(&self) -> &'static str {
+    pub const fn to_str(&self) -> &str {
         match self {
             Self::Csv => "csv",
             Self::Json => "json",
@@ -92,7 +92,7 @@ impl fmt::Display for Format {
 impl Deref for Format {
     type Target = str;
 
-    fn deref(&self) -> &'static Self::Target {
+    fn deref(&self) -> &Self::Target {
         self.to_str()
     }
 }
@@ -149,7 +149,9 @@ impl File {
     }
 
     /// Checks the format of a file and return the same instance with the correct format.
-    pub fn check_name(mut path: PathBuf) -> PathBuf {
+    pub fn check_name(path: PathBuf) -> PathBuf {
+        let mut path = path;
+
         let file_name: String = path
             .file_name()
             .unwrap_or_else(|| OsStr::new("tasks"))
@@ -169,7 +171,7 @@ impl File {
 
         path.set_file_name(file_parts.join("."));
 
-        path
+        path.to_owned()
     }
 
     /// Returns a struct that implements the `FilePersister` trait based on the file extension.
@@ -177,9 +179,13 @@ impl File {
     /// # Panics
     /// In case the file extension can't be converted to `&str`.
     pub fn get_persister(path: PathBuf) -> Box<dyn FilePersister> {
-        let ext = path.extension().unwrap().to_str().unwrap();
+        let mut path = path;
 
-        match Format::from(ext) {
+        let format = Format::from(path.extension().unwrap().to_str().unwrap());
+
+        path.set_extension(format.to_str());
+
+        match format {
             Format::Csv => Csv::new(path).boxed(),
             Format::Json => Json::new(path).boxed(),
         }
@@ -239,5 +245,11 @@ impl Persister for File {
 
     fn tasks(&self) -> Vec<Task> {
         self.file.tasks()
+    }
+}
+
+impl PartialEq for File {
+    fn eq(&self, other: &Self) -> bool {
+        (self.to_string() == other.to_string()) && (self.tasks() == other.tasks())
     }
 }
