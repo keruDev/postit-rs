@@ -1,7 +1,11 @@
+use std::ops::Not;
+
 use postit::args::ConfigCommand;
+use postit::persisters::db::Protocol;
+use postit::persisters::fs::Format;
 use postit::Config;
 
-use crate::mocks::MockConfig;
+use crate::mocks::{MockConfig, MockConn, MockPath};
 
 #[test]
 fn manage_init() {
@@ -16,8 +20,29 @@ fn manage_init() {
     assert_eq!(result, expected);
 }
 
-// #[test]
-// fn manage_edit() {}
+#[test]
+fn manage_edit() {
+    let key = "EDITOR";
+    let value = std::env::var(key).unwrap();
+    
+    // TODO make this Windows compatible
+    std::env::set_var(key, "echo");
+    Config::manage(&ConfigCommand::Edit);
+    
+    std::env::set_var(key, value);
+}
+
+#[test]
+#[should_panic]
+fn manage_edit_panics() {
+    let key = "EDITOR";
+    let value = std::env::var(key).unwrap();
+
+    std::env::set_var(key, "");
+    Config::manage(&ConfigCommand::Edit);
+    
+    std::env::set_var(key, value);
+}
 
 #[test]
 fn manage_drop() {
@@ -26,7 +51,7 @@ fn manage_drop() {
     Config::manage(&ConfigCommand::Init);
     Config::manage(&ConfigCommand::Drop);
 
-    assert!(!mock.path().exists());
+    assert!(mock.path().exists().not());
 }
 
 #[test]
@@ -40,32 +65,35 @@ fn default() {
     let config = Config::default();
 
     assert_eq!(config.persister, "tasks.csv");
-    assert!(!config.force_drop);
-    assert!(!config.force_copy);
-    assert!(!config.drop_after_copy);
+    assert!(config.force_drop.not());
+    assert!(config.force_copy.not());
+    assert!(config.drop_after_copy.not());
 }
 
 #[test]
 fn path_custom() {
-    std::env::set_var("POSTIT_CONFIG_PATH", "test_postit.toml");
+    let key = "POSTIT_CONFIG_PATH";
+    let value = Config::editor();
+
+    std::env::set_var(key, "test_postit.toml");
     assert_eq!(Config::path().to_str().unwrap(), "test_postit.toml");
 
-    std::env::set_var("POSTIT_CONFIG_PATH", "postit.toml");
+    std::env::set_var(key, value);
 }
 
 #[test]
 fn path_default() {
-    assert_eq!(Config::path().to_str().unwrap(), "postit.toml");
+    assert_eq!(Config::path().to_str().unwrap(), ".postit.toml");
 }
 
 #[test]
 fn editor_custom() {
-    let default = Config::editor();
+    let value = Config::editor();
 
     std::env::set_var("EDITOR", "code");
     assert!(Config::editor().contains("code"));
 
-    std::env::set_var("EDITOR", default);
+    std::env::set_var("EDITOR", value);
 }
 
 #[test]
@@ -75,6 +103,8 @@ fn editor_default() {
 
 #[test]
 fn load_default() {
+    let _mock = MockConfig::new();
+
     let result = Config::load();
     let expected = Config::default();
 
@@ -83,18 +113,18 @@ fn load_default() {
 
 #[test]
 fn resolve_persister_file() {
-    let path = String::from("tasks.csv");
-    let persister = Config::resolve_persister(Some(path.clone()));
+    let mock = MockPath::create(Format::Csv);
+    let persister = Config::resolve_persister(Some(mock.to_string()));
 
-    assert_eq!(persister.to_string(), path)
+    assert_eq!(persister.to_string(), mock.to_string())
 }
 
 #[test]
 fn resolve_persister_db() {
-    let conn = String::from("tasks.db");
-    let persister = Config::resolve_persister(Some(conn.clone()));
+    let mock = MockConn::create(Protocol::Sqlite);
+    let persister = Config::resolve_persister(Some(mock.conn()));
 
-    assert_eq!(persister.to_string(), conn)
+    assert_eq!(persister.to_string(), mock.conn())
 }
 
 #[test]

@@ -27,6 +27,12 @@ impl fmt::Debug for Sqlite {
     }
 }
 
+impl Clone for Sqlite {
+    fn clone(&self) -> Self {
+        Self::from(&self.conn())
+    }
+}
+
 impl Sqlite {
     /// Creates a `Sqlite` instance from a connection string.
     /// 
@@ -99,8 +105,6 @@ impl DbPersister for Sqlite {
     }
 
     fn create(&self) {
-        println!("creating");
-
         self.connection.execute("
             CREATE TABLE IF NOT EXISTS tasks (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -179,6 +183,10 @@ impl DbPersister for Sqlite {
         if let Err(e) = stmt.next() {
             eprintln!("Error while dropping value: {e}");
         }
+    }
+    
+    fn drop_database(&self) {
+        std::fs::remove_file(self.conn()).expect("Couldn't drop the database")
     }
 
     fn tasks(&self) -> Vec<Task> {

@@ -54,7 +54,7 @@ impl Protocol {
     }
 
     /// Returns the `Priority` value as its string representation.
-    pub const fn to_str(&self) -> &'static str {
+    pub const fn to_str(&self) -> &str {
         match self {
             Self::Sqlite => "sqlite",
         }
@@ -72,7 +72,7 @@ impl fmt::Display for Protocol {
 impl Deref for Protocol {
     type Target = str;
 
-    fn deref(&self) -> &'static Self::Target {
+    fn deref(&self) -> &Self::Target {
         self.to_str()
     }
 }
@@ -109,9 +109,8 @@ impl Orm {
         let path = std::path::Path::new(conn);
 
         conn.eq(":memory:")
-        || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("db"))
-        || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case(".sqlite3"))
-        || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case(".sqlite"))
+        || path.extension()
+            .is_some_and(|ext| matches!(ext.to_str().unwrap(), "db"| "sqlite3" | "sqlite"))
     }
 
     /// Returns a struct that implements the [`DbPersister`] trait based on

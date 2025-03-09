@@ -53,6 +53,12 @@ impl PartialEq for Box<dyn Persister> {
     }
 }
 
+impl Clone for Box<dyn Persister> {
+    fn clone(&self) -> Self {
+        crate::Config::resolve_persister(Some(self.to_string()))
+    }
+}
+
 /// Includes basic methods for data management in a file.
 pub trait FilePersister {
     /// Checks if the path exists.
@@ -77,7 +83,7 @@ pub trait FilePersister {
     fn write(&self, todo: &Todo);
 }
 
-impl PartialEq for dyn FilePersister {
+impl PartialEq for Box<dyn FilePersister> {
     fn eq(&self, other: &Self) -> bool {
         (self.path() == other.path()) && (self.tasks() == other.tasks())
     }
@@ -108,9 +114,12 @@ pub trait DbPersister {
     
     /// Drops data from a table.
     fn delete(&self, ids: &[u32]);
+
+    /// Drops the specified database.
+    fn drop_database(&self);
 }
 
-impl PartialEq for dyn DbPersister {
+impl PartialEq for Box<dyn DbPersister> {
     fn eq(&self, other: &Self) -> bool {
         (self.conn() == other.conn()) && (self.tasks() == other.tasks())
     }

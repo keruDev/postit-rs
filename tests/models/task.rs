@@ -96,3 +96,19 @@ fn uncheck_err() {
 
     assert!(result.is_err())
 }
+
+#[test]
+fn priority_as_str() {
+    assert_eq!(Priority::Low.to_str(), "low");
+    assert_eq!(Priority::Med.to_str(), "med");
+    assert_eq!(Priority::High.to_str(), "high");
+    assert_eq!(Priority::None.to_str(), "none");
+}
+
+#[test]
+fn priority_deref() {
+    assert_eq!(&*Priority::Low, "low");
+    assert_eq!(&*Priority::Med, "med");
+    assert_eq!(&*Priority::High, "high");
+    assert_eq!(&*Priority::None, "none");
+}

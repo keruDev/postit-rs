@@ -2,9 +2,9 @@
 exclude-files = ["src/main.rs"]
 run-types = ["Tests"]
 ignore-tests = false
+skip-clean = true
 verbose = true
 line = true
-jobs = 1
 fail-under = 90
 
 [report]

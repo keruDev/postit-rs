@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::PathBuf;
 
 use postit::args::{Arguments, Command, ConfigCommand, EditTaskArgs};
 use postit::models::{Task, Todo};
@@ -122,7 +122,7 @@ fn uncheck() {
 fn drop_no_force_drop() {
     let mut mock_config = MockConfig::new();
     mock_config.config.force_drop = false;
-    mock_config.update();
+    mock_config.save();
 
     let mock = MockPath::create(Format::Csv);
     let ids = vec![2, 3];
@@ -152,7 +152,7 @@ fn drop_no_force_drop() {
 fn drop_force() {
     let mut mock_config = MockConfig::new();
     mock_config.config.force_drop = true;
-    mock_config.update();
+    mock_config.save();
 
     let mock = MockPath::create(Format::Csv);
     let ids = vec![2, 3];
@@ -193,7 +193,7 @@ fn copy() {
 
     Postit::run(args);
 
-    let mock_new = MockPath::new(new_path);
+    let mock_new = MockPath::new(PathBuf::from(new_path));
     let (old_file, old_todo) = expected(&mock_old);
     let (new_file, new_todo) = expected(&mock_new);
 
@@ -212,5 +212,5 @@ fn config() {
 
     Postit::run(args);
 
-    assert!(Path::new(&mock.path()).exists());
+    assert!(PathBuf::from(&mock.path()).exists());
 }

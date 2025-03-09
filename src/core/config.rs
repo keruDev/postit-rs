@@ -41,15 +41,12 @@ impl Default for Config {
 impl Config {
     /// Returns the path of the config file in the `POSTIT_CONFIG_PATH` env var.
     pub fn path() -> PathBuf {
-        let config_path = std::env::var("POSTIT_CONFIG_PATH").unwrap_or_else(|_| {
-            let mut file = ".postit.toml";
+        let env = std::env::var("POSTIT_CONFIG_PATH");
+        let config_path = env.unwrap_or_else(|_| String::from(".postit.toml"));
 
-            if !PathBuf::from(file).exists() {
-                file = "postit.toml";
-            }
-
-            String::from(file)
-        });
+        if config_path.is_empty() {
+            return PathBuf::from(".postit.toml");
+        }
 
         PathBuf::from(config_path)
     }
