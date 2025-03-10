@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 use std::{fmt, fs};
 
-use crate::core::{Action, PersisterKind};
+use crate::core::Action;
 use crate::models::{Task, Todo};
 
 /// The `Persister` trait serves as a base for structures that store instances
@@ -18,9 +18,6 @@ pub trait Persister: fmt::Debug {
 
     /// The value that created the `Persister` instance.
     fn to_string(&self) -> String;
-
-    /// Returns the kind of persister used.
-    fn kind(&self) -> PersisterKind;
 
     /// Reads the persister's content and returns its lines.
     fn read(&self) -> Vec<String>;
@@ -87,6 +84,9 @@ pub trait DbPersister {
 
     /// Checks if a table exists.
     fn exists(&self) -> bool;
+
+    /// Returns the number of results in a table.
+    fn count(&self) -> u32;
 
     /// Creates a table.
     fn create(&self);

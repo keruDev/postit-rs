@@ -16,7 +16,7 @@ pub use csv::Csv;
 pub use json::Json;
 
 use super::traits::{FilePersister, Persister};
-use crate::core::{Action, PersisterKind};
+use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::Config;
 
@@ -142,7 +142,7 @@ impl File {
 
         let file_name = path
             .file_name()
-            .unwrap_or_else(|| OsStr::new("tasks"))
+            .unwrap_or(OsStr::new("tasks"))
             .to_string_lossy()
             .into_owned();
 
@@ -209,10 +209,6 @@ impl File {
 impl Persister for File {
     fn boxed(self) -> Box<dyn Persister> {
         Box::new(self)
-    }
-
-    fn kind(&self) -> PersisterKind {
-        PersisterKind::Db
     }
 
     fn to_string(&self) -> String {

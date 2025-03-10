@@ -22,6 +22,11 @@ impl Todo {
         Self { tasks: persister.tasks() }
     }
 
+    /// Adds a task to the task list.
+    pub fn one(task: Task) -> Self {
+        Self::new(vec![task])
+    }
+
     /// Returns tasks based on the ids passed.
     pub fn get(&mut self, ids: &[u32]) -> Vec<&mut Task> {
         self.tasks
@@ -39,7 +44,7 @@ impl Todo {
     pub fn add(&mut self, task: Task) {
         self.tasks.push(task);
     }
-
+    
     /// Marks a task as checked.
     pub fn check(&mut self, ids: &[u32]) -> Vec<u32> {
         let mut changed_ids = Vec::<u32>::new();

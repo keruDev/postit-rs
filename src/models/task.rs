@@ -134,7 +134,7 @@ impl Task {
     /// If the `id` field can't be obtained from the first index or there is an error parsing.
     /// If the `content` field can't be obtained from the second index.
     pub fn unpack(line: &str) -> (u32, String, Priority, bool) {
-        let list: Vec<&str> = line.split(',').collect();
+        let list: Vec<&str> = line.split(',').map(str::trim).collect();
 
         let id = list[0]
             .parse()

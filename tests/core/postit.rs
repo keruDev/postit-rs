@@ -9,8 +9,8 @@ use postit::{Config, Postit};
 
 use crate::mocks::{MockConfig, MockPath};
 
-fn fakes(mock: &MockPath) -> (Box<dyn Persister>, Todo) {
-    let persister = Config::resolve_persister(Some(mock.to_string()));
+fn fakes(path_or_conn: &MockPath) -> (Box<dyn Persister>, Todo) {
+    let persister = Config::resolve_persister(Some(path_or_conn.to_string()));
     let todo = Todo { tasks: persister.tasks() };
 
     (persister, todo)
@@ -43,9 +43,26 @@ fn view() {
 }
 
 #[test]
-fn add() {
+#[should_panic]
+fn add_panics() {
     let mock = MockPath::create(Format::Csv);
-    let task = "5,Test,med,false";
+    let task = "1,med";
+
+    let args = Arguments {
+        command: Command::Add {
+            persister: Some(mock.to_string()),
+            task: String::from(task),
+        },
+    };
+
+    Postit::run(args);
+}
+
+#[test]
+fn add_ok() {
+    let mock = MockPath::create(Format::Csv);
+    let task = "Test,med";
+    let line = format!("5,{task},false");
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
@@ -57,7 +74,32 @@ fn add() {
 
     Postit::run(args);
 
-    todo.add(Task::from(task));
+    todo.add(Task::from(&line));
+    file.save(&todo);
+
+    let (expected_file, expected_todo) = expected(&mock);
+
+    assert_eq!(todo, expected_todo);
+    assert_eq!(file.read(), expected_file.read());
+}
+
+#[test]
+fn add_no_priority() {
+    let mock = MockPath::create(Format::Csv);
+    let task = "Test";
+    let line = format!("5,{task},med,false");
+
+    let (file, mut todo) = fakes(&mock);
+    let args = Arguments {
+        command: Command::Add {
+            persister: Some(mock.to_string()),
+            task: String::from(task),
+        },
+    };
+
+    Postit::run(args);
+
+    todo.add(Task::from(&line));
     file.save(&todo);
 
     let (expected_file, expected_todo) = expected(&mock);
