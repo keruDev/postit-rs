@@ -7,17 +7,17 @@
 mod csv;
 mod json;
 
-pub use csv::Csv;
-pub use json::Json;
-
 use std::ffi::OsStr;
 use std::ops::Deref;
 use std::path::PathBuf;
 use std::{fmt, fs};
 
+pub use csv::Csv;
+pub use json::Json;
+
+use super::traits::{FilePersister, Persister};
 use crate::core::{Action, PersisterKind};
 use crate::models::{Task, Todo};
-use super::traits::{FilePersister, Persister};
 use crate::Config;
 
 /// Defines errors related to file management.
@@ -49,7 +49,6 @@ pub mod error {
     }
 }
 
-
 /// Possible file formats.
 pub enum Format {
     /// A CSV file (associated persister: [`Csv`]).
@@ -67,7 +66,7 @@ impl Format {
             _ => {
                 eprintln!("{}", error::Error::UnsupportedFormat);
                 Self::Csv
-            },
+            }
         }
     }
 
@@ -87,7 +86,6 @@ impl Deref for Format {
         self.to_str()
     }
 }
-
 
 /// Representation of a file that is used to manage a [`Todo`] structure.
 pub struct File {
@@ -135,8 +133,7 @@ impl File {
 
         println!("Creating {path:?}");
 
-        fs::write(path, self.file.default())
-            .expect("Should have been able to create the file");
+        fs::write(path, self.file.default()).expect("Should have been able to create the file");
     }
 
     /// Checks the format of a file and return the same instance with the correct format.
@@ -162,7 +159,7 @@ impl File {
 
         path.set_file_name(file_parts.join("."));
 
-        path.to_owned()
+        path.clone()
     }
 
     /// Returns a struct that implements the `FilePersister` trait based on the file extension.

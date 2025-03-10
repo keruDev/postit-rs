@@ -5,14 +5,14 @@
 
 mod sqlite;
 
-pub use sqlite::Sqlite;
-
 use std::fmt;
 use std::ops::Deref;
 
+pub use sqlite::Sqlite;
+
+use super::traits::{DbPersister, Persister};
 use crate::core::{Action, PersisterKind};
 use crate::models::{Task, Todo};
-use super::traits::{Persister, DbPersister};
 
 /// Defines errors related to database management.
 pub mod error {
@@ -30,8 +30,12 @@ pub mod error {
     impl fmt::Display for Error {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
-                Self::UnsupportedDatabase => write!(f, "Unsupported database; defaulting to Sqlite"),
-                Self::IncorrectConnectionString => write!(f, "The provided connection string is incorrect"),
+                Self::UnsupportedDatabase => {
+                    write!(f, "Unsupported database; defaulting to Sqlite")
+                }
+                Self::IncorrectConnectionString => {
+                    write!(f, "The provided connection string is incorrect")
+                }
             }
         }
     }
@@ -42,7 +46,6 @@ pub enum Protocol {
     /// An Sqlite database (associated persister: [`Sqlite`]).
     Sqlite,
 }
-
 
 impl Protocol {
     /// Transforms a string slice into a `Protocol` variant.
@@ -77,11 +80,10 @@ impl Deref for Protocol {
     }
 }
 
-
 /// Abstraction of database actions, used to manage a [`Todo`] structure.
 pub struct Orm {
     /// Database that implements the [`DbPersister`] trait.
-    db: Box<dyn DbPersister>
+    db: Box<dyn DbPersister>,
 }
 
 impl fmt::Debug for Orm {
@@ -104,13 +106,17 @@ impl Orm {
         Self::new(Self::get_persister(conn))
     }
 
-    /// Checks if the passed connection string has an Sqlite format. 
+    /// Checks if the passed connection string has an Sqlite format.
+    ///
+    /// # Panics
+    /// In case the extension can't be converted to str.
     pub fn is_sqlite(conn: &str) -> bool {
         let path = std::path::Path::new(conn);
 
         conn.eq(":memory:")
-        || path.extension()
-            .is_some_and(|ext| matches!(ext.to_str().unwrap(), "db"| "sqlite3" | "sqlite"))
+            || path
+                .extension()
+                .is_some_and(|ext| matches!(ext.to_str().unwrap(), "db" | "sqlite3" | "sqlite"))
     }
 
     /// Returns a struct that implements the [`DbPersister`] trait based on

@@ -17,7 +17,7 @@ pub mod error {
         /// Thrown when `task.checked == false` and the user unchecks it again.
         AlreadyUnchecked,
     }
-    
+
     impl fmt::Display for Error {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
@@ -27,7 +27,6 @@ pub mod error {
         }
     }
 }
-
 
 /// Priority of the Task, which is used to define the task's color and importance.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -147,7 +146,9 @@ impl Task {
             .get(2)
             .map_or(Priority::Med, |&s| Priority::from(s.trim()));
 
-        let checked = list.get(3).is_some_and(|&s| matches!(s.trim(), "true" | "1"));
+        let checked = list
+            .get(3)
+            .is_some_and(|&s| matches!(s.trim(), "true" | "1"));
 
         (id, content, priority, checked)
     }
@@ -158,7 +159,7 @@ impl Task {
     }
 
     /// Formats the Task into a String.
-    pub fn to_string(&self) -> String {
+    pub fn formatted(&self) -> String {
         let (id, content, priority, checked) = self.fields();
         format!("{id},{content},{priority},{checked}")
     }

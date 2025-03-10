@@ -15,12 +15,12 @@ pub enum Action {
 }
 
 /// Possible actions taken when editing a persister's contents.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum PersisterKind {
     /// Represents a [`FilePersister`][`crate::persisters::traits::FilePersister`].
     File,
     /// Represents a [`DbPersister`][`crate::persisters::traits::DbPersister`].
-    Db
+    Db,
 }
 
 pub use config::Config;

@@ -3,8 +3,8 @@
 use std::path::PathBuf;
 use std::{fmt, fs};
 
-use crate::models::{Task, Todo};
 use crate::core::{Action, PersisterKind};
+use crate::models::{Task, Todo};
 
 /// The `Persister` trait serves as a base for structures that store instances
 /// of other structs that contain either the [`FilePersister`] trait or the
@@ -16,21 +16,6 @@ pub trait Persister: fmt::Debug {
     /// Returns the tasks collected from the persister's contents.
     fn tasks(&self) -> Vec<Task>;
 
-    // /// Default value that can populate the file if it's empty.
-    // fn default(&self) -> String;
-
-    // /// Returns the current persister as `Any`.
-    // fn as_any(&self) -> &dyn Any;
-
-    // /// Compares two different objects that implement the `Persister` trait.
-    // fn is_equal(&self, other: &dyn Persister) -> bool;
-
-    // /// Checks if the file is empty.
-    // fn is_empty(&self) -> bool;
-
-    // /// Checks if the path exists.
-    // fn exists(&self) -> bool;
-
     /// The value that created the `Persister` instance.
     fn to_string(&self) -> String;
 
@@ -39,7 +24,7 @@ pub trait Persister: fmt::Debug {
 
     /// Reads the persister's content and returns its lines.
     fn read(&self) -> Vec<String>;
-    
+
     /// Edits a persister by managing an [`Action`] variant.
     fn edit(&self, ids: &[u32], action: Action);
 
@@ -108,13 +93,13 @@ pub trait DbPersister {
 
     /// Selects data from a table.
     fn select(&self) -> Vec<String>;
-    
+
     /// Inserts data into a table.
     fn insert(&self, todo: &Todo);
-    
+
     /// Updates data from a table.
     fn update(&self, ids: &[u32], action: Action);
-    
+
     /// Drops data from a table.
     fn delete(&self, ids: &[u32]);
 

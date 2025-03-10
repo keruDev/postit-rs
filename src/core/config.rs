@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::args::ConfigCommand;
 use crate::persisters::traits::Persister;
-use crate::persisters::{Orm, File};
+use crate::persisters::{File, Orm};
 
 /// Contains the configuration used while running `postit`.
 ///

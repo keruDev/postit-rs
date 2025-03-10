@@ -7,7 +7,6 @@ use postit::Action;
 
 use crate::mocks::MockConn;
 
-
 #[test]
 fn clone() {
     let mock = MockConn::create(Protocol::Sqlite);
@@ -28,18 +27,13 @@ fn exists() {
 #[test]
 fn format_ids() {
     let mock = MockConn::create(Protocol::Sqlite);
-    
+
     let ids = vec![1, 2, 3];
 
     let result = Sqlite::from(&mock.conn()).format_ids(&ids);
     let expect = "1, 2, 3";
-    
+
     assert_eq!(result, expect)
-}
-
-#[test]
-fn read_row() {
-
 }
 
 #[test]
@@ -88,7 +82,7 @@ fn update_check_ok() {
     let mock = MockConn::create(Protocol::Sqlite);
     let mut todo = MockConn::sample();
 
-    let ids =  vec![2, 3];
+    let ids = vec![2, 3];
     let action = Action::Check;
 
     mock.instance.insert(&todo);
@@ -107,7 +101,7 @@ fn update_uncheck() {
     let mock = MockConn::create(Protocol::Sqlite);
     let mut todo = MockConn::sample();
 
-    let ids =  vec![2, 3];
+    let ids = vec![2, 3];
     let action = Action::Uncheck;
 
     mock.instance.insert(&todo);
@@ -126,7 +120,7 @@ fn update_delete() {
     let mock = MockConn::create(Protocol::Sqlite);
     let mut todo = MockConn::sample();
 
-    let ids =  vec![2, 3];
+    let ids = vec![2, 3];
     let action = Action::Drop;
 
     mock.instance.insert(&todo);

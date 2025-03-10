@@ -13,7 +13,7 @@ pub struct Sqlite {
     /// Connection string used to connect to the `SQLite` file.
     conn_str: String,
     /// Connection to the `SQLite` file.
-    connection: Connection
+    connection: Connection,
 }
 
 impl Clone for Sqlite {
@@ -24,13 +24,13 @@ impl Clone for Sqlite {
 
 impl Sqlite {
     /// Creates a `Sqlite` instance from a connection string.
-    /// 
+    ///
     /// # Panics
     /// If a connection to the `SQLite` file can't be opened.
     pub fn from(conn: &str) -> Self {
         let instance = Self {
             conn_str: String::from(conn),
-            connection: sqlite::open(conn).unwrap()
+            connection: sqlite::open(conn).unwrap(),
         };
 
         if !instance.exists() {
@@ -49,7 +49,7 @@ impl Sqlite {
     }
 
     /// Reads one row from the current statement.
-    /// 
+    ///
     /// # Panics
     /// If a value can't be unwrapped.
     pub fn read_row(&self, statement: &Statement) -> String {
@@ -73,10 +73,11 @@ impl DbPersister for Sqlite {
     }
 
     /// Checks if a table exists.
-    /// 
+    ///
     /// # Panics
     /// In case the statement can't be prepared.
     fn exists(&self) -> bool {
+        #[rustfmt::skip]
         let mut stmt = self.connection.prepare("
             SELECT *
             FROM sqlite_master
@@ -88,12 +89,13 @@ impl DbPersister for Sqlite {
 
         while matches!(stmt.next(), Ok(State::Row)) {
             result.push(stmt.read::<String, _>("name").unwrap().to_string());
-        };
+        }
 
         !result.is_empty()
     }
 
     fn create(&self) {
+        #[rustfmt::skip]
         self.connection.execute("
             CREATE TABLE IF NOT EXISTS tasks (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -118,11 +120,13 @@ impl DbPersister for Sqlite {
 
     fn insert(&self, todo: &Todo) {
         todo.tasks.iter().for_each(|task| {
-            let mut stmt  = self.connection.prepare("
+            #[rustfmt::skip]
+            let mut stmt = self.connection.prepare("
                 INSERT INTO tasks (content, priority, checked)
                 VALUES (?, ?, ?)
             ").unwrap();
 
+            #[rustfmt::skip]
             stmt.bind(&[
                 &task.content,
                 &*task.priority,
@@ -135,7 +139,7 @@ impl DbPersister for Sqlite {
         });
     }
 
-    fn update(&self, ids: &[u32], action: Action) {        
+    fn update(&self, ids: &[u32], action: Action) {
         if matches!(action, Action::Drop) {
             return self.delete(ids);
         }
@@ -146,14 +150,17 @@ impl DbPersister for Sqlite {
             _ => unreachable!(),
         };
 
+        let ids = self.format_ids(ids);
+
+        #[rustfmt::skip]
         let query = format!("
             UPDATE tasks
             SET checked = {value}
             WHERE id
-            IN ({})
-        ", self.format_ids(ids));
+            IN ({ids})
+        ");
 
-        let mut stmt  = self.connection.prepare(query).unwrap();
+        let mut stmt = self.connection.prepare(query).unwrap();
 
         if let Err(e) = stmt.next() {
             eprintln!("Error while updating value: {e}");
@@ -161,21 +168,24 @@ impl DbPersister for Sqlite {
     }
 
     fn delete(&self, ids: &[u32]) {
+        let ids = self.format_ids(ids);
+
+        #[rustfmt::skip]
         let query = format!("
             DELETE FROM tasks
             WHERE id
-            IN ({})
-        ", self.format_ids(ids));
+            IN ({ids})
+        ");
 
-        let mut stmt  = self.connection.prepare(query).unwrap();
+        let mut stmt = self.connection.prepare(query).unwrap();
 
         if let Err(e) = stmt.next() {
             eprintln!("Error while dropping value: {e}");
         }
     }
-    
+
     fn drop_database(&self) {
-        std::fs::remove_file(self.conn()).expect("Couldn't drop the database")
+        std::fs::remove_file(self.conn()).expect("Couldn't drop the database");
     }
 
     fn tasks(&self) -> Vec<Task> {

@@ -33,9 +33,6 @@ fn get() {
     assert_eq!(tasks, expect);
 }
 
-// #[test]
-// view() {}
-
 #[test]
 fn add_ok() {
     let mock = MockPath::create(Format::Csv);
@@ -81,5 +78,20 @@ fn uncheck_ok() {
     assert_eq!(todo, expect);
 }
 
-// #[test]
-// fn drop () {}
+#[test]
+fn drop() {
+    let mock = MockPath::create(Format::Csv);
+
+    let mut todo = fakes(&mock);
+    let mut expect = todo.clone();
+
+    let ids = vec![2, 3];
+
+    todo.check(&ids);
+    todo.drop(&ids);
+
+    expect.tasks.remove(1);
+    expect.tasks.remove(1);
+
+    assert_eq!(todo, expect);
+}

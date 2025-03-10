@@ -24,11 +24,10 @@ fn manage_init() {
 fn manage_edit() {
     let key = "EDITOR";
     let value = std::env::var(key).unwrap();
-    
-    // TODO make this Windows compatible
+
     std::env::set_var(key, "echo");
     Config::manage(&ConfigCommand::Edit);
-    
+
     std::env::set_var(key, value);
 }
 
@@ -40,7 +39,7 @@ fn manage_edit_panics() {
 
     std::env::set_var(key, "");
     Config::manage(&ConfigCommand::Edit);
-    
+
     std::env::set_var(key, value);
 }
 

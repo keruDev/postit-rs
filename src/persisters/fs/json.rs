@@ -29,17 +29,6 @@ impl Json {
 }
 
 impl FilePersister for Json {
-    // fn as_any(&self) -> &dyn Any {
-    //     self
-    // }
-
-    // fn is_equal(&self, other: &dyn FilePersister) -> bool {
-    //     other
-    //         .as_any()
-    //         .downcast_ref::<Self>()
-    //         .is_some_and(|persister| self.path == persister.path)
-    // }
-
     fn path(&self) -> PathBuf {
         self.path.clone()
     }

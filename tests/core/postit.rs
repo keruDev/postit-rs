@@ -73,12 +73,10 @@ fn check() {
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::Check(
-            EditTaskArgs {
-                persister: Some(file.to_string()),
-                ids: ids.to_owned()
-            }
-        )
+        command: Command::Check(EditTaskArgs {
+            persister: Some(file.to_string()),
+            ids: ids.to_owned(),
+        }),
     };
 
     Postit::run(args);
@@ -99,12 +97,10 @@ fn uncheck() {
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::Uncheck(
-            EditTaskArgs {
-                persister: Some(file.to_string()),
-                ids: ids.to_owned()
-            }
-        )
+        command: Command::Uncheck(EditTaskArgs {
+            persister: Some(file.to_string()),
+            ids: ids.to_owned(),
+        }),
     };
 
     Postit::run(args);
@@ -129,12 +125,10 @@ fn drop_no_force_drop() {
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::Drop(
-            EditTaskArgs {
-                persister: Some(file.to_string()),
-                ids: ids.to_owned()
-            }
-        )
+        command: Command::Drop(EditTaskArgs {
+            persister: Some(file.to_string()),
+            ids: ids.to_owned(),
+        }),
     };
 
     Postit::run(args);
@@ -160,12 +154,10 @@ fn drop_force() {
     let (file, mut todo) = fakes(&mock);
 
     let args = Arguments {
-        command: Command::Drop(
-            EditTaskArgs {
-                persister: Some(file.to_string()),
-                ids: ids.to_owned()
-            }
-        )
+        command: Command::Drop(EditTaskArgs {
+            persister: Some(file.to_string()),
+            ids: ids.to_owned(),
+        }),
     };
 
     Postit::run(args);
