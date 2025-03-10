@@ -56,7 +56,7 @@ impl Config {
         std::env::var("EDITOR").unwrap_or(String::from("nano"))
     }
 
-    /// Manages the `postit.toml` file using a `ConfigOptions` instance.
+    /// Manages the `.postit.toml` file using a `ConfigOptions` instance.
     pub fn manage(option: &ConfigCommand) {
         match option {
             ConfigCommand::Init => Self::init(),
