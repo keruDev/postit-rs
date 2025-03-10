@@ -2,8 +2,6 @@
 //!
 //! The `Sqlite` struct implements the [`DbPersister`] trait.
 
-use std::fmt;
-
 use sqlite::{Connection, State, Statement};
 
 use crate::core::Action;
@@ -16,15 +14,6 @@ pub struct Sqlite {
     conn_str: String,
     /// Connection to the `SQLite` file.
     connection: Connection
-}
-
-impl fmt::Debug for Sqlite {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Sqlite")
-            .field("conn_str", &self.conn_str)
-            .field("connection", &self.conn_str)
-            .finish()
-    }
 }
 
 impl Clone for Sqlite {
@@ -49,27 +38,6 @@ impl Sqlite {
         }
 
         instance
-    }
-
-    /// Checks if a table exists.
-    /// 
-    /// # Panics
-    /// In case the statement can't be prepared.
-    pub fn exists(&self) -> bool {
-        let mut stmt = self.connection.prepare("
-            SELECT *
-            FROM sqlite_master
-            WHERE type='table'
-              AND name='tasks'
-        ").unwrap();
-
-        let mut result = vec![];
-
-        while matches!(stmt.next(), Ok(State::Row)) {
-            result.push(stmt.read::<String, _>("name").unwrap().to_string());
-        };
-
-        !result.is_empty()
     }
 
     /// Returns the desired ids format to be used in a query.
@@ -102,6 +70,27 @@ impl DbPersister for Sqlite {
 
     fn boxed(self) -> Box<dyn DbPersister> {
         Box::new(self)
+    }
+
+    /// Checks if a table exists.
+    /// 
+    /// # Panics
+    /// In case the statement can't be prepared.
+    fn exists(&self) -> bool {
+        let mut stmt = self.connection.prepare("
+            SELECT *
+            FROM sqlite_master
+            WHERE type='table'
+              AND name='tasks'
+        ").unwrap();
+
+        let mut result = vec![];
+
+        while matches!(stmt.next(), Ok(State::Row)) {
+            result.push(stmt.read::<String, _>("name").unwrap().to_string());
+        };
+
+        !result.is_empty()
     }
 
     fn create(&self) {

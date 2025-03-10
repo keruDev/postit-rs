@@ -31,4 +31,4 @@ mod core;
 pub mod models;
 pub mod persisters;
 
-pub use core::{args, Config, Postit};
+pub use core::*;

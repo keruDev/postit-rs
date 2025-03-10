@@ -9,7 +9,12 @@ use postit::persisters::File;
 use crate::mocks::{MockConfig, MockPath};
 
 #[test]
-fn fmt_debug() {
+fn format_deref() {
+    assert_eq!(&*Format::Csv, "csv")
+}
+
+#[test]
+fn file_fmt_debug() {
     let mock = MockPath::create(Format::Csv);
 
     let persister = File::get_persister(mock.path());
@@ -26,9 +31,9 @@ fn from() {
     let mock = MockPath::create(Format::Csv);
 
     let result = File::from(&mock.to_string());
-    let expected = File::new(Csv::new(mock.path()).boxed());
+    let expect = File::new(Csv::new(mock.path()).boxed());
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -39,9 +44,9 @@ fn check_name_ok() {
     let checked_path = File::check_name(mock_path.clone());
 
     let result = checked_path.file_name().unwrap();
-    let expected = mock_path.as_os_str();
+    let expect = mock_path.as_os_str();
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -49,14 +54,14 @@ fn check_content_is_empty_or_exists() {
     let mock = MockPath::blank(Format::Csv);
 
     let persister = File::get_persister(mock.path());
-    let expected = persister.default();
+    let expect = persister.default();
 
     let file = File::new(persister);
     file.check_content();
 
     let result = fs::read_to_string(mock.path()).unwrap();
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -68,9 +73,9 @@ fn check_name_no_name() {
     let expected_path = format!("tasks{path}");
 
     let result = checked_path.file_name().unwrap();
-    let expected = OsStr::new(&expected_path);
+    let expect = OsStr::new(&expected_path);
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -82,9 +87,9 @@ fn check_name_no_ext() {
     let expected_path = format!("{path}.csv");
 
     let result = checked_path.file_name().unwrap();
-    let expected = OsStr::new(&expected_path);
+    let expect = OsStr::new(&expected_path);
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -93,9 +98,9 @@ fn check_name_empty() {
 
     let checked_path = File::check_name(mock.path());
     let result = checked_path.file_name().unwrap();
-    let expected = OsStr::new("tasks.csv");
+    let expect = OsStr::new("tasks.csv");
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -105,9 +110,9 @@ fn get_persister_csv() {
     let path = File::get_persister(mock.path()).path();
 
     let result = path.extension().unwrap().to_str().unwrap();
-    let expected = "csv";
+    let expect = "csv";
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -117,9 +122,9 @@ fn get_persister_json() {
     let path = File::get_persister(mock.path()).path();
 
     let result = path.extension().unwrap().to_str().unwrap();
-    let expected = "json";
+    let expect = "json";
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -129,9 +134,9 @@ fn get_persister_txt() {
     let path = File::get_persister(mock.path()).path();
 
     let result = path.extension().unwrap().to_str().unwrap();
-    let expected = "csv";
+    let expect = "csv";
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -141,9 +146,9 @@ fn get_persister_any() {
     let path = File::get_persister(mock.path()).path();
 
     let result = path.extension().unwrap().to_str().unwrap();
-    let expected = "csv";
+    let expect = "csv";
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -172,7 +177,7 @@ fn copy_path_exists() {
     let _mock_config = MockConfig::new();
 
     let old = MockPath::create(Format::Csv);
-    let new: MockPath = MockPath::create(Format::Json);
+    let new = MockPath::create(Format::Json);
 
     File::copy(&old.to_string(), &new.to_string());
 }

@@ -158,7 +158,7 @@ impl Task {
     }
 
     /// Formats the Task into a String.
-    pub fn format(&self) -> String {
+    pub fn to_string(&self) -> String {
         let (id, content, priority, checked) = self.fields();
         format!("{id},{content},{priority},{checked}")
     }

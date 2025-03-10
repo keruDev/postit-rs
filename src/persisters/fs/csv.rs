@@ -28,7 +28,7 @@ impl Csv {
 
     /// Transforms tasks into file lines.
     pub fn format(tasks: &[Task]) -> Vec<String> {
-        tasks.iter().map(Task::format).collect()
+        tasks.iter().map(Task::to_string).collect()
     }
 
     /// Returns the header of a the csv file.

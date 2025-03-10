@@ -5,7 +5,7 @@ ignore-tests = false
 skip-clean = true
 verbose = true
 line = true
-fail-under = 90
+fail-under = 100
 
 [report]
 output-dir = "coverage"

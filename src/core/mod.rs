@@ -15,6 +15,7 @@ pub enum Action {
 }
 
 /// Possible actions taken when editing a persister's contents.
+#[derive(Debug, PartialEq)]
 pub enum PersisterKind {
     /// Represents a [`FilePersister`][`crate::persisters::traits::FilePersister`].
     File,

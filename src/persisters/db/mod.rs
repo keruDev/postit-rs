@@ -126,7 +126,7 @@ impl Orm {
 
         let protocol = parts[0];
 
-        if Self::is_sqlite(protocol) {
+        if parts.len() == 1 && Self::is_sqlite(protocol) {
             return Sqlite::from(&conn).boxed();
         }
 

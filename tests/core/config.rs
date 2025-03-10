@@ -14,10 +14,10 @@ fn manage_init() {
     Config::manage(&ConfigCommand::Init);
 
     let result = Config::load();
-    let expected = Config::default();
+    let expect = Config::default();
 
     assert!(mock.path().exists());
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -106,9 +106,9 @@ fn load_default() {
     let _mock = MockConfig::new();
 
     let result = Config::load();
-    let expected = Config::default();
+    let expect = Config::default();
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]

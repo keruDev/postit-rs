@@ -100,6 +100,9 @@ pub trait DbPersister {
     /// Returns the tasks collected from the database's contents.
     fn tasks(&self) -> Vec<Task>;
 
+    /// Checks if a table exists.
+    fn exists(&self) -> bool;
+
     /// Creates a table.
     fn create(&self);
 

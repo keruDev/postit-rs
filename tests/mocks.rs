@@ -40,7 +40,7 @@ impl MockPath {
                 Task::from("2,Test,med,false"),
                 Task::from("3,Test,high,true"),
                 Task::from("4,Test,none,true"),
-            ],
+            ]
         }
     }
 
@@ -121,6 +121,17 @@ impl MockConn {
         self.conn()
     }
 
+    pub fn sample() -> Todo {
+        Todo {
+            tasks: vec![
+                Task::from("1,Test,low,false"),
+                Task::from("2,Test,med,false"),
+                Task::from("3,Test,high,true"),
+                Task::from("4,Test,none,true"),
+            ]
+        }
+    }
+
     pub fn create(protocol: Protocol) -> Self {
         match protocol {
             Protocol::Sqlite => Self::sqlite(),
@@ -136,9 +147,14 @@ impl Drop for MockConn {
     fn drop(&mut self) {
         // TEMP
         self.instance.drop_database();
-    }
+     }
 }
 
+impl Clone for MockConn {
+    fn clone(&self) -> Self {
+        Self::new(&self.instance.conn())
+    }
+}
 
 /// The temporary representation of the Config file.
 ///
