@@ -59,7 +59,7 @@ fn fields() {
 fn to_string() {
     let task = fake_task_unchecked();
 
-    let result = task.to_string();
+    let result = task.formatted();
     let expect = format!("{},{},{},{}", task.id, task.content, task.priority, task.checked,);
 
     assert_eq!(result, expect);

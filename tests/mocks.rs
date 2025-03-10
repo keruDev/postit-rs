@@ -20,15 +20,13 @@ pub struct MockPath {
 impl MockPath {
     /// Constructor of the `MockPath` struct.
     pub fn new(path: PathBuf) -> Self {
-        let path = PathBuf::from(path);
-
         if !path.exists() {
             fs::File::create(&path).expect("Failed to create temp file");
         }
 
         Self { path }
     }
- 
+
     pub fn from(path: &str) -> Self {
         Self { path: PathBuf::from(path) }
     }
@@ -40,16 +38,12 @@ impl MockPath {
                 Task::from("2,Test,med,false"),
                 Task::from("3,Test,high,true"),
                 Task::from("4,Test,none,true"),
-            ]
+            ],
         }
     }
 
     pub fn path(&self) -> PathBuf {
         self.path.clone()
-    }
-    
-    pub fn to_string(&self) -> String {
-        self.path().to_str().unwrap().to_owned()
     }
 
     pub fn create(format: Format) -> Self {
@@ -104,7 +98,7 @@ impl Drop for MockPath {
 /// Implements the `Deref` and `Drop` traits
 /// to delete the temporary connection string when the test ends.
 pub struct MockConn {
-    pub instance: Box<dyn DbPersister>
+    pub instance: Box<dyn DbPersister>,
 }
 
 impl MockConn {
@@ -117,10 +111,6 @@ impl MockConn {
         self.instance.conn()
     }
 
-    pub fn to_string(&self) -> String {
-        self.conn()
-    }
-
     pub fn sample() -> Todo {
         Todo {
             tasks: vec![
@@ -128,7 +118,7 @@ impl MockConn {
                 Task::from("2,Test,med,false"),
                 Task::from("3,Test,high,true"),
                 Task::from("4,Test,none,true"),
-            ]
+            ],
         }
     }
 
@@ -147,7 +137,7 @@ impl Drop for MockConn {
     fn drop(&mut self) {
         // TEMP
         self.instance.drop_database();
-     }
+    }
 }
 
 impl Clone for MockConn {

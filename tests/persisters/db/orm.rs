@@ -38,16 +38,6 @@ fn orm_fmt_debug() {
 }
 
 #[test]
-fn new() {
-
-}
-
-#[test]
-fn from() {
-
-}
-
-#[test]
 fn is_sqlite() {
     assert!(Orm::is_sqlite(":memory:"));
     assert!(Orm::is_sqlite("test.db"));
@@ -86,7 +76,7 @@ fn save_read() {
     let orm = Orm::from(&mock.instance.conn());
 
     orm.save(&todo);
-    
+
     let content = orm.read();
     let result: Vec<Task> = content.iter().map(|line| Task::from(line)).collect();
 

@@ -3,13 +3,12 @@
 //!
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
+use super::args::EditTaskArgs;
+use super::{Action, PersisterKind};
 use crate::args::{Arguments, Command, ConfigCommand};
 use crate::models::{Task, Todo};
 use crate::persisters::File;
 use crate::Config;
-
-use super::args::EditTaskArgs;
-use super::{Action, PersisterKind};
 
 /// Entry point where all operations are executed.
 ///

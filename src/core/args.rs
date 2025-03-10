@@ -46,10 +46,10 @@ pub enum Command {
     },
     /// Marks a task as checked.
     Check(EditTaskArgs),
-    
+
     /// Marks a task as unchecked.
     Uncheck(EditTaskArgs),
-    
+
     /// Deletes a task from the list.
     Drop(EditTaskArgs),
 
