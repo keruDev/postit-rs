@@ -63,7 +63,7 @@ pub enum Command {
         #[arg(value_name = "NEW_PATH", help = "New path of the tasks file.")]
         new: String,
     },
-    /// Manages the configuration file (.postit.toml or postit.toml).
+    /// Manages the configuration file (.postit.toml).
     Config {
         #[command(subcommand)]
         /// The option the `Config` command will use.
