@@ -47,17 +47,14 @@ impl Postit {
         let task_content = String::from(task);
 
         let parts: Vec<&str> = task_content.split(',').map(str::trim).collect();
-        
+
         let content = match parts[0].parse::<u32>() {
             Ok(_n) => panic!("Task element can't be a number"),
             Err(_e) => parts[0],
         };
 
-        let priority = if parts.len() > 1 {
-            Priority::from(parts.get(1).unwrap())
-        } else {
-            Priority::Med
-        };
+        let priority =
+            if parts.len() > 1 { Priority::from(parts.get(1).unwrap()) } else { Priority::Med };
 
         let line = format!("{},{},{},{}", id, content, priority, false);
         let task = Task::from(&line);

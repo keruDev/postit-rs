@@ -44,7 +44,7 @@ impl Todo {
     pub fn add(&mut self, task: Task) {
         self.tasks.push(task);
     }
-    
+
     /// Marks a task as checked.
     pub fn check(&mut self, ids: &[u32]) -> Vec<u32> {
         let mut changed_ids = Vec::<u32>::new();

@@ -159,7 +159,7 @@ impl Persister for Orm {
         if self.db.count() == 0 {
             return self.db.insert(todo);
         }
-        
+
         let last = todo.tasks.last().unwrap().to_owned();
 
         let task = Todo::one(last);
