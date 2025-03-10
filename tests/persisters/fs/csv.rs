@@ -42,9 +42,9 @@ fn format() {
     ];
 
     let result = Csv::format(&tasks);
-    let expected = vec![String::from("1,Test,high,true"), String::from("2,Test,med,false")];
+    let expect = vec![String::from("1,Test,high,true"), String::from("2,Test,med,false")];
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -55,7 +55,7 @@ fn read() {
     let header = Csv::header().replace("\n", "");
 
     let result = file.read();
-    let expected = vec![
+    let expect = vec![
         &header,
         "1,Test,low,false",
         "2,Test,med,false",
@@ -63,7 +63,7 @@ fn read() {
         "4,Test,none,true",
     ];
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -74,10 +74,10 @@ fn open() {
     let mut file = fs::File::open(mock.path()).unwrap();
 
     let mut result = Vec::new();
-    let mut expected = Vec::new();
+    let mut expect = Vec::new();
 
     csv.read_to_end(&mut result).expect("Error reading CSV");
-    file.read_to_end(&mut expected).expect("Error reading file");
+    file.read_to_end(&mut expect).expect("Error reading file");
 
-    assert_eq!(result, expected);
+    assert_eq!(result, expect);
 }

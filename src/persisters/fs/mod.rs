@@ -80,15 +80,6 @@ impl Format {
     }
 }
 
-impl fmt::Display for Format {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            Self::Csv => write!(f, "csv"),
-            Self::Json => write!(f, "json"),
-        }
-    }
-}
-
 impl Deref for Format {
     type Target = str;
 
@@ -152,7 +143,7 @@ impl File {
     pub fn check_name(path: PathBuf) -> PathBuf {
         let mut path = path;
 
-        let file_name: String = path
+        let file_name = path
             .file_name()
             .unwrap_or_else(|| OsStr::new("tasks"))
             .to_string_lossy()

@@ -17,7 +17,7 @@ it effectively serves its intended purpose.
 Customization:
 - Configuration file (more info in the [Configuration](#configuration) section).
 - Set your own configuration path using the `POSTIT_CONFIG_PATH` environment variable 
-  (by default and convention, `.postit.toml` or `postit.toml`).
+  (by default, `.postit.toml`).
 
 Supported file formats:
 - csv
@@ -33,11 +33,10 @@ Display:
 
 ## Configuration
 
-postit's behavior can be changed using the `.postit.toml` or `postit.toml` file
-(the first one is preferred over the second one).
+postit's behavior can be changed using the `.postit.toml`.
 
 You can check out its possible fields in the [docs](https://docs.rs/postit/latest/postit/struct.Config.html) or down below:
-- `path`: location of the default file where tasks are stored (the `-p` or `--path` flag can override this).
+- `persister`: where tasks are stored (the `-p` or `--persister` flag can override this).
 - `force_drop`: if true, allows dropping tasks without them being checked.
 - `force_copy`: if true, allows overwriting files on copy if they already exist.
 - `drop_after_copy`: if true, drops files after copying.
@@ -45,7 +44,7 @@ You can check out its possible fields in the [docs](https://docs.rs/postit/lates
 
 ## Environment variables
 
-- `POSTIT_CONFIG_PATH`: specifies where the `.postit.toml` or `postit.toml` is located.
+- `POSTIT_CONFIG_PATH`: specifies where the config file is located (by default, `.postit.toml`).
 
 ## Usage
 
@@ -77,7 +76,7 @@ Here is a sample of tasks so you try `postit`.
 
 Syntax: `postit view`
 
-Takes the `path` config defined at `postit.toml` (or the `-p` flag, if provided)
+Takes the `persister` config defined at `postit.toml` (or the `-p` flag, if provided)
 to show the list of current tasks:
 
 ```csv
@@ -208,7 +207,7 @@ cargo test -- --test-threads=1
 You can also use `tarpaulin`, configured in the `tarpaulin.toml` file.
 It is slower, but shows line coverage (not branch coverage):
 ```sh
-cargo tarpaulin
+cargo tarpaulin -- --test-threads=1
 ```
 
 The reason why tests are run synchronously is to not overwrite existing files,

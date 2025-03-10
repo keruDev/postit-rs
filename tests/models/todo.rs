@@ -28,9 +28,9 @@ fn get() {
 
     let ids = vec![2, 3];
     let tasks = todo.get(&ids);
-    let expected = vec![&clone.tasks[1], &clone.tasks[2]];
+    let expect = vec![&clone.tasks[1], &clone.tasks[2]];
 
-    assert_eq!(tasks, expected);
+    assert_eq!(tasks, expect);
 }
 
 // #[test]
@@ -41,14 +41,14 @@ fn add_ok() {
     let mock = MockPath::create(Format::Csv);
 
     let mut todo = fakes(&mock);
-    let mut expected = todo.clone();
+    let mut expect = todo.clone();
 
     let task = Task::from("5,Test,med,false");
 
     todo.add(task.clone());
-    expected.tasks.push(task);
+    expect.tasks.push(task);
 
-    assert_eq!(todo, expected);
+    assert_eq!(todo, expect);
 }
 
 #[test]
@@ -56,14 +56,14 @@ fn check_ok() {
     let mock = MockPath::create(Format::Csv);
 
     let mut todo = fakes(&mock);
-    let mut expected = todo.clone();
+    let mut expect = todo.clone();
 
     let task = Task::from("5,Test,med,false");
 
     todo.add(task.clone());
-    expected.tasks.push(task);
+    expect.tasks.push(task);
 
-    assert_eq!(todo, expected);
+    assert_eq!(todo, expect);
 }
 
 #[test]
@@ -71,14 +71,14 @@ fn uncheck_ok() {
     let mock = MockPath::create(Format::Csv);
 
     let mut todo = fakes(&mock);
-    let mut expected = todo.clone();
+    let mut expect = todo.clone();
 
     let task = Task::from("5,Test,med,true");
 
     todo.add(task.clone());
-    expected.tasks.push(task);
+    expect.tasks.push(task);
 
-    assert_eq!(todo, expected);
+    assert_eq!(todo, expect);
 }
 
 // #[test]
