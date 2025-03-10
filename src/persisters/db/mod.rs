@@ -11,7 +11,7 @@ use std::ops::Deref;
 pub use sqlite::Sqlite;
 
 use super::traits::{DbPersister, Persister};
-use crate::core::{Action, PersisterKind};
+use crate::core::Action;
 use crate::models::{Task, Todo};
 
 /// Defines errors related to database management.
@@ -123,17 +123,17 @@ impl Orm {
     /// a connection string.
     pub fn get_persister(conn: &str) -> Box<dyn DbPersister> {
         let conn = String::from(conn);
-        let parts: Vec<&str> = conn.split("://").collect();
+        let mut parts: Vec<&str> = conn.split("://").collect();
 
-        if parts.is_empty() {
+        if parts[0].is_empty() {
             eprintln!("{}", error::Error::IncorrectConnectionString);
-            return Sqlite::from(&conn).boxed();
+            parts[0] = "tasks.db";
         }
 
         let protocol = parts[0];
 
         if parts.len() == 1 && Self::is_sqlite(protocol) {
-            return Sqlite::from(&conn).boxed();
+            return Sqlite::from(protocol).boxed();
         }
 
         match Protocol::from(protocol) {
@@ -147,10 +147,6 @@ impl Persister for Orm {
         Box::new(self)
     }
 
-    fn kind(&self) -> PersisterKind {
-        PersisterKind::Db
-    }
-
     fn to_string(&self) -> String {
         self.db.conn()
     }
@@ -160,7 +156,14 @@ impl Persister for Orm {
     }
 
     fn save(&self, todo: &Todo) {
-        self.db.insert(todo);
+        if self.db.count() == 0 {
+            return self.db.insert(todo);
+        }
+        
+        let last = todo.tasks.last().unwrap().to_owned();
+
+        let task = Todo::one(last);
+        self.db.insert(&task);
     }
 
     fn edit(&self, ids: &[u32], action: Action) {

@@ -18,6 +18,22 @@ fn clone() {
 }
 
 #[test]
+fn count_ok() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    mock.instance.insert(&MockConn::sample());
+
+    assert_eq!(Sqlite::from(&mock.conn()).count(), 4);
+}
+
+#[test]
+fn count_table_doesnt_exist() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    mock.instance.drop_database();
+
+    assert_eq!(Sqlite::from(&mock.conn()).count(), 0);
+}
+
+#[test]
 fn exists() {
     let mock = MockConn::create(Protocol::Sqlite);
 

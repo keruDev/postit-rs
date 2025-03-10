@@ -4,9 +4,9 @@
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
 use super::args::EditTaskArgs;
-use super::{Action, PersisterKind};
+use super::Action;
 use crate::args::{Arguments, Command, ConfigCommand};
-use crate::models::{Task, Todo};
+use crate::models::{Priority, Task, Todo};
 use crate::persisters::File;
 use crate::Config;
 
@@ -44,17 +44,26 @@ impl Postit {
         let mut todo = Todo::from(&*persister);
 
         let id = todo.tasks.last().map_or(1, |last| last.id + 1);
+        let task_content = String::from(task);
 
-        let line = format!("{},{},{}", id, task, false);
+        let parts: Vec<&str> = task_content.split(',').map(str::trim).collect();
+        
+        let content = match parts[0].parse::<u32>() {
+            Ok(_n) => panic!("Task element can't be a number"),
+            Err(_e) => parts[0],
+        };
+
+        let priority = if parts.len() > 1 {
+            Priority::from(parts.get(1).unwrap())
+        } else {
+            Priority::Med
+        };
+
+        let line = format!("{},{},{},{}", id, content, priority, false);
         let task = Task::from(&line);
 
-        todo.add(task.clone());
+        todo.add(task);
         todo.view();
-
-        // Just saves the new task
-        if matches!(persister.kind(), PersisterKind::Db) {
-            todo = Todo::new(vec![task]);
-        }
 
         persister.save(&todo);
     }

@@ -14,14 +14,5 @@ pub enum Action {
     Drop,
 }
 
-/// Possible actions taken when editing a persister's contents.
-#[derive(Debug, PartialEq, Eq)]
-pub enum PersisterKind {
-    /// Represents a [`FilePersister`][`crate::persisters::traits::FilePersister`].
-    File,
-    /// Represents a [`DbPersister`][`crate::persisters::traits::DbPersister`].
-    Db,
-}
-
 pub use config::Config;
 pub use postit::Postit;

@@ -42,7 +42,7 @@ impl Config {
     /// Returns the path of the config file in the `POSTIT_CONFIG_PATH` env var.
     pub fn path() -> PathBuf {
         let env = std::env::var("POSTIT_CONFIG_PATH");
-        let config_path = env.unwrap_or_else(|_| String::from(".postit.toml"));
+        let config_path = env.unwrap_or(String::from(".postit.toml"));
 
         if config_path.is_empty() {
             return PathBuf::from(".postit.toml");
@@ -53,7 +53,7 @@ impl Config {
 
     /// Returns the editor in the `EDITOR` env var.
     pub fn editor() -> String {
-        std::env::var("EDITOR").unwrap_or_else(|_| String::from("nano"))
+        std::env::var("EDITOR").unwrap_or(String::from("nano"))
     }
 
     /// Manages the `postit.toml` file using a `ConfigOptions` instance.

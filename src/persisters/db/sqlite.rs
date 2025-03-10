@@ -52,13 +52,13 @@ impl Sqlite {
     ///
     /// # Panics
     /// If a value can't be unwrapped.
-    pub fn read_row(&self, statement: &Statement) -> String {
+    pub fn read_row(&self, stmt: &Statement) -> String {
         format!(
             "{},{},{},{}",
-            statement.read::<i64, _>("id").unwrap(),
-            statement.read::<String, _>("content").unwrap(),
-            statement.read::<String, _>("priority").unwrap(),
-            statement.read::<String, _>("checked").unwrap()
+            stmt.read::<i64, _>("id").unwrap(),
+            stmt.read::<String, _>("content").unwrap(),
+            stmt.read::<String, _>("priority").unwrap(),
+            stmt.read::<String, _>("checked").unwrap()
         )
     }
 }
@@ -93,6 +93,25 @@ impl DbPersister for Sqlite {
 
         !result.is_empty()
     }
+
+    fn count(&self) -> u32 {
+        if !self.exists() {
+            return 0_u32
+        }
+
+        #[rustfmt::skip]
+        let mut stmt = self.connection.prepare("
+            SELECT COUNT(*)
+              AS count
+            FROM tasks
+        ").unwrap();
+        
+        if matches!(stmt.next(), Ok(State::Row)) {
+            stmt.read::<i64, _>("count").unwrap_or(0) as u32
+        } else {
+            0
+        }
+    } 
 
     fn create(&self) {
         #[rustfmt::skip]

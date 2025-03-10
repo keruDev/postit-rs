@@ -4,7 +4,6 @@ use postit::models::Task;
 use postit::persisters::db::Protocol;
 use postit::persisters::traits::Persister;
 use postit::persisters::Orm;
-use postit::PersisterKind;
 
 use crate::mocks::MockConn;
 
@@ -56,8 +55,13 @@ fn get_persister() {
 }
 
 #[test]
-fn kind() {
-    assert_eq!(Orm::from("test.db").kind(), PersisterKind::Db)
+fn get_persister_empty() {
+    let conn = "tasks.db";
+
+    let _mock = MockConn::new(conn);
+    let persister = Orm::get_persister("");
+
+    assert_eq!(persister.conn(), conn)
 }
 
 #[test]
@@ -69,6 +73,23 @@ fn to_string() {
 }
 
 #[test]
+fn save_twice() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    let mut todo = MockConn::sample();
+    let task = Task::from("5,task,med,false");
+
+    let orm = Orm::from(&mock.instance.conn());
+
+    orm.save(&todo);
+    todo.add(task);
+    orm.save(&todo);
+
+    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
+
+    assert_eq!(result, todo.tasks)
+}
+
+#[test]
 fn save_read() {
     let mock = MockConn::create(Protocol::Sqlite);
     let todo = MockConn::sample();
@@ -77,8 +98,7 @@ fn save_read() {
 
     orm.save(&todo);
 
-    let content = orm.read();
-    let result: Vec<Task> = content.iter().map(|line| Task::from(line)).collect();
+    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
 
     assert_eq!(result, todo.tasks)
 }
@@ -96,8 +116,7 @@ fn edit_check() {
 
     todo.check(&ids);
 
-    let content = orm.read();
-    let result: Vec<Task> = content.iter().map(|line| Task::from(line)).collect();
+    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
 
     assert_eq!(result, todo.tasks)
 }
@@ -115,8 +134,7 @@ fn edit_uncheck() {
 
     todo.uncheck(&ids);
 
-    let content = orm.read();
-    let result: Vec<Task> = content.iter().map(|line| Task::from(line)).collect();
+    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
 
     assert_eq!(result, todo.tasks)
 }
@@ -135,8 +153,7 @@ fn edit_drop() {
     todo.check(&ids);
     todo.drop(&ids);
 
-    let content = orm.read();
-    let result: Vec<Task> = content.iter().map(|line| Task::from(line)).collect();
+    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
 
     assert_eq!(result, todo.tasks)
 }
