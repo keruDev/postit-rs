@@ -131,8 +131,8 @@ fn resolve_persister_db() {
 fn resolve_persister_none() {
     let _mock = MockConfig::new();
     let persister = Config::resolve_persister(None).to_string();
-    
+
     assert_eq!(persister.to_string(), Config::load().persister);
-    
+
     MockPath::new(PathBuf::from("tasks.csv"));
 }

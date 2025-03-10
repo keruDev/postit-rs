@@ -96,7 +96,7 @@ impl DbPersister for Sqlite {
 
     fn count(&self) -> u32 {
         if !self.exists() {
-            return 0_u32
+            return 0_u32;
         }
 
         #[rustfmt::skip]
@@ -105,13 +105,13 @@ impl DbPersister for Sqlite {
               AS count
             FROM tasks
         ").unwrap();
-        
+
         if matches!(stmt.next(), Ok(State::Row)) {
             stmt.read::<i64, _>("count").unwrap_or(0) as u32
         } else {
             0
         }
-    } 
+    }
 
     fn create(&self) {
         #[rustfmt::skip]
