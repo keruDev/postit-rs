@@ -174,7 +174,7 @@ fn copy_no_old_path() {
 #[test]
 #[should_panic]
 fn copy_path_exists() {
-    let _mock_config = MockConfig::new();
+    let _mock = MockConfig::new();
 
     let old = MockPath::create(Format::Csv);
     let new = MockPath::create(Format::Json);
