@@ -19,7 +19,14 @@ impl Todo {
 
     /// Creates a `Todo` instance from a file's contents.
     pub fn from(persister: &dyn Persister) -> Self {
-        Self { tasks: persister.tasks() }
+        // TODO ver si se puede hacer que tasks devuelva vec![]
+        let tasks = if persister.has_tasks() {
+            persister.tasks()
+        } else {
+            vec![]
+        };
+
+        Self { tasks }
     }
 
     /// Adds a task to the task list.

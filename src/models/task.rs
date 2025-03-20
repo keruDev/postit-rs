@@ -116,6 +116,17 @@ impl fmt::Display for Task {
     }
 }
 
+impl Default for Task {
+    fn default() -> Self {
+        Task {
+            id: 0,
+            content: String::new(),
+            priority: Priority::Med,
+            checked: false,
+        }
+    }
+}
+
 impl Task {
     /// Constructor of the `Task` struct.
     pub const fn new(id: u32, content: String, priority: Priority, checked: bool) -> Self {

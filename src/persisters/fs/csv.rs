@@ -70,7 +70,7 @@ impl FilePersister for Csv {
 
         bytes.append(&mut tasks);
 
-        fs::write(&self.path, bytes).expect("Should have been able to write into the CSV file");
+        fs::write(&self.path(), bytes).expect("Should have been able to write into the CSV file");
     }
 
     /// Transforms a csv file into tasks.
