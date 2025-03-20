@@ -3,9 +3,11 @@
 //! The currently supported formats are:
 //! - csv
 //! - json
+//! - xml
 
 mod csv;
 mod json;
+mod xml;
 
 use std::ffi::OsStr;
 use std::ops::Deref;
@@ -14,6 +16,7 @@ use std::{fmt, fs};
 
 pub use csv::Csv;
 pub use json::Json;
+use xml::Xml;
 
 use super::traits::{FilePersister, Persister};
 use crate::core::Action;
@@ -55,6 +58,8 @@ pub enum Format {
     Csv,
     /// A JSON file (associated persister: [`Json`]).
     Json,
+    /// An XML file (associated persister: [`Xml`]).
+    Xml,
 }
 
 impl Format {
@@ -63,6 +68,7 @@ impl Format {
         match s {
             "json" => Self::Json,
             "csv" => Self::Csv,
+            "xml" => Self::Xml,
             _ => {
                 eprintln!("{}", error::Error::UnsupportedFormat);
                 Self::Csv
@@ -75,6 +81,7 @@ impl Format {
         match self {
             Self::Csv => "csv",
             Self::Json => "json",
+            Self::Xml => "xml",
         }
     }
 }
@@ -176,6 +183,7 @@ impl File {
         match format {
             Format::Csv => Csv::new(path).boxed(),
             Format::Json => Json::new(path).boxed(),
+            Format::Xml => Xml::new(path).boxed(),
         }
     }
 
@@ -215,6 +223,17 @@ impl Persister for File {
         self.file.path().to_str().unwrap().to_owned()
     }
 
+    fn tasks(&self) -> Vec<Task> {
+        self.file.tasks()
+    }
+
+    fn has_tasks(&self) -> bool {
+        let content = self.read();
+        let default = self.file.default();
+
+        !(content.is_empty() || content.join("\n") == default)
+    }
+
     fn read(&self) -> Vec<String> {
         self.file.read()
     }
@@ -225,10 +244,6 @@ impl Persister for File {
 
     fn edit(&self, _ids: &[u32], _action: Action) {
         self.file.write(&Todo::from(self));
-    }
-
-    fn tasks(&self) -> Vec<Task> {
-        self.file.tasks()
     }
 }
 

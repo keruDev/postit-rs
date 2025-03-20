@@ -53,7 +53,7 @@ pub enum Command {
     /// Deletes a task from the list.
     Drop(EditTaskArgs),
 
-    /// Creates a copy of a file (supports other formats, e.g.: csv -> json).
+    /// Creates a copy of a file (can parse formats, like csv to json).
     Copy {
         /// Where the file is.
         #[arg(value_name = "OLD_PATH", help = "Old path of the tasks file.")]

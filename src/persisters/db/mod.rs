@@ -151,6 +151,14 @@ impl Persister for Orm {
         self.db.conn()
     }
 
+    fn has_tasks(&self) -> bool {
+        self.db.select().is_empty()
+    }
+
+    fn tasks(&self) -> Vec<Task> {
+        self.db.tasks()
+    }
+
     fn read(&self) -> Vec<String> {
         self.db.select()
     }
@@ -168,9 +176,5 @@ impl Persister for Orm {
 
     fn edit(&self, ids: &[u32], action: Action) {
         self.db.update(ids, action);
-    }
-
-    fn tasks(&self) -> Vec<Task> {
-        self.db.tasks()
     }
 }

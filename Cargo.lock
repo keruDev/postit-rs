@@ -124,6 +124,7 @@ version = "0.2.0"
 dependencies = [
  "clap",
  "colored",
+ "quick-xml",
  "serde",
  "serde_json",
  "sqlite",
@@ -137,6 +138,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a31971752e70b8b2686d7e46ec17fb38dad4051d94024c88df49b667caea9c84"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.37.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "165859e9e55f79d67b96c5d96f4e88b6f2695a1972849c15a6a3f5c59fc2c003"
+dependencies = [
+ "memchr",
+ "serde",
 ]
 
 [[package]]

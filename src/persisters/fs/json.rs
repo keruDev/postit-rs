@@ -2,7 +2,6 @@
 //!
 //! The `Json` struct implements the [`FilePersister`] trait.
 
-// use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
