@@ -237,6 +237,24 @@ fn copy() {
 }
 
 #[test]
+fn sample() {
+    let mock = MockPath::create(Format::Csv);
+
+    let args = Arguments {
+        command: Command::Sample(PersisterArgs { persister: Some(mock.to_string()) }),
+    };
+
+    Postit::run(args);
+
+    let file = File::from(&mock.to_string());
+
+    let result = Todo::from(&file).tasks;
+    let expect = Todo::sample().tasks;
+
+    assert_eq!(result, expect);
+}
+
+#[test]
 fn clean() {
     let mock = MockPath::create(Format::Csv);
 
