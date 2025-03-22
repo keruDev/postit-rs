@@ -4,7 +4,7 @@
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
 use super::args::cmnd::{Command, ConfigCommand};
-use super::args::kind::{AddTask, CopyTask, EditTask, UsePersister};
+use super::args::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 use super::args::Arguments;
 use super::{Action, Config};
 use crate::models::{Priority, Task, Todo};
@@ -34,13 +34,13 @@ impl Postit {
     }
 
     /// Shows the list of current tasks.
-    fn view(args: UsePersister) {
+    fn view(args: PersisterArgs) {
         let persister = Config::resolve_persister(args.persister);
         Todo::from(&*persister).view();
     }
 
     /// Adds a new task to the list.
-    fn add(args: AddTask) {
+    fn add(args: AddTaskArgs) {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
@@ -66,7 +66,7 @@ impl Postit {
     }
 
     /// Edits tasks based on the action passed.
-    fn edit(args: EditTask, action: Action) {
+    fn edit(args: EditTaskArgs, action: Action) {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
@@ -82,7 +82,7 @@ impl Postit {
     }
 
     /// Copies the contents of a file to another.
-    fn copy(args: CopyTask) {
+    fn copy(args: CopyTaskArgs) {
         let old = args.old;
         let new = args.new;
 
@@ -90,7 +90,7 @@ impl Postit {
     }
 
     /// Cleans the tasks from a file.
-    fn clean(args: UsePersister) {
+    fn clean(args: PersisterArgs) {
         let persister = Config::resolve_persister(args.persister);
 
         persister.clean();

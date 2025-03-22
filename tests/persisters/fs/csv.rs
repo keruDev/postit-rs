@@ -81,3 +81,14 @@ fn open() {
 
     assert_eq!(result, expect);
 }
+
+#[test]
+fn clean() {
+    let mock = MockPath::create(Format::Csv);
+    Csv::new(mock.path()).clean();
+
+    let result = Csv::new(mock.path()).tasks();
+    let expect = Vec::new();
+
+    assert_eq!(result, expect);
+}

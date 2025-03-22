@@ -1,6 +1,6 @@
 use std::ops::Not;
 
-use postit::models::Task;
+use postit::models::{Task, Todo};
 use postit::persisters::db::{Protocol, Sqlite};
 use postit::persisters::traits::DbPersister;
 use postit::Action;
@@ -69,6 +69,24 @@ fn boxed() {
     let result = sqlite.clone().boxed();
 
     assert_eq!(result.conn(), sqlite.conn());
+}
+
+#[test]
+fn reset_autoincrement() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    let todo = MockConn::sample();
+    let task = Todo::one(todo.tasks[0].clone());
+
+    let sqlite = Sqlite::from(&mock.conn());
+
+    sqlite.insert(&todo);
+    sqlite.clean();
+    sqlite.insert(&task);
+
+    let result = sqlite.tasks()[0].id;
+    let expect = 1;
+
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -170,4 +188,20 @@ fn tasks() {
     sqlite.insert(&todo);
 
     assert_eq!(todo.tasks, sqlite.tasks());
+}
+
+#[test]
+fn clean() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    let todo = MockConn::sample();
+
+    let sqlite = Sqlite::from(&mock.conn());
+    sqlite.insert(&todo);
+
+    sqlite.clean();
+
+    let result = sqlite.tasks();
+    let expect = Vec::new();
+
+    assert_eq!(result, expect);
 }
