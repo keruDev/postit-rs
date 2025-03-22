@@ -27,6 +27,16 @@ impl Todo {
         Self::new(vec![task])
     }
 
+    /// Initializes a Todo instance with fake data.
+    pub fn sample() -> Self {
+        Self::new(vec![
+            Task::from("1,Task,low,false"),
+            Task::from("2,Task,med,false"),
+            Task::from("3,Task,high,true"),
+            Task::from("4,Task,none,true"),
+        ])
+    }
+
     /// Returns tasks based on the ids passed.
     pub fn get(&mut self, ids: &[u32]) -> Vec<&mut Task> {
         self.tasks
@@ -36,8 +46,8 @@ impl Todo {
     }
 
     /// Shows the current list of tasks.
-    pub fn view(&mut self) {
-        self.tasks.iter_mut().for_each(|task| println!("{task}"));
+    pub fn view(&self) {
+        self.tasks.iter().for_each(|task| println!("{task}"));
     }
 
     /// Adds a task to the task list.

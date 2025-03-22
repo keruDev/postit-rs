@@ -14,3 +14,4 @@ build_rs_cov.profraw
 *.json
 *.xml
 *.db
+*.sqlite*
