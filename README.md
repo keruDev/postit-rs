@@ -54,7 +54,6 @@ You can check out its possible fields in the [docs](https://docs.rs/postit/lates
 - `force_copy`: if true, allows overwriting files on copy if they already exist.
 - `drop_after_copy`: if true, drops files after copying.
 
-
 ## Environment variables
 
 - `EDITOR`: used to open your configuration file and edit it.
@@ -63,6 +62,7 @@ You can check out its possible fields in the [docs](https://docs.rs/postit/lates
 ## Commands
 
 The commands currently available are (click to go to a use example):
+- [`sample`](#sample)
 - [`view`](#view)
 - [`add`](#add)
 - [`check`](#check)
@@ -76,11 +76,18 @@ You can also use the `--help` flag for additional help on every command.
 
 ## Examples
 
-Here is a sample of tasks so you try `postit`.
+### sample
+
+Syntax: `postit sample`
+
+Populates a persister with fake data so you can test other commands. This command
+takes the `persister` defined at `.postit.toml` (or the `-p` flag, if provided):
+
+```sh
+postit sample
+```
 
 ```csv
-// tasks.csv
-
 1,Task,low,false
 2,Task,med,false
 3,Task,high,true
@@ -229,7 +236,6 @@ In the other hand, if you want to copy your file and delete the old one, you can
 do it by setting the `drop_after_copy` config to `true`. This will delete the file
 located at `<OLD_PATH>`.
 
-
 ### clean
 
 Syntax: `postit clean`
@@ -261,6 +267,7 @@ Syntax: `postit <COMMAND> --persister <PATH_OR_CONN>`
 
 The `--persister` or `-p` flag specifies where the tasks will be read from and saved to.
 It can be used on the following commands:
+- [sample](#sample)
 - [view](#view)
 - [add](#add)
 - [check](#check)
