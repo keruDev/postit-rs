@@ -11,7 +11,7 @@ use quick_xml::name::QName;
 use quick_xml::{Reader, Writer};
 
 use crate::models::{Priority, Task, Todo};
-use crate::persisters::traits::FilePersister;
+use crate::traits::FilePersister;
 
 /// Representation of a Xml file.
 #[derive(Debug, Clone, PartialEq, Eq)]

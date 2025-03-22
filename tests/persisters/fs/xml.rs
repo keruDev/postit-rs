@@ -1,5 +1,5 @@
-use postit::persisters::fs::{Format, Xml};
-use postit::persisters::traits::FilePersister as _;
+use postit::fs::{Format, Xml};
+use postit::traits::FilePersister as _;
 
 use crate::mocks::MockPath;
 

@@ -6,7 +6,7 @@ use sqlite::{Connection, State, Statement};
 
 use crate::core::Action;
 use crate::models::{Task, Todo};
-use crate::persisters::traits::DbPersister;
+use crate::traits::DbPersister;
 
 /// Representation of a `SQLite` database.
 pub struct Sqlite {

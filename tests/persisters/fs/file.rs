@@ -2,9 +2,8 @@ use std::ffi::OsStr;
 use std::fs;
 use std::ops::Not;
 
-use postit::persisters::fs::{Csv, Format};
-use postit::persisters::traits::FilePersister;
-use postit::persisters::File;
+use postit::fs::{Csv, File, Format};
+use postit::traits::FilePersister;
 
 use crate::mocks::{MockConfig, MockPath};
 

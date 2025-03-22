@@ -8,8 +8,9 @@ use std::process::Command;
 use serde::{Deserialize, Serialize};
 
 use crate::args::cmnd::ConfigCommand;
-use crate::persisters::traits::Persister;
-use crate::persisters::{File, Orm};
+use crate::db::Orm;
+use crate::fs::File;
+use crate::traits::Persister;
 
 /// Contains the configuration used while running `postit`.
 ///

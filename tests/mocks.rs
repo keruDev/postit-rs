@@ -2,11 +2,10 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{fmt, fs};
 
+use postit::db::{Orm, Protocol};
+use postit::fs::{Csv, Format, Json, Xml};
 use postit::models::{Task, Todo};
-use postit::persisters::db::Protocol;
-use postit::persisters::fs::{Csv, Format, Json, Xml};
-use postit::persisters::traits::{DbPersister, FilePersister};
-use postit::persisters::Orm;
+use postit::traits::{DbPersister, FilePersister};
 use postit::Config;
 
 /// A temporary path used for testing purposes.

@@ -1,7 +1,7 @@
 //! Collection of existing tasks. This is where major task management is made.
 
 use crate::models::task::Task;
-use crate::persisters::traits::Persister;
+use crate::traits::Persister;
 use crate::Config;
 
 /// Contains all the Tasks.

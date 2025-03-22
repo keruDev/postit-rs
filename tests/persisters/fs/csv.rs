@@ -1,9 +1,9 @@
 use std::fs;
 use std::io::Read;
 
+use postit::fs::{Csv, Format};
 use postit::models::{Priority, Task};
-use postit::persisters::fs::{Csv, Format};
-use postit::persisters::traits::FilePersister;
+use postit::traits::FilePersister;
 
 use crate::mocks::MockPath;
 

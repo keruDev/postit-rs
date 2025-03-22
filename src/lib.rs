@@ -32,6 +32,8 @@
 
 mod core;
 pub mod models;
-pub mod persisters;
+mod persisters;
 
 pub use core::*;
+
+pub use persisters::*;
