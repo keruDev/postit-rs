@@ -151,10 +151,6 @@ impl Persister for Orm {
         self.db.conn()
     }
 
-    fn has_tasks(&self) -> bool {
-        self.db.select().is_empty()
-    }
-
     fn tasks(&self) -> Vec<Task> {
         self.db.tasks()
     }
