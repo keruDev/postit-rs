@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
-use postit::args::{Arguments, Command, ConfigCommand, EditTaskArgs};
+use postit::args::cmnd::{Command, ConfigCommand};
+use postit::args::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
+use postit::args::Arguments;
 use postit::models::{Task, Todo};
 use postit::persisters::fs::Format;
 use postit::persisters::traits::Persister;
@@ -17,7 +19,7 @@ fn fakes(path_or_conn: &MockPath) -> (Box<dyn Persister>, Todo) {
 }
 
 fn expected(mock: &MockPath) -> (File, Todo) {
-    let path = mock.path.display().to_string();
+    let path = mock.to_string();
 
     let file = File::from(&path);
     let todo = Todo::from(&file);
@@ -31,7 +33,7 @@ fn view() {
 
     let (file, todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::View { persister: Some(file.to_string()) },
+        command: Command::View(PersisterArgs { persister: Some(file.to_string()) }),
     };
 
     Postit::run(args);
@@ -49,10 +51,10 @@ fn add_panics() {
     let task = "1,med";
 
     let args = Arguments {
-        command: Command::Add {
+        command: Command::Add(AddTaskArgs {
             persister: Some(mock.to_string()),
             task: String::from(task),
-        },
+        }),
     };
 
     Postit::run(args);
@@ -66,10 +68,10 @@ fn add_ok() {
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::Add {
+        command: Command::Add(AddTaskArgs {
             persister: Some(mock.to_string()),
             task: String::from(task),
-        },
+        }),
     };
 
     Postit::run(args);
@@ -91,10 +93,10 @@ fn add_no_priority() {
 
     let (file, mut todo) = fakes(&mock);
     let args = Arguments {
-        command: Command::Add {
+        command: Command::Add(AddTaskArgs {
             persister: Some(mock.to_string()),
             task: String::from(task),
-        },
+        }),
     };
 
     Postit::run(args);
@@ -219,10 +221,10 @@ fn copy() {
     let new_path = "postit_copy.json";
 
     let args = Arguments {
-        command: Command::Copy {
+        command: Command::Copy(CopyTaskArgs {
             old: mock_old.to_string(),
             new: new_path.to_string(),
-        },
+        }),
     };
 
     Postit::run(args);
@@ -233,6 +235,24 @@ fn copy() {
 
     assert_eq!(old_file.tasks(), new_file.tasks());
     assert_eq!(old_todo, new_todo);
+}
+
+#[test]
+fn clean() {
+    let mock = MockPath::create(Format::Csv);
+
+    let args = Arguments {
+        command: Command::Clean(PersisterArgs { persister: Some(mock.to_string()) }),
+    };
+
+    Postit::run(args);
+
+    let file = File::from(&mock.to_string());
+
+    let result = Todo::from(&file).tasks;
+    let expect = Vec::new();
+
+    assert_eq!(result, expect);
 }
 
 #[test]

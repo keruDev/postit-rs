@@ -1,7 +1,7 @@
 use std::ops::Not;
 use std::path::PathBuf;
 
-use postit::args::ConfigCommand;
+use postit::args::cmnd::ConfigCommand;
 use postit::persisters::db::Protocol;
 use postit::persisters::fs::Format;
 use postit::Config;

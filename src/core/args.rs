@@ -8,7 +8,7 @@ pub mod kind {
 
     /// Defines common arguments for commands that just use the persister value.
     #[derive(Args, Debug)]
-    pub struct UsePersister {
+    pub struct PersisterArgs {
         /// Used to read from and save tasks to.
         #[arg(long, short, value_name = "PERSISTER")]
         pub persister: Option<String>,
@@ -16,7 +16,7 @@ pub mod kind {
 
     /// Defines common arguments for commands related to adding tasks.
     #[derive(Args, Debug)]
-    pub struct AddTask {
+    pub struct AddTaskArgs {
         /// Used to read from and save tasks to.
         #[arg(long, short, value_name = "PERSISTER")]
         pub persister: Option<String>,
@@ -28,7 +28,7 @@ pub mod kind {
 
     /// Defines common arguments for commands related to editing task values.
     #[derive(Args, Debug)]
-    pub struct EditTask {
+    pub struct EditTaskArgs {
         /// Used to read from and save tasks to.
         #[arg(long, short, value_name = "PERSISTER")]
         pub persister: Option<String>,
@@ -40,7 +40,7 @@ pub mod kind {
 
     /// Defines common arguments for commands related to copying files.
     #[derive(Args, Debug)]
-    pub struct CopyTask {
+    pub struct CopyTaskArgs {
         /// Where the file is.
         #[arg(value_name = "OLD_PATH", help = "Old path of the tasks file.")]
         pub old: String,
@@ -55,31 +55,31 @@ pub mod kind {
 pub mod cmnd {
     use clap::{Subcommand, ValueEnum};
 
-    use super::kind::{AddTask, CopyTask, EditTask, UsePersister};
+    use super::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 
     /// Contains the different commands available.
     #[derive(Subcommand, Debug)]
     pub enum Command {
         /// Shows a list of the current tasks.
-        View(UsePersister),
+        View(PersisterArgs),
 
         /// Adds a new task to the list.
-        Add(AddTask),
+        Add(AddTaskArgs),
 
         /// Marks a task as checked.
-        Check(EditTask),
+        Check(EditTaskArgs),
 
         /// Marks a task as unchecked.
-        Uncheck(EditTask),
+        Uncheck(EditTaskArgs),
 
         /// Deletes a task from the list.
-        Drop(EditTask),
+        Drop(EditTaskArgs),
 
         /// Creates a copy of a file (can parse formats, like csv to json).
-        Copy(CopyTask),
+        Copy(CopyTaskArgs),
 
         /// Cleans the tasks from a persister
-        Clean(UsePersister),
+        Clean(PersisterArgs),
 
         /// Manages the configuration file (.postit.toml).
         Config {
