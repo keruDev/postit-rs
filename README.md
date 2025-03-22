@@ -27,9 +27,9 @@ along with some more file extensions (XML) and more commands to make task manage
 Hope to cross paths in future versions :)
 
 Roadmap:
-- [ ] MySQL support
+- [x] XML support
 - [ ] MongoDB support
-- [ ] XML support
+- [ ] MySQL support
 - [ ] Tasks filtering and sorting
 
 ## Features
@@ -45,6 +45,7 @@ Customization:
 Supported file formats:
 - csv
 - json
+- xml
 
 Supported database formats:
 - sqlite (.db, .sqlite or .sqlite3)
@@ -137,6 +138,7 @@ postit add "New task"
 3,Task,high,true
 4,Task,none,true
 5,New task,med,false    (new element)
+```
 
 ```csv
 postit add "New task,low"
@@ -211,7 +213,7 @@ Syntax: `postit copy <OLD_PATH> <NEW_PATH>`
 Copies a file's contents into another:
 
 ```sh
-postit copy "tasks.csv" "tasks.json"
+postit copy tasks.csv tasks.json
 ```
 
 By default, if the file at `<NEW_PATH>` exists, `postit` will refuse to
@@ -244,24 +246,21 @@ Syntax: `postit <COMMAND> --persister <PATH_OR_CONN>`
 
 The `--persister` or `-p` flag specifies where the tasks will be read from and saved to.
 It can be used on the following commands:
-- [view](#view),
-- [add](#add),
-- [check](#check),
-- [uncheck](#uncheck),
-- [drop](#drop).
+- [view](#view)
+- [add](#add)
+- [check](#check)
+- [uncheck](#uncheck)
+- [drop](#drop)
 
-There are currently 3 supported persisters:
-```sh
-postit <COMMAND> -p tasks.csv
-```
+There are currently 4 supported persisters:
 
-```sh
-postit <COMMAND> -p tasks.json
-```
+- Files
+  - csv (e.g.: tasks.csv)
+  - json (e.g.: tasks.json)
+  - xml (e.g.: tasks.xml)
 
-```sh
-postit <COMMAND> -p tasks.db
-```
+- Databases
+  - SQLite (e.g.: tasks.db)
 
 ## Testing
 
