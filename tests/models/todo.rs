@@ -1,7 +1,6 @@
+use postit::fs::{File, Format};
 use postit::models::{Task, Todo};
-use postit::persisters::fs::Format;
-use postit::persisters::traits::Persister;
-use postit::persisters::File;
+use postit::traits::Persister;
 
 use crate::mocks::MockPath;
 

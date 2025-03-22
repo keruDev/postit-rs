@@ -3,10 +3,9 @@ use std::path::PathBuf;
 use postit::args::cmnd::{Command, ConfigCommand};
 use postit::args::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 use postit::args::Arguments;
+use postit::fs::{File, Format};
 use postit::models::{Task, Todo};
-use postit::persisters::fs::Format;
-use postit::persisters::traits::Persister;
-use postit::persisters::File;
+use postit::traits::Persister;
 use postit::{Config, Postit};
 
 use crate::mocks::{MockConfig, MockPath};

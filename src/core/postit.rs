@@ -7,14 +7,14 @@ use super::args::cmnd::{Command, ConfigCommand};
 use super::args::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 use super::args::Arguments;
 use super::{Action, Config};
+use crate::fs::File;
 use crate::models::{Priority, Task, Todo};
-use crate::persisters::File;
 
 /// Entry point where all operations are executed.
 ///
 /// Handles operations via commands.
 ///
-/// The [`Todo`] instance is loaded using the desired [`FilePersister`][`crate::persisters::traits::FilePersister`]
+/// The [`Todo`] instance is loaded using the desired [`FilePersister`][`crate::traits::FilePersister`]
 /// instance, which is modified when the `Postit` finishes working.
 pub struct Postit;
 

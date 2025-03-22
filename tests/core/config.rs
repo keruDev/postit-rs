@@ -2,8 +2,8 @@ use std::ops::Not;
 use std::path::PathBuf;
 
 use postit::args::cmnd::ConfigCommand;
-use postit::persisters::db::Protocol;
-use postit::persisters::fs::Format;
+use postit::db::Protocol;
+use postit::fs::Format;
 use postit::Config;
 
 use crate::mocks::{MockConfig, MockConn, MockPath};

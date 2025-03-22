@@ -1,6 +1,6 @@
-use postit::persisters::db::{Protocol, Sqlite};
-use postit::persisters::fs::{Csv, Format};
-use postit::persisters::traits::{DbPersister, FilePersister};
+use postit::db::{Protocol, Sqlite};
+use postit::fs::{Csv, Format};
+use postit::traits::{DbPersister, FilePersister};
 use postit::Config;
 
 use crate::mocks::{MockConn, MockPath};
