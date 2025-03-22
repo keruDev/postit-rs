@@ -118,7 +118,7 @@ impl fmt::Display for Task {
 
 impl Default for Task {
     fn default() -> Self {
-        Task {
+        Self {
             id: 0,
             content: String::new(),
             priority: Priority::Med,

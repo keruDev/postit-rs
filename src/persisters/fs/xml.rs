@@ -6,11 +6,11 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 
-use quick_xml::{Reader, Writer};
+use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::name::QName;
-use quick_xml::events::{Event, BytesStart, BytesText, BytesEnd};
+use quick_xml::{Reader, Writer};
 
-use crate::models::{Task, Todo, Priority};
+use crate::models::{Priority, Task, Todo};
 use crate::persisters::traits::FilePersister;
 
 /// Representation of a Xml file.
@@ -32,22 +32,32 @@ impl Xml {
     }
 
     /// Writes a [Todo] instance into XML writer and returns a buffer with the content.
+    ///
+    /// # Panics
+    /// In case the XML Event can't be written.
     pub fn todo_to_xml(todo: &Todo) -> Vec<u8> {
         let mut buffer = Vec::new();
         let mut writer = Writer::new_with_indent(&mut buffer, b' ', 4);
 
-        writer.write_event(Event::Start(BytesStart::new("Tasks"))).unwrap();
-    
+        writer
+            .write_event(Event::Start(BytesStart::new("Tasks")))
+            .unwrap();
+
         for task in &todo.tasks {
             Self::task_to_xml(&mut writer, task);
         }
-    
-        writer.write_event(Event::End(BytesEnd::new("Tasks"))).unwrap();
-    
+
+        writer
+            .write_event(Event::End(BytesEnd::new("Tasks")))
+            .unwrap();
+
         buffer
     }
 
     /// Writes a [Task] instance into XML writer.
+    ///
+    /// # Panics
+    /// In case the XML Event can't be written.
     pub fn task_to_xml(writer: &mut Writer<&mut Vec<u8>>, task: &Task) {
         let mut task_bytes = BytesStart::new("Task");
         task_bytes.push_attribute(("id", &*task.id.to_string()));
@@ -56,9 +66,13 @@ impl Xml {
 
         writer.write_event(Event::Start(task_bytes)).unwrap();
 
-        writer.write_event(Event::Text(BytesText::new(&task.content))).unwrap();
+        writer
+            .write_event(Event::Text(BytesText::new(&task.content)))
+            .unwrap();
 
-        writer.write_event(Event::End(BytesEnd::new("Task"))).unwrap();
+        writer
+            .write_event(Event::End(BytesEnd::new("Task")))
+            .unwrap();
     }
 }
 
@@ -93,7 +107,7 @@ impl FilePersister for Xml {
             .collect()
     }
 
-    fn write(&self, todo: &Todo) {    
+    fn write(&self, todo: &Todo) {
         let buffer = Self::todo_to_xml(todo);
         let xml = String::from_utf8(buffer).unwrap();
 
@@ -102,7 +116,7 @@ impl FilePersister for Xml {
 
     fn tasks(&self) -> Vec<Task> {
         let xml = self.read().join("");
-    
+
         let mut tasks: Vec<Task> = Vec::new();
         let mut task: Option<Task> = None;
 
@@ -122,7 +136,7 @@ impl FilePersister for Xml {
                             _ => {}
                         }
                     }
-    
+
                     task = Some(new_task);
                 }
 
@@ -141,14 +155,14 @@ impl FilePersister for Xml {
                 Ok(Event::Eof) => break,
 
                 Err(e) => {
-                    eprintln!("Error reading the XML file: {:?}", e);
+                    eprintln!("Error reading the XML file: {e:?}");
                     break;
                 }
 
                 _ => {}
             }
         }
-    
+
         tasks
     }
 }
