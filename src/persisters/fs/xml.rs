@@ -26,9 +26,25 @@ impl Xml {
         Self { path }
     }
 
-    /// Returns the basic structure to initialize a XML file.
+    /// Basic structure to initialize a XML file.
     pub fn prolog() -> String {
-        String::from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        String::from(r#"<?xml version="1.0" encoding="UTF-8"?>"#) + "\n"
+    }
+
+    /// Document Type Definition of a XML file.
+    #[rustfmt::skip]
+    pub fn dtd() -> String {
+        String::from(
+"<!DOCTYPE Tasks [
+    <!ELEMENT Tasks (Task+)>
+    <!ELEMENT Task (#PCDATA)>
+    <!ATTLIST Task 
+        id CDATA #REQUIRED
+        priority (low | med | high | none) #REQUIRED
+        checked (true | false) #REQUIRED
+    >
+]>\n",
+        )
     }
 
     /// Writes a [Todo] instance into XML writer and returns a buffer with the content.
@@ -163,7 +179,9 @@ impl FilePersister for Xml {
         let buffer = Self::todo_to_xml(todo);
         let xml = String::from_utf8(buffer).unwrap();
 
-        self.open().write_all(xml.as_bytes()).unwrap();
+        let bytes = [Self::prolog().as_bytes(), Self::dtd().as_bytes(), xml.as_bytes()].concat();
+
+        self.open().write_all(&bytes).unwrap();
     }
 
     fn tasks(&self) -> Vec<Task> {
