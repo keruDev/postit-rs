@@ -61,6 +61,25 @@ impl Sqlite {
             stmt.read::<String, _>("checked").unwrap()
         )
     }
+
+    /// Resets the autoincrement value.
+    ///
+    /// # Panics
+    /// If a value can't be unwrapped.
+    pub fn reset_autoincrement(&self, table: &str) {
+        #[rustfmt::skip]
+        let query = format!("
+            UPDATE sqlite_sequence
+            SET SEQ=0
+            WHERE NAME='{table}'
+        ");
+
+        let mut stmt = self.connection.prepare(query).unwrap();
+
+        if let Err(e) = stmt.next() {
+            eprintln!("Error while cleaning table: {e}");
+        }
+    }
 }
 
 impl DbPersister for Sqlite {
@@ -209,5 +228,18 @@ impl DbPersister for Sqlite {
 
     fn tasks(&self) -> Vec<Task> {
         self.select().iter().map(|row| Task::from(row)).collect()
+    }
+
+    fn clean(&self) {
+        let table = String::from("tasks");
+        let query = format!("DELETE FROM {table}");
+
+        let mut stmt = self.connection.prepare(query).unwrap();
+
+        if let Err(e) = stmt.next() {
+            eprintln!("Error while cleaning table: {e}");
+        }
+
+        self.reset_autoincrement(&table);
     }
 }

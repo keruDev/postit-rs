@@ -66,4 +66,8 @@ impl FilePersister for Json {
     fn tasks(&self) -> Vec<Task> {
         serde_json::from_str(&self.read().join("")).expect("JSON was not well-formatted")
     }
+
+    fn clean(&self) {
+        fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
+    }
 }
