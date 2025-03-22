@@ -57,10 +57,10 @@ fn read() {
     let result = file.read();
     let expect = vec![
         &header,
-        "1,Test,low,false",
-        "2,Test,med,false",
-        "3,Test,high,true",
-        "4,Test,none,true",
+        "1,Task,low,false",
+        "2,Task,med,false",
+        "3,Task,high,true",
+        "4,Task,none,true",
     ];
 
     assert_eq!(result, expect);

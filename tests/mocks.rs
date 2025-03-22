@@ -4,7 +4,7 @@ use std::{fmt, fs};
 
 use postit::db::{Orm, Protocol};
 use postit::fs::{Csv, Format, Json, Xml};
-use postit::models::{Task, Todo};
+use postit::models::Todo;
 use postit::traits::{DbPersister, FilePersister};
 use postit::Config;
 
@@ -31,14 +31,7 @@ impl MockPath {
     }
 
     pub fn sample() -> Todo {
-        Todo {
-            tasks: vec![
-                Task::from("1,Test,low,false"),
-                Task::from("2,Test,med,false"),
-                Task::from("3,Test,high,true"),
-                Task::from("4,Test,none,true"),
-            ],
-        }
+        Todo::sample()
     }
 
     pub fn path(&self) -> PathBuf {
@@ -117,14 +110,7 @@ impl MockConn {
     }
 
     pub fn sample() -> Todo {
-        Todo {
-            tasks: vec![
-                Task::from("1,Test,low,false"),
-                Task::from("2,Test,med,false"),
-                Task::from("3,Test,high,true"),
-                Task::from("4,Test,none,true"),
-            ],
-        }
+        Todo::sample()
     }
 
     pub fn create(protocol: Protocol) -> Self {
