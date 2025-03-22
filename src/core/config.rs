@@ -7,7 +7,7 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
-use crate::args::ConfigCommand;
+use crate::args::cmnd::ConfigCommand;
 use crate::persisters::traits::Persister;
 use crate::persisters::{File, Orm};
 

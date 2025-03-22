@@ -16,6 +16,9 @@ pub trait Persister: fmt::Debug {
     /// Returns the tasks collected from the persister's contents.
     fn tasks(&self) -> Vec<Task>;
 
+    /// Deletes all tasks from the persister.
+    fn clean(&self);
+
     /// The value that created the `Persister` instance.
     fn to_string(&self) -> String;
 
@@ -52,6 +55,9 @@ pub trait FilePersister {
     /// Returns the tasks collected from the file's contents.
     fn tasks(&self) -> Vec<Task>;
 
+    /// Deletes all tasks from the persister.
+    fn clean(&self);
+
     /// Returns a String used to initialize the file.
     fn default(&self) -> String;
 
@@ -81,6 +87,9 @@ pub trait DbPersister {
 
     /// Returns the tasks collected from the database's contents.
     fn tasks(&self) -> Vec<Task>;
+
+    /// Deletes all tasks from the persister.
+    fn clean(&self);
 
     /// Checks if a table exists.
     fn exists(&self) -> bool;

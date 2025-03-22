@@ -227,6 +227,10 @@ impl Persister for File {
         self.file.tasks()
     }
 
+    fn clean(&self) {
+        self.file.clean();
+    }
+
     fn read(&self) -> Vec<String> {
         self.file.read()
     }

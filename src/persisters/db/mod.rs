@@ -155,6 +155,10 @@ impl Persister for Orm {
         self.db.tasks()
     }
 
+    fn clean(&self) {
+        self.db.clean();
+    }
+
     fn read(&self) -> Vec<String> {
         self.db.select()
     }

@@ -74,53 +74,14 @@ impl Xml {
             .write_event(Event::End(BytesEnd::new("Task")))
             .unwrap();
     }
-}
 
-impl FilePersister for Xml {
-    fn path(&self) -> PathBuf {
-        self.path.clone()
-    }
-
-    fn boxed(self) -> Box<dyn FilePersister> {
-        Box::new(self)
-    }
-
-    fn default(&self) -> String {
-        Self::prolog()
-    }
-
-    fn open(&self) -> fs::File {
-        fs::OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .open(&self.path)
-            .expect("Should have been able to create the file")
-    }
-
-    fn read(&self) -> Vec<String> {
-        fs::read_to_string(&self.path)
-            .expect("Should have been able to read the file")
-            .lines()
-            .map(|line| line.replace('\r', ""))
-            .filter(|line| !line.is_empty())
-            .collect()
-    }
-
-    fn write(&self, todo: &Todo) {
-        let buffer = Self::todo_to_xml(todo);
-        let xml = String::from_utf8(buffer).unwrap();
-
-        self.open().write_all(xml.as_bytes()).unwrap();
-    }
-
-    fn tasks(&self) -> Vec<Task> {
-        let xml = self.read().join("");
-
+    /// Reads the tasks from an XML reader and returns a vector of tasks.
+    ///
+    /// # Panics
+    /// If a value can't be unescaped.
+    pub fn xml_to_tasks(mut reader: Reader<&[u8]>) -> Vec<Task> {
         let mut tasks: Vec<Task> = Vec::new();
         let mut task: Option<Task> = None;
-
-        let mut reader = Reader::from_str(&xml);
 
         loop {
             match reader.read_event() {
@@ -164,5 +125,55 @@ impl FilePersister for Xml {
         }
 
         tasks
+    }
+}
+
+impl FilePersister for Xml {
+    fn path(&self) -> PathBuf {
+        self.path.clone()
+    }
+
+    fn boxed(self) -> Box<dyn FilePersister> {
+        Box::new(self)
+    }
+
+    fn default(&self) -> String {
+        Self::prolog()
+    }
+
+    fn open(&self) -> fs::File {
+        fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(&self.path)
+            .expect("Should have been able to create the file")
+    }
+
+    fn read(&self) -> Vec<String> {
+        fs::read_to_string(&self.path)
+            .expect("Should have been able to read the file")
+            .lines()
+            .map(|line| line.replace('\r', ""))
+            .filter(|line| !line.is_empty())
+            .collect()
+    }
+
+    fn write(&self, todo: &Todo) {
+        let buffer = Self::todo_to_xml(todo);
+        let xml = String::from_utf8(buffer).unwrap();
+
+        self.open().write_all(xml.as_bytes()).unwrap();
+    }
+
+    fn tasks(&self) -> Vec<Task> {
+        let xml = self.read().join("");
+        let reader = Reader::from_str(&xml);
+
+        Self::xml_to_tasks(reader)
+    }
+
+    fn clean(&self) {
+        fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
     }
 }

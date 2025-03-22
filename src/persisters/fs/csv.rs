@@ -84,4 +84,8 @@ impl FilePersister for Csv {
             })
             .collect()
     }
+
+    fn clean(&self) {
+        fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
+    }
 }

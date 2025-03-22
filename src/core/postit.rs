@@ -3,12 +3,12 @@
 //!
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
-use super::args::EditTaskArgs;
-use super::Action;
-use crate::args::{Arguments, Command, ConfigCommand};
+use super::args::cmnd::{Command, ConfigCommand};
+use super::args::kind::{AddTask, CopyTask, EditTask, UsePersister};
+use super::args::Arguments;
+use super::{Action, Config};
 use crate::models::{Priority, Task, Todo};
 use crate::persisters::File;
-use crate::Config;
 
 /// Entry point where all operations are executed.
 ///
@@ -22,31 +22,31 @@ impl Postit {
     /// Runs `Postit` commands based on the args provided.
     pub fn run(args: Arguments) {
         match args.command {
-            Command::View { persister } => Self::view(persister),
-            Command::Add { persister, task } => Self::add(persister, &task),
+            Command::View(args) => Self::view(args),
+            Command::Add(args) => Self::add(args),
             Command::Check(args) => Self::edit(args, Action::Check),
             Command::Uncheck(args) => Self::edit(args, Action::Uncheck),
             Command::Drop(args) => Self::edit(args, Action::Drop),
-            Command::Copy { old, new } => Self::copy(&old, &new),
+            Command::Copy(args) => Self::copy(args),
+            Command::Clean(args) => Self::clean(args),
             Command::Config { option } => Self::config(option),
         }
     }
 
     /// Shows the list of current tasks.
-    fn view(persister: Option<String>) {
-        let persister = Config::resolve_persister(persister);
+    fn view(args: UsePersister) {
+        let persister = Config::resolve_persister(args.persister);
         Todo::from(&*persister).view();
     }
 
     /// Adds a new task to the list.
-    fn add(persister: Option<String>, task: &str) {
-        let persister = Config::resolve_persister(persister);
+    fn add(args: AddTask) {
+        let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
         let id = todo.tasks.last().map_or(1, |last| last.id + 1);
-        let task_content = String::from(task);
 
-        let parts: Vec<&str> = task_content.split(',').map(str::trim).collect();
+        let parts: Vec<&str> = args.task.split(',').map(str::trim).collect();
 
         let content = match parts[0].parse::<u32>() {
             Ok(_n) => panic!("Task element can't be a number"),
@@ -66,7 +66,7 @@ impl Postit {
     }
 
     /// Edits tasks based on the action passed.
-    fn edit(args: EditTaskArgs, action: Action) {
+    fn edit(args: EditTask, action: Action) {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
@@ -82,8 +82,18 @@ impl Postit {
     }
 
     /// Copies the contents of a file to another.
-    fn copy(old: &str, new: &str) {
-        File::copy(old, new);
+    fn copy(args: CopyTask) {
+        let old = args.old;
+        let new = args.new;
+
+        File::copy(&old, &new);
+    }
+
+    /// Cleans the tasks from a file.
+    fn clean(args: UsePersister) {
+        let persister = Config::resolve_persister(args.persister);
+
+        persister.clean();
     }
 
     /// Manages the configuration file.   
