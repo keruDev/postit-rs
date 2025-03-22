@@ -26,37 +26,22 @@ along with some more file extensions (XML) and more commands to make task manage
 
 Hope to cross paths in future versions :)
 
-Roadmap:
-- [x] XML support
-- [ ] MongoDB support
-- [ ] MySQL support
-- [ ] Tasks filtering and sorting
-
 ## Features
 
 Although `postit` is still in early development, it is alive and keeps growing!
 Here are some of its current features and some planned ones as well: 
 
-Customization:
-- Configuration file (more info in the [Configuration](#configuration) section below).
-- Set your own configuration path using the `POSTIT_CONFIG_PATH` environment variable 
-  (by default, `.postit.toml`).
+Features:
+- [Commands](#commands) and [flags](#flags) to manage tasks and files.
+- Supported file and database formats to persist data (described in the [persisters](#persister) flag).
+- Configuration file to change postit's behavior (more info in the [Configuration](#configuration) section).
+- Tasks are displayed differently depending on their priority and wether they are checked or not.
 
-Supported file formats:
-- csv
-- json
-- xml
-
-Supported database formats:
-- sqlite (.db, .sqlite or .sqlite3)
-
-Display:
-- Checked tasks appear crossed out.
-- Different colors depending on priority.
-  - `high`: red
-  - `med`: yellow
-  - `low`: blue
-  - `none`: white
+Roadmap:
+- [x] XML support
+- [ ] MongoDB support
+- [ ] MySQL support
+- [ ] Tasks filtering and sorting
 
 ## Configuration
 
@@ -84,6 +69,7 @@ The commands currently available are (click to go to a use example):
 - [`uncheck`](#uncheck)
 - [`drop`](#drop)
 - [`copy`](#copy)
+- [`clean`](#clean)
 - [`config`](#config)
 
 You can also use the `--help` flag for additional help on every command.
@@ -108,9 +94,11 @@ Syntax: `postit view`
 Takes the `persister` defined at `.postit.toml` (or the `-p` flag, if provided)
 to show the list of current tasks:
 
-```csv
+```sh
 postit view
+```
 
+```csv
 1,Task,low,false
 2,Task,med,false
 3,Task,high,true
@@ -123,16 +111,19 @@ Syntax: `postit add <TASK>`
 
 Adds a task with the format `id,content,priority,checked`. 
 - **id**: a unique unsigned integer.
-- **content**: text contained.
+- **content**: description of the task.
 - **priority**: `high`, `med` (default), `low` or `none`.
 - **checked**: `true` or `false`.
 
-To add a task, use the format `content,priority`
+To add a task, use the format `content,priority`.
+
 If priority is left blank, then it will be assigned `med`:
 
-```csv
+```sh
 postit add "New task"
+```
 
+```csv
 1,Task,low,false
 2,Task,med,false
 3,Task,high,true
@@ -140,9 +131,13 @@ postit add "New task"
 5,New task,med,false    (new element)
 ```
 
-```csv
-postit add "New task,low"
+To assign a different value to the task's priority:
 
+```sh
+postit add "New task,low"
+```
+
+```csv
 1,Task,low,false
 2,Task,med,false
 3,Task,high,true
@@ -156,9 +151,11 @@ Syntax: `postit check <IDS>`
 
 Checks tasks if they are unchecked.
 
-```csv
+```sh
 postit check 2,3
+```
 
+```csv
 1,Task,low,false
 2,Task,med,true         (changed)
 3,Task,high,true        (not changed)
@@ -171,9 +168,11 @@ Syntax: `postit uncheck <IDS>`
 
 Unchecks tasks if they are checked.
 
-```csv
+```sh
 postit uncheck 2,3
+```
 
+```csv
 1,Task,low,false
 2,Task,med,false        (not changed)
 3,Task,high,false       (changed)
@@ -186,9 +185,11 @@ Syntax: `postit drop <IDS>`
 
 By default, tasks must be checked to be dropped.
 
-```csv
+```sh
 postit drop 2,3
+```
 
+```csv
 1,Task,low,false
 2,Task,med,false        (not dropped)
 // 3,Task,high,true     (dropped)
@@ -197,9 +198,11 @@ postit drop 2,3
 
 You can set the `force_drop` config to `true` to drop tasks wether they are checked or not.
 
-```csv
+```sh
 postit drop 2,3
+```
 
+```csv
 1,Task,low,false
 // 2,Task,med,false     (dropped)
 // 3,Task,high,true     (dropped)
@@ -226,6 +229,18 @@ In the other hand, if you want to copy your file and delete the old one, you can
 do it by setting the `drop_after_copy` config to `true`. This will delete the file
 located at `<OLD_PATH>`.
 
+
+### clean
+
+Syntax: `postit clean`
+
+Deletes all tasks from a persister. This command takes the `persister` defined
+at `.postit.toml` (or the `-p` flag, if provided):
+
+```sh
+postit clean
+```
+
 ### config
 
 Syntax: `postit config <COMMAND>`
@@ -251,6 +266,7 @@ It can be used on the following commands:
 - [check](#check)
 - [uncheck](#uncheck)
 - [drop](#drop)
+- [clean](#clean)
 
 There are currently 4 supported persisters:
 
@@ -260,7 +276,12 @@ There are currently 4 supported persisters:
   - xml (e.g.: tasks.xml)
 
 - Databases
-  - SQLite (e.g.: tasks.db)
+  - SQLite (e.g.: tasks.db, tasks.sqlite or tasks.sqlite3)
+
+A use example:
+```sh
+postit view --persister tasks.csv 
+```
 
 ## Testing
 

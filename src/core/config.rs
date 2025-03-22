@@ -24,7 +24,7 @@ pub struct Config {
     pub force_drop: bool,
     /// If `true`, allows overwriting files on copy if they already exist.
     pub force_copy: bool,
-    /// If `true`, drops files after copying.
+    /// If `true`, drops the old file after copying its contents to the new file.
     pub drop_after_copy: bool,
 }
 
