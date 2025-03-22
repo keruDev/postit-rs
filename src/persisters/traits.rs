@@ -16,9 +16,6 @@ pub trait Persister: fmt::Debug {
     /// Returns the tasks collected from the persister's contents.
     fn tasks(&self) -> Vec<Task>;
 
-    /// Determines wether a persister has tasks or not.
-    fn has_tasks(&self) -> bool;
-
     /// The value that created the `Persister` instance.
     fn to_string(&self) -> String;
 

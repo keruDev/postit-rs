@@ -31,7 +31,7 @@ impl Xml {
         String::from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
     }
 
-    /// TODO
+    /// Writes a [Todo] instance into XML writer and returns a buffer with the content.
     pub fn todo_to_xml(todo: &Todo) -> Vec<u8> {
         let mut buffer = Vec::new();
         let mut writer = Writer::new_with_indent(&mut buffer, b' ', 4);
@@ -47,7 +47,7 @@ impl Xml {
         buffer
     }
 
-    /// TODO
+    /// Writes a [Task] instance into XML writer.
     pub fn task_to_xml(writer: &mut Writer<&mut Vec<u8>>, task: &Task) {
         let mut task_bytes = BytesStart::new("Task");
         task_bytes.push_attribute(("id", &*task.id.to_string()));

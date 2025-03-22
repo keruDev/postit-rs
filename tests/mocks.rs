@@ -4,7 +4,7 @@ use std::{fmt, fs};
 
 use postit::models::{Task, Todo};
 use postit::persisters::db::Protocol;
-use postit::persisters::fs::{Csv, Format, Json};
+use postit::persisters::fs::{Csv, Format, Json, Xml};
 use postit::persisters::traits::{DbPersister, FilePersister};
 use postit::persisters::Orm;
 use postit::Config;
@@ -52,6 +52,7 @@ impl MockPath {
         let file = match format {
             Format::Csv => Self::csv(name),
             Format::Json => Self::json(name),
+            Format::Xml => Self::xml(name),
         };
 
         file.write(&Self::sample());
@@ -65,6 +66,7 @@ impl MockPath {
         let file = match format {
             Format::Csv => Self::csv(name),
             Format::Json => Self::json(name),
+            Format::Xml => Self::xml(name),
         };
 
         Self { path: file.path() }
@@ -76,6 +78,10 @@ impl MockPath {
 
     pub fn json(name: &str) -> Box<dyn FilePersister> {
         Json::new(PathBuf::from(format!("test_{name}.json"))).boxed()
+    }
+
+    pub fn xml(name: &str) -> Box<dyn FilePersister> {
+        Xml::new(PathBuf::from(format!("test_{name}.xml"))).boxed()
     }
 }
 

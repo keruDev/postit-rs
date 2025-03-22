@@ -16,7 +16,7 @@ use std::{fmt, fs};
 
 pub use csv::Csv;
 pub use json::Json;
-use xml::Xml;
+pub use xml::Xml;
 
 use super::traits::{FilePersister, Persister};
 use crate::core::Action;
@@ -225,13 +225,6 @@ impl Persister for File {
 
     fn tasks(&self) -> Vec<Task> {
         self.file.tasks()
-    }
-
-    fn has_tasks(&self) -> bool {
-        let content = self.read();
-        let default = self.file.default();
-
-        !(content.is_empty() || content.join("\n") == default)
     }
 
     fn read(&self) -> Vec<String> {
