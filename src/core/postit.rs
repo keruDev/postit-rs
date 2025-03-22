@@ -28,6 +28,7 @@ impl Postit {
             Command::Uncheck(args) => Self::edit(args, Action::Uncheck),
             Command::Drop(args) => Self::edit(args, Action::Drop),
             Command::Copy(args) => Self::copy(args),
+            Command::Sample(args) => Self::sample(args),
             Command::Clean(args) => Self::clean(args),
             Command::Config { option } => Self::config(option),
         }
@@ -60,9 +61,9 @@ impl Postit {
         let task = Task::from(&line);
 
         todo.add(task);
-        todo.view();
-
         persister.save(&todo);
+
+        todo.view();
     }
 
     /// Edits tasks based on the action passed.
@@ -76,9 +77,9 @@ impl Postit {
             Action::Drop => todo.drop(&args.ids),
         };
 
-        todo.view();
-
         persister.edit(&changed_ids, action);
+
+        todo.view();
     }
 
     /// Copies the contents of a file to another.
@@ -87,6 +88,16 @@ impl Postit {
         let new = args.new;
 
         File::copy(&old, &new);
+    }
+
+    /// Populates the persister with fake data for testing purposes.
+    fn sample(args: PersisterArgs) {
+        let persister = Config::resolve_persister(args.persister);
+        let todo = Todo::sample();
+
+        persister.save(&todo);
+
+        todo.view();
     }
 
     /// Cleans the tasks from a file.

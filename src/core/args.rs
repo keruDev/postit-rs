@@ -78,6 +78,9 @@ pub mod cmnd {
         /// Creates a copy of a file (can parse formats, like csv to json).
         Copy(CopyTaskArgs),
 
+        /// Creates a sample of tasks. Useful to test the program's features.
+        Sample(PersisterArgs),
+
         /// Cleans the tasks from a persister
         Clean(PersisterArgs),
 
