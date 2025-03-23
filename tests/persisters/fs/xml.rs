@@ -1,3 +1,5 @@
+use std::ops::Not;
+
 use postit::fs::{Format, Xml};
 use postit::traits::FilePersister as _;
 
@@ -32,4 +34,12 @@ fn clean() {
     let expect = Vec::new();
 
     assert_eq!(result, expect);
+}
+
+#[test]
+fn remove() {
+    let mock = MockPath::create(Format::Xml);
+    Xml::new(mock.path()).remove();
+
+    assert!(mock.path().exists().not());
 }

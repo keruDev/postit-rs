@@ -1,5 +1,6 @@
 use std::fs;
 use std::io::Read;
+use std::ops::Not;
 
 use postit::fs::{Csv, Format};
 use postit::models::{Priority, Task};
@@ -91,4 +92,12 @@ fn clean() {
     let expect = Vec::new();
 
     assert_eq!(result, expect);
+}
+
+#[test]
+fn remove() {
+    let mock = MockPath::create(Format::Csv);
+    Csv::new(mock.path()).remove();
+
+    assert!(mock.path().exists().not());
 }

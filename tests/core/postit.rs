@@ -1,3 +1,4 @@
+use std::ops::Not;
 use std::path::PathBuf;
 
 use postit::args::cmnd::{Command, ConfigCommand};
@@ -270,6 +271,19 @@ fn clean() {
     let expect = Vec::new();
 
     assert_eq!(result, expect);
+}
+
+#[test]
+fn remove() {
+    let mock = MockPath::create(Format::Csv);
+
+    let args = Arguments {
+        command: Command::Remove(PersisterArgs { persister: Some(mock.to_string()) }),
+    };
+
+    Postit::run(args);
+    
+    assert!(mock.path().exists().not());
 }
 
 #[test]

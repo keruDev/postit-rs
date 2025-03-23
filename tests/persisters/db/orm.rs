@@ -1,8 +1,8 @@
 use std::ops::Not;
 
-use postit::db::{Orm, Protocol};
+use postit::db::{Orm, Protocol, Sqlite};
 use postit::models::Task;
-use postit::traits::Persister;
+use postit::traits::{DbPersister, Persister};
 
 use crate::mocks::MockConn;
 
@@ -169,4 +169,27 @@ fn tasks() {
     let result = orm.tasks();
 
     assert_eq!(result, todo.tasks)
+}
+
+#[test]
+fn clean() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    let orm = Orm::from(&mock.instance.conn());
+
+    orm.clean();
+
+    let result = orm.tasks();
+    let expect = Vec::new();
+
+    assert_eq!(result, expect)
+}
+
+#[test]
+fn remove() {
+    let sqlite = Sqlite::from("test_tasks.db");
+    let orm = Orm::from(&sqlite.conn());
+
+    orm.remove();
+
+    assert!(std::path::PathBuf::from(sqlite.conn()).exists().not())
 }

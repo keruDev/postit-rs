@@ -3,7 +3,7 @@ use std::fs;
 use std::ops::Not;
 
 use postit::fs::{Csv, File, Format};
-use postit::traits::FilePersister;
+use postit::traits::{FilePersister, Persister};
 
 use crate::mocks::{MockConfig, MockPath};
 
@@ -127,6 +127,18 @@ fn get_persister_json() {
 }
 
 #[test]
+fn get_persister_xml() {
+    let mock = MockPath::create(Format::Xml);
+
+    let path = File::get_persister(mock.path()).path();
+
+    let result = path.extension().unwrap().to_str().unwrap();
+    let expect = "xml";
+
+    assert_eq!(result, expect);
+}
+
+#[test]
 fn get_persister_txt() {
     let mock = MockPath::from("test.txt");
 
@@ -204,4 +216,15 @@ fn file_persister_eq() {
     let right = File::get_persister(mock.path());
 
     assert!(left == right);
+}
+
+
+#[test]
+fn remove() {
+    let mock = MockPath::create(Format::Json);
+    let file = File::from(&mock.to_string());
+    
+    file.remove();
+
+    assert!(mock.path().exists().not());
 }
