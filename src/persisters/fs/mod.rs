@@ -244,7 +244,7 @@ impl Persister for File {
     }
 
     fn remove(&self) {
-        self.file.remove()
+        self.file.remove();
     }
 }
 

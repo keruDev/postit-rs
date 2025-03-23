@@ -72,6 +72,6 @@ impl FilePersister for Json {
     }
 
     fn remove(&self) {
-        fs::remove_file(&self.path).expect("Should have been able to delete the JSON file")
+        fs::remove_file(&self.path).expect("Should have been able to delete the JSON file");
     }
 }

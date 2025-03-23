@@ -218,12 +218,11 @@ fn file_persister_eq() {
     assert!(left == right);
 }
 
-
 #[test]
 fn remove() {
     let mock = MockPath::create(Format::Json);
     let file = File::from(&mock.to_string());
-    
+
     file.remove();
 
     assert!(mock.path().exists().not());
