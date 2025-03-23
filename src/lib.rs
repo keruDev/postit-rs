@@ -24,6 +24,7 @@
     clippy::cast_sign_loss,
     clippy::cast_possible_truncation,
     clippy::or_fun_call,
+    clippy::manual_assert,
     clippy::match_wildcard_for_single_variants,
     clippy::module_name_repetitions,
     clippy::must_use_candidate,

@@ -217,24 +217,105 @@ fn drop_force() {
 
 #[test]
 fn copy() {
-    let mock_old = MockPath::create(Format::Csv);
-    let new_path = "postit_copy.json";
+    let mut mock_config = MockConfig::new();
+    mock_config.config.force_copy = false;
+    mock_config.save();
+
+    let mock_left = MockPath::create(Format::Csv);
+    let right = "postit_copy.json";
 
     let args = Arguments {
         command: Command::Copy(CopyTaskArgs {
-            old: mock_old.to_string(),
-            new: new_path.to_string(),
+            left: mock_left.to_string(),
+            right: right.to_string(),
         }),
     };
 
     Postit::run(args);
 
-    let mock_new = MockPath::new(PathBuf::from(new_path));
-    let (old_file, old_todo) = expected(&mock_old);
-    let (new_file, new_todo) = expected(&mock_new);
+    let mock_right = MockPath::new(PathBuf::from(right));
 
-    assert_eq!(old_file.tasks(), new_file.tasks());
-    assert_eq!(old_todo, new_todo);
+    let (left_file, left_todo) = expected(&mock_left);
+    let (right_file, right_todo) = expected(&mock_right);
+
+    assert_eq!(left_file.tasks(), right_file.tasks());
+    assert_eq!(left_todo, right_todo);
+}
+
+#[test]
+#[should_panic]
+fn copy_same_paths() {
+    let left = MockPath::create(Format::Csv);
+    let right = MockPath::create(Format::Csv);
+
+    let args = Arguments {
+        command: Command::Copy(CopyTaskArgs {
+            left: left.to_string(),
+            right: right.to_string(),
+        }),
+    };
+
+    Postit::run(args);
+}
+
+#[test]
+#[should_panic]
+fn copy_no_left_path() {
+    let left = MockPath::create(Format::Csv);
+    let right = MockPath::create(Format::Json);
+
+    let args = Arguments {
+        command: Command::Copy(CopyTaskArgs {
+            left: left.to_string(),
+            right: right.to_string(),
+        }),
+    };
+
+    drop(left);
+
+    Postit::run(args);
+}
+
+#[test]
+#[should_panic]
+fn copy_path_exists() {
+    let mut mock = MockConfig::new();
+    mock.config.force_copy = false;
+    mock.save();
+
+    let left = MockPath::create(Format::Csv);
+    let right = MockPath::create(Format::Json);
+
+    let args = Arguments {
+        command: Command::Copy(CopyTaskArgs {
+            left: left.to_string(),
+            right: right.to_string(),
+        }),
+    };
+
+    Postit::run(args);
+}
+
+#[test]
+fn copy_drop_after_copy() {
+    let mut mock = MockConfig::new();
+    mock.config.force_copy = true;
+    mock.config.drop_after_copy = true;
+    mock.save();
+
+    let left = MockPath::create(Format::Csv);
+    let right = MockPath::blank(Format::Json);
+
+    let args = Arguments {
+        command: Command::Copy(CopyTaskArgs {
+            left: left.to_string(),
+            right: right.to_string(),
+        }),
+    };
+
+    Postit::run(args);
+
+    assert!(left.path().exists().not());
 }
 
 #[test]

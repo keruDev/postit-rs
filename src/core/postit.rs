@@ -82,7 +82,6 @@ impl Postit {
         todo.view();
     }
 
-
     /// Copies the contents of a persister to another.
     ///
     /// # Panics
@@ -103,10 +102,11 @@ impl Postit {
 
         let config = Config::load();
 
-        if !config.force_copy {
-            if right.tasks() != Vec::new() {
-                panic!("'{}' already has tasks. Set 'force_copy' to 'true' to overwrite them.", right.to_string());
-            }
+        if !config.force_copy && right.tasks() != Vec::new(){
+            panic!(
+                "'{}' already has tasks. Set 'force_copy' to 'true' to overwrite them.",
+                right.to_string()
+            );
         }
 
         right.replace(&Todo::from(&*left));
