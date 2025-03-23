@@ -60,7 +60,7 @@ impl FilePersister for Csv {
             })
             .collect()
     }
-    
+
     fn open(&self) -> fs::File {
         fs::File::open(&self.path).expect("Should have been able to create the file")
     }
@@ -89,6 +89,6 @@ impl FilePersister for Csv {
     }
 
     fn remove(&self) {
-        fs::remove_file(&self.path).expect("Should have been able to delete the CSV file")
+        fs::remove_file(&self.path).expect("Should have been able to delete the CSV file");
     }
 }

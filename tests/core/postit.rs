@@ -282,7 +282,7 @@ fn remove() {
     };
 
     Postit::run(args);
-    
+
     assert!(mock.path().exists().not());
 }
 

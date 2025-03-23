@@ -196,6 +196,6 @@ impl FilePersister for Xml {
     }
 
     fn remove(&self) {
-        fs::remove_file(&self.path).expect("Should have been able to delete the XML file")
+        fs::remove_file(&self.path).expect("Should have been able to delete the XML file");
     }
 }
