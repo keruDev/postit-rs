@@ -21,7 +21,6 @@ pub use xml::Xml;
 use super::traits::{FilePersister, Persister};
 use crate::core::Action;
 use crate::models::{Task, Todo};
-use crate::Config;
 
 /// Defines errors related to file management.
 pub mod error {
@@ -186,32 +185,6 @@ impl File {
             Format::Xml => Xml::new(path).boxed(),
         }
     }
-
-    /// Copies the contents of a file to another.
-    ///
-    /// # Panics
-    /// - [`FileError::SamePaths`] => If old path is the same as new path.
-    /// - [`FileError::NoOldPath`] => If old path doesn't exist.
-    /// - [`FileError::PathExists`] => If new path already exists.
-    pub fn copy(old_path: &str, new_path: &str) {
-        assert!(old_path != new_path, "{}", error::Error::SamePaths);
-        assert!(PathBuf::from(old_path).exists(), "{}", error::Error::NoOldPath);
-
-        let config = Config::load();
-
-        if !config.force_copy {
-            assert!(!PathBuf::from(new_path).exists(), "{}", error::Error::PathExists);
-        }
-
-        let old = Self::from(old_path);
-        let new = Self::from(new_path);
-
-        new.save(&Todo::from(&*old.boxed()));
-
-        if config.drop_after_copy {
-            fs::remove_file(old_path).expect("Should have been able to delete file after copying");
-        }
-    }
 }
 
 impl Persister for File {
@@ -221,6 +194,10 @@ impl Persister for File {
 
     fn to_string(&self) -> String {
         self.file.path().to_str().unwrap().to_owned()
+    }
+
+    fn exists(&self) -> bool {
+        self.file.exists()        
     }
 
     fn tasks(&self) -> Vec<Task> {
@@ -237,6 +214,10 @@ impl Persister for File {
 
     fn save(&self, todo: &Todo) {
         self.file.write(todo);
+    }
+
+    fn replace(&self, todo: &Todo) {
+        self.file.write(&todo);
     }
 
     fn clean(&self) {

@@ -7,7 +7,6 @@ use super::args::cmnd::{Command, ConfigCommand};
 use super::args::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 use super::args::Arguments;
 use super::{Action, Config};
-use crate::fs::File;
 use crate::models::{Priority, Task, Todo};
 
 /// Entry point where all operations are executed.
@@ -83,12 +82,40 @@ impl Postit {
         todo.view();
     }
 
-    /// Copies the contents of a file to another.
-    fn copy(args: CopyTaskArgs) {
-        let old = args.old;
-        let new = args.new;
 
-        File::copy(&old, &new);
+    /// Copies the contents of a persister to another.
+    ///
+    /// # Panics
+    /// - If both persisters are the same.
+    /// - If the left persister has no tasks.
+    /// - If the right persister has tasks.    
+    fn copy(args: CopyTaskArgs) {
+        if args.left == args.right {
+            panic!("Both persisters are the same");
+        }
+
+        let left = Config::resolve_persister(Some(args.left));
+        let right = Config::resolve_persister(Some(args.right));
+
+        if left.tasks() == Vec::new() {
+            panic!("'{}' doesn't exist or has no tasks to copy", left.to_string())
+        }
+
+        let config = Config::load();
+
+        if !config.force_copy {
+            if right.tasks() != Vec::new() {
+                panic!("'{}' already has tasks. Set 'force_copy' to 'true' to overwrite them.", right.to_string());
+            }
+        }
+
+        right.replace(&Todo::from(&*left));
+
+        if config.drop_after_copy {
+            left.remove();
+        }
+
+        Todo::new(right.tasks()).view();
     }
 
     /// Populates the persister with fake data for testing purposes.

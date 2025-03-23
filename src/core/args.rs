@@ -21,8 +21,8 @@ pub mod kind {
         #[arg(long, short, value_name = "PERSISTER")]
         pub persister: Option<String>,
 
-        /// Task structure needed to create a task.
-        #[arg(value_name = "TASK", help = "Structure: 'content,priority'")]
+        /// The structure of a task: 'content,priority'.
+        #[arg(value_name = "TASK")]
         pub task: String,
     }
 
@@ -33,21 +33,21 @@ pub mod kind {
         #[arg(long, short, value_name = "PERSISTER")]
         pub persister: Option<String>,
 
-        /// Identifiers of tasks separated by spaces.
-        #[arg(value_name = "IDS", help = "Task IDs")]
+        /// Identifiers of tasks separated by commas.
+        #[arg(value_name = "IDS")]
         pub ids: Vec<u32>,
     }
 
     /// Defines common arguments for commands related to copying files.
     #[derive(Args, Debug)]
     pub struct CopyTaskArgs {
-        /// Where the file is.
-        #[arg(value_name = "OLD_PATH", help = "Old path of the tasks file.")]
-        pub old: String,
+        /// The persister that has tasks.
+        #[arg(value_name = "LEFT")]
+        pub left: String,
 
-        /// Where the contents will be copied to.
-        #[arg(value_name = "NEW_PATH", help = "New path of the tasks file.")]
-        pub new: String,
+        /// Where the tasks will be copied to.
+        #[arg(value_name = "RIGHT")]
+        pub right: String,
     }
 }
 

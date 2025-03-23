@@ -16,6 +16,9 @@ pub trait Persister: fmt::Debug {
     /// The value that created the `Persister` instance.
     fn to_string(&self) -> String;
 
+    /// Checks wether a persister exists or not.
+    fn exists(&self) -> bool;
+
     /// Returns the tasks collected from the persister's contents.
     fn tasks(&self) -> Vec<Task>;
 
@@ -27,6 +30,9 @@ pub trait Persister: fmt::Debug {
 
     /// Saves a Todo instance as the persister's content.
     fn save(&self, todo: &Todo);
+
+    /// Replaces the current data with a new [`Todo`] instance.
+    fn replace(&self, todo: &Todo);
 
     /// Deletes all tasks from the persister.
     fn clean(&self);
@@ -54,6 +60,9 @@ pub trait FilePersister {
 
     /// Returns the file instance inside a [`Box`] pointer.
     fn boxed(self) -> Box<dyn FilePersister>;
+
+    /// Checks wether a persister exists or not.
+    fn exists(&self) -> bool;
 
     /// Returns a String used to initialize the file.
     fn default(&self) -> String;

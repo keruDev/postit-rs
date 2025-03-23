@@ -9,7 +9,7 @@
 build_rs_cov.profraw
 
 # Files
-.postit.toml
+*postit.toml
 *.csv
 *.json
 *.xml

@@ -151,6 +151,10 @@ impl Persister for Orm {
         self.db.conn()
     }
 
+    fn exists(&self) -> bool {
+        self.db.exists()
+    }
+
     fn tasks(&self) -> Vec<Task> {
         self.db.tasks()
     }
@@ -172,6 +176,11 @@ impl Persister for Orm {
 
         let task = Todo::one(last);
         self.db.insert(&task);
+    }
+
+    fn replace(&self, todo: &Todo) {
+        self.db.clean();
+        self.db.insert(todo);
     }
 
     fn clean(&self) {
