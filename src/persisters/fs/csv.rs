@@ -50,6 +50,17 @@ impl FilePersister for Csv {
         Self::header()
     }
 
+    fn tasks(&self) -> Vec<Task> {
+        self.read()
+            .iter()
+            .skip(1)
+            .map(|line| {
+                let (id, content, priority, checked) = Self::parse(line);
+                Task::new(id, content, priority, checked)
+            })
+            .collect()
+    }
+    
     fn open(&self) -> fs::File {
         fs::File::open(&self.path).expect("Should have been able to create the file")
     }
@@ -73,19 +84,11 @@ impl FilePersister for Csv {
         fs::write(&self.path, bytes).expect("Should have been able to write into the CSV file");
     }
 
-    /// Transforms a csv file into tasks.
-    fn tasks(&self) -> Vec<Task> {
-        self.read()
-            .iter()
-            .skip(1)
-            .map(|line| {
-                let (id, content, priority, checked) = Self::parse(line);
-                Task::new(id, content, priority, checked)
-            })
-            .collect()
-    }
-
     fn clean(&self) {
         fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
+    }
+
+    fn remove(&self) {
+        fs::remove_file(&self.path).expect("Should have been able to delete the CSV file")
     }
 }

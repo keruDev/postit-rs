@@ -30,6 +30,7 @@ impl Postit {
             Command::Copy(args) => Self::copy(args),
             Command::Sample(args) => Self::sample(args),
             Command::Clean(args) => Self::clean(args),
+            Command::Remove(args) => Self::remove(args),
             Command::Config { option } => Self::config(option),
         }
     }
@@ -105,6 +106,13 @@ impl Postit {
         let persister = Config::resolve_persister(args.persister);
 
         persister.clean();
+    }
+
+    /// Removes a persister completely (file or table).
+    fn remove(args: PersisterArgs) {
+        let persister = Config::resolve_persister(args.persister);
+
+        persister.remove();
     }
 
     /// Manages the configuration file.   

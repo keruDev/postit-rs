@@ -227,20 +227,24 @@ impl Persister for File {
         self.file.tasks()
     }
 
-    fn clean(&self) {
-        self.file.clean();
-    }
-
     fn read(&self) -> Vec<String> {
         self.file.read()
+    }
+
+    fn edit(&self, _ids: &[u32], _action: Action) {
+        self.file.write(&Todo::from(self));
     }
 
     fn save(&self, todo: &Todo) {
         self.file.write(todo);
     }
 
-    fn edit(&self, _ids: &[u32], _action: Action) {
-        self.file.write(&Todo::from(self));
+    fn clean(&self) {
+        self.file.clean();
+    }
+
+    fn remove(&self) {
+        self.file.remove()
     }
 }
 

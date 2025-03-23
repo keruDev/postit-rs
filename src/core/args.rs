@@ -84,6 +84,9 @@ pub mod cmnd {
         /// Cleans the tasks from a persister
         Clean(PersisterArgs),
 
+        /// Removes a persister completely (file or table)
+        Remove(PersisterArgs),
+
         /// Manages the configuration file (.postit.toml).
         Config {
             #[command(subcommand)]
