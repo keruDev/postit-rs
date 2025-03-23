@@ -41,7 +41,7 @@ pub mod kind {
     /// Defines common arguments for commands related to copying files.
     #[derive(Args, Debug)]
     pub struct CopyTaskArgs {
-        /// The persister that has tasks.
+        /// The persister that contains the tasks.
         #[arg(value_name = "LEFT")]
         pub left: String,
 

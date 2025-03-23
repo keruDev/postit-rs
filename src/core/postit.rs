@@ -102,7 +102,7 @@ impl Postit {
 
         let config = Config::load();
 
-        if !config.force_copy && right.tasks() != Vec::new(){
+        if !config.force_copy && right.tasks() != Vec::new() {
             panic!(
                 "'{}' already has tasks. Set 'force_copy' to 'true' to overwrite them.",
                 right.to_string()
