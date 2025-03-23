@@ -70,6 +70,7 @@ The commands currently available are (click to go to a use example):
 - [`drop`](#drop)
 - [`copy`](#copy)
 - [`clean`](#clean)
+- [`remove`](#remove)
 - [`config`](#config)
 
 You can also use the `--help` flag for additional help on every command.
@@ -247,6 +248,17 @@ at `.postit.toml` (or the `-p` flag, if provided):
 postit clean
 ```
 
+### remove
+
+Syntax: `postit remove`
+
+Deletes the persister completely (file or table). This command takes the
+`persister` defined at `.postit.toml` (or the `-p` flag, if provided):
+
+```sh
+postit remove
+```
+
 ### config
 
 Syntax: `postit config <COMMAND>`
@@ -274,6 +286,7 @@ It can be used on the following commands:
 - [uncheck](#uncheck)
 - [drop](#drop)
 - [clean](#clean)
+- [remove](#remove)
 
 There are currently 4 supported persisters:
 
