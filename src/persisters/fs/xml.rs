@@ -157,6 +157,13 @@ impl FilePersister for Xml {
         Self::prolog()
     }
 
+    fn tasks(&self) -> Vec<Task> {
+        let xml = self.read().join("");
+        let reader = Reader::from_str(&xml);
+
+        Self::xml_to_tasks(reader)
+    }
+
     fn open(&self) -> fs::File {
         fs::OpenOptions::new()
             .write(true)
@@ -184,14 +191,11 @@ impl FilePersister for Xml {
         self.open().write_all(&bytes).unwrap();
     }
 
-    fn tasks(&self) -> Vec<Task> {
-        let xml = self.read().join("");
-        let reader = Reader::from_str(&xml);
-
-        Self::xml_to_tasks(reader)
-    }
-
     fn clean(&self) {
         fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
+    }
+
+    fn remove(&self) {
+        fs::remove_file(&self.path).expect("Should have been able to delete the XML file")
     }
 }

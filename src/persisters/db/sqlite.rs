@@ -132,6 +132,10 @@ impl DbPersister for Sqlite {
         }
     }
 
+    fn tasks(&self) -> Vec<Task> {
+        self.select().iter().map(|row| Task::from(row)).collect()
+    }
+
     fn create(&self) {
         #[rustfmt::skip]
         self.connection.execute("
@@ -224,10 +228,6 @@ impl DbPersister for Sqlite {
 
     fn drop_database(&self) {
         std::fs::remove_file(self.conn()).expect("Couldn't drop the database");
-    }
-
-    fn tasks(&self) -> Vec<Task> {
-        self.select().iter().map(|row| Task::from(row)).collect()
     }
 
     fn clean(&self) {

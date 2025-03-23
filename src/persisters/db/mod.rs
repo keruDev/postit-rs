@@ -155,12 +155,12 @@ impl Persister for Orm {
         self.db.tasks()
     }
 
-    fn clean(&self) {
-        self.db.clean();
-    }
-
     fn read(&self) -> Vec<String> {
         self.db.select()
+    }
+
+    fn edit(&self, ids: &[u32], action: Action) {
+        self.db.update(ids, action);
     }
 
     fn save(&self, todo: &Todo) {
@@ -174,7 +174,11 @@ impl Persister for Orm {
         self.db.insert(&task);
     }
 
-    fn edit(&self, ids: &[u32], action: Action) {
-        self.db.update(ids, action);
+    fn clean(&self) {
+        self.db.clean();
+    }
+
+    fn remove(&self) {
+        self.db.drop_database();
     }
 }

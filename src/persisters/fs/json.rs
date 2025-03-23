@@ -40,6 +40,10 @@ impl FilePersister for Json {
         Self::array()
     }
 
+    fn tasks(&self) -> Vec<Task> {
+        serde_json::from_str(&self.read().join("")).expect("JSON was not well-formatted")
+    }
+
     fn open(&self) -> fs::File {
         fs::OpenOptions::new()
             .write(true)
@@ -63,11 +67,11 @@ impl FilePersister for Json {
             .expect("Should have been able to write into the JSON file");
     }
 
-    fn tasks(&self) -> Vec<Task> {
-        serde_json::from_str(&self.read().join("")).expect("JSON was not well-formatted")
-    }
-
     fn clean(&self) {
         fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
+    }
+
+    fn remove(&self) {
+        fs::remove_file(&self.path).expect("Should have been able to delete the JSON file")
     }
 }

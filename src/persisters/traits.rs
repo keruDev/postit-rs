@@ -13,14 +13,11 @@ pub trait Persister: fmt::Debug {
     /// Returns the persister instance inside a [`Box`] pointer.
     fn boxed(self) -> Box<dyn Persister>;
 
-    /// Returns the tasks collected from the persister's contents.
-    fn tasks(&self) -> Vec<Task>;
-
-    /// Deletes all tasks from the persister.
-    fn clean(&self);
-
     /// The value that created the `Persister` instance.
     fn to_string(&self) -> String;
+
+    /// Returns the tasks collected from the persister's contents.
+    fn tasks(&self) -> Vec<Task>;
 
     /// Reads the persister's content and returns its lines.
     fn read(&self) -> Vec<String>;
@@ -30,6 +27,12 @@ pub trait Persister: fmt::Debug {
 
     /// Saves a Todo instance as the persister's content.
     fn save(&self, todo: &Todo);
+
+    /// Deletes all tasks from the persister.
+    fn clean(&self);
+
+    /// Removes a persister completely (file or table).
+    fn remove(&self);
 }
 
 impl PartialEq for Box<dyn Persister> {
@@ -52,14 +55,11 @@ pub trait FilePersister {
     /// Returns the file instance inside a [`Box`] pointer.
     fn boxed(self) -> Box<dyn FilePersister>;
 
-    /// Returns the tasks collected from the file's contents.
-    fn tasks(&self) -> Vec<Task>;
-
-    /// Deletes all tasks from the persister.
-    fn clean(&self);
-
     /// Returns a String used to initialize the file.
     fn default(&self) -> String;
+
+    /// Returns the tasks collected from the file's contents.
+    fn tasks(&self) -> Vec<Task>;
 
     /// Grants access to an open file.
     fn open(&self) -> fs::File;
@@ -69,6 +69,12 @@ pub trait FilePersister {
 
     /// Writes into a file.
     fn write(&self, todo: &Todo);
+
+    /// Deletes all tasks from the persister.
+    fn clean(&self);
+
+    /// Removes a persister completely (file or table).
+    fn remove(&self);
 }
 
 impl PartialEq for Box<dyn FilePersister> {
@@ -85,17 +91,14 @@ pub trait DbPersister {
     /// Returns the database instance inside a [`Box`] pointer.
     fn boxed(self) -> Box<dyn DbPersister>;
 
-    /// Returns the tasks collected from the database's contents.
-    fn tasks(&self) -> Vec<Task>;
-
-    /// Deletes all tasks from the persister.
-    fn clean(&self);
-
     /// Checks if a table exists.
     fn exists(&self) -> bool;
 
     /// Returns the number of results in a table.
     fn count(&self) -> u32;
+
+    /// Returns the tasks collected from the database's contents.
+    fn tasks(&self) -> Vec<Task>;
 
     /// Creates a table.
     fn create(&self);
@@ -114,6 +117,9 @@ pub trait DbPersister {
 
     /// Drops the specified database.
     fn drop_database(&self);
+
+    /// Deletes all tasks from the persister.
+    fn clean(&self);
 }
 
 impl PartialEq for Box<dyn DbPersister> {
