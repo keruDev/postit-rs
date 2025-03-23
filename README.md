@@ -219,23 +219,30 @@ postit drop 2,3
 
 ### copy
 
-Syntax: `postit copy <OLD_PATH> <NEW_PATH>`
+Syntax: `postit copy <LEFT> <RIGHT>`
 
-Copies a file's contents into another:
+Copies a persister's contents into another:
 
 ```sh
 postit copy tasks.csv tasks.json
 ```
 
-By default, if the file at `<NEW_PATH>` exists, `postit` will refuse to
-overwrite that file in case you are using that file as a backup or you simply
-don't want to overwrite it.
+You can also copy data from a file persister to a database persister:
+
+```sh
+postit copy tasks.db tasks.xml
+```
+
+By default, if the persister at `<RIGHT>` exists, `postit` will refuse to
+overwrite its tasks in case you are using that persister as a backup or you
+simply don't want to overwrite it.
 
 You can set the `force_copy` config to `true` to overwrite it anyways.
 
-In the other hand, if you want to copy your file and delete the old one, you can
-do it by setting the `drop_after_copy` config to `true`. This will delete the file
-located at `<OLD_PATH>`.
+In the other hand, if you want to copy your tasks and delete the `<LEFT>` persister,
+you can do so by setting the `drop_after_copy` config to `true`.
+
+This will delete the file or table located at `<LEFT>`.
 
 ### clean
 
