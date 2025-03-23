@@ -36,6 +36,10 @@ impl FilePersister for Json {
         Box::new(self)
     }
 
+    fn exists(&self) -> bool {
+        fs::exists(&self.path).expect("The JSON file's existence couldn't be checked")
+    }
+
     fn default(&self) -> String {
         Self::array()
     }

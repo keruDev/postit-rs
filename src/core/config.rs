@@ -22,7 +22,7 @@ pub struct Config {
     pub persister: String,
     /// If `true`, allows dropping tasks without them being checked.
     pub force_drop: bool,
-    /// If `true`, allows overwriting files on copy if they already exist.
+    /// If `true`, allows overwriting files if they already exist.
     pub force_copy: bool,
     /// If `true`, drops the old file after copying its contents to the new file.
     pub drop_after_copy: bool,

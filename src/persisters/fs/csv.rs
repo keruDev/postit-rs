@@ -46,6 +46,10 @@ impl FilePersister for Csv {
         Box::new(self)
     }
 
+    fn exists(&self) -> bool {
+        fs::exists(&self.path).expect("The CSV file's existence couldn't be checked")
+    }
+
     fn default(&self) -> String {
         Self::header()
     }

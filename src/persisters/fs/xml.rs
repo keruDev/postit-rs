@@ -153,6 +153,10 @@ impl FilePersister for Xml {
         Box::new(self)
     }
 
+    fn exists(&self) -> bool {
+        fs::exists(&self.path).expect("The XML file's existence couldn't be checked")
+    }
+
     fn default(&self) -> String {
         Self::prolog()
     }
