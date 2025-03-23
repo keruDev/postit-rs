@@ -197,7 +197,7 @@ impl Persister for File {
     }
 
     fn exists(&self) -> bool {
-        self.file.exists()        
+        self.file.exists()
     }
 
     fn tasks(&self) -> Vec<Task> {
@@ -217,7 +217,7 @@ impl Persister for File {
     }
 
     fn replace(&self, todo: &Todo) {
-        self.file.write(&todo);
+        self.file.write(todo);
     }
 
     fn clean(&self) {

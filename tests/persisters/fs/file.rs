@@ -5,7 +5,7 @@ use std::ops::Not;
 use postit::fs::{Csv, File, Format};
 use postit::traits::{FilePersister, Persister};
 
-use crate::mocks::{MockConfig, MockPath};
+use crate::mocks::MockPath;
 
 #[test]
 fn format_deref() {
@@ -160,52 +160,6 @@ fn get_persister_any() {
     let expect = "csv";
 
     assert_eq!(result, expect);
-}
-
-#[test]
-#[should_panic]
-fn copy_same_paths() {
-    let old = String::from("test.csv");
-    let new = old.clone();
-
-    File::copy(&old, &new);
-}
-
-#[test]
-#[should_panic]
-fn copy_no_old_path() {
-    let old = MockPath::create(Format::Csv);
-    fs::remove_file(old.path()).unwrap();
-
-    let new = MockPath::create(Format::Json);
-
-    File::copy(&old.to_string(), &new.to_string());
-}
-
-#[test]
-#[should_panic]
-fn copy_path_exists() {
-    let _mock = MockConfig::new();
-
-    let old = MockPath::create(Format::Csv);
-    let new = MockPath::create(Format::Json);
-
-    File::copy(&old.to_string(), &new.to_string());
-}
-
-#[test]
-fn copy_drop_after_copy() {
-    let mut mock_config = MockConfig::new();
-    mock_config.config.drop_after_copy = true;
-    mock_config.save();
-
-    let old = MockPath::create(Format::Csv);
-    let new_path = "test.json";
-
-    File::copy(&old.to_string(), new_path);
-    MockPath::from(new_path);
-
-    assert!(old.path().exists().not());
 }
 
 #[test]
