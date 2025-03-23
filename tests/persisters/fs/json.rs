@@ -1,3 +1,5 @@
+use std::ops::Not;
+
 use postit::fs::{Format, Json};
 use postit::traits::FilePersister;
 
@@ -22,4 +24,12 @@ fn clean() {
     let expect = Vec::new();
 
     assert_eq!(result, expect);
+}
+
+#[test]
+fn remove() {
+    let mock = MockPath::create(Format::Json);
+    Json::new(mock.path()).remove();
+
+    assert!(mock.path().exists().not());
 }
