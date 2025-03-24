@@ -1,5 +1,6 @@
 # 📝 postit-rs
 
+[![Coverage Status](https://coveralls.io/repos/github/keruDev/postit-rs/badge.svg?branch=master)](https://coveralls.io/github/keruDev/postit-rs?branch=master)
 [![Build Status](https://github.com/keruDev/postit-rs/workflows/CI/badge.svg)](https://github.com/keruDev/postit-rs/actions)
 [![Current Crates.io Version](https://img.shields.io/crates/v/postit.svg)](https://crates.io/crates/postit)
 [![Docs.rs](https://img.shields.io/badge/postit-blue.svg?label=docs.rs)](https://docs.rs/postit/latest/postit/)
