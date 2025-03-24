@@ -17,17 +17,8 @@ jobs:
     - name: Checkout Sources
       uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y curl build-essential pkg-config
-
     - name: Install Rust
-      uses: dtolnay/rust-toolchain@master
-      id: toolchain
-      with:
-        toolchain: stable
-        components: rust-src, clippy, rustfmt
+      uses: dtolnay/rust-toolchain@stable
 
     - name: Check code
       run: cargo check --verbose
