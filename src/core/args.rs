@@ -61,43 +61,43 @@ pub mod cmnd {
     #[derive(Subcommand, Debug)]
     pub enum Command {
         /// Shows a list of the current tasks.
-        #[command(alias="v")]
+        #[command(alias = "v")]
         View(PersisterArgs),
 
         /// Adds a new task to the list.
-        #[command(alias="a")]
+        #[command(alias = "a")]
         Add(AddTaskArgs),
 
         /// Marks a task as checked.
-        #[command(alias="c")]
+        #[command(alias = "c")]
         Check(EditTaskArgs),
 
         /// Marks a task as unchecked.
-        #[command(alias="uc")]
+        #[command(alias = "uc")]
         Uncheck(EditTaskArgs),
 
         /// Deletes a task from the list.
-        #[command(alias="d")]
+        #[command(alias = "d")]
         Drop(EditTaskArgs),
 
         /// Creates a copy of a file (can parse formats, like csv to json).
-        #[command(alias="cp")]
+        #[command(alias = "cp")]
         Copy(CopyTaskArgs),
 
         /// Creates a sample of tasks. Useful to test the program's features.
-        #[command(alias="s")]
+        #[command(alias = "s")]
         Sample(PersisterArgs),
 
         /// Cleans the tasks from a persister
-        #[command(alias="cl")]
+        #[command(alias = "cl")]
         Clean(PersisterArgs),
 
         /// Removes a persister completely (file or table)
-        #[command(alias="rm")]
+        #[command(alias = "rm")]
         Remove(PersisterArgs),
 
         /// Manages the configuration file (.postit.toml).
-        #[command(alias="conf")]
+        #[command(alias = "conf")]
         Config {
             #[command(subcommand)]
             /// The option the `Config` command will use.
