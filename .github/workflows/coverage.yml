@@ -23,9 +23,4 @@ jobs:
         run: cargo install cargo-tarpaulin
 
       - name: Execute coverage
-        run: cargo tarpaulin -- --test-threads=1
-
-      - name: Upload report to Coveralls
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.COVERALLS_TOKEN }}
+        run: cargo tarpaulin --coveralls ${{ secrets.COVERALLS_TOKEN }} -- --test-threads=1
