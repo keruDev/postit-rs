@@ -137,7 +137,7 @@ impl File {
             return;
         }
 
-        println!("Creating {path:?}");
+        println!("Creating {}", path.display());
 
         fs::write(path, self.file.default()).expect("Should have been able to create the file");
     }
