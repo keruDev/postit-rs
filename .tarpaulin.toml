@@ -9,4 +9,4 @@ fail-under = 93
 
 [report]
 output-dir = "coverage"
-out = ["Html"]
+out = ["Xml"]
