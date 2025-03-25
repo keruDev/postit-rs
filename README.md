@@ -10,20 +10,56 @@ Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
 Postit is a CLI utility aimed to help you complete your tasks.
 You can also save your tasks to keep track of them later.
 
+## Index
+
+Here is an index of this file to make it easier for you to navigate:
+
+- [Getting started](#getting-started): describes installation and first steps.
+- [From 0.1.x to 0.2.x](#from-01x-to-02x): brief migration guide.
+- [Features](#features): postit's functionalities and new additions roadmap. 
+- [Configuration](#configuration): describes configuration options.
+- [Environment variables](#environment-variables): environment variables used.
+- [Commands](#commands): all commands available, including a description and use example.
+- [Flags](#flags): all flags available, including a description and what commands support them.
+- [Development](#development): things to take into account if you want to contribute to postit.
+
+## Getting started
+
+To install `postit`, just use:
+
+```sh
+cargo install postit
+```
+
+After installing, run the `help` command to display a list of all possible commands:
+
+```sh
+postit help
+```
+
+`postit` uses a configuration file called `.postit.toml`. You can tell `postit`
+where this file is by using the `POSTIT_CONFIG_PATH` env var. After setting it,
+use the command below to generate the config structure:
+
+```sh
+postit config init
+```
+
 ## From 0.1.x to 0.2.x
 
-The 0.1.x minor marked the beginning of postit's development, but the best is yet to come.
-As of 0.1.x, postit featured csv and json file support, as well as some basic commands to
-manage tasks and the configuration file.
+The 0.1.x minor marked the beginning of postit's development, but the best is
+yet to come. As of 0.1.x, postit featured csv and json file support, as well
+as some basic commands to manage tasks and the configuration file.
 
-By bumping the version to 0.2.x, it is intended to mark the first great step of postit to
-becoming a more serious product.
+By bumping the version to 0.2.x, it is intended to mark the first great step
+of postit to becoming a more serious product.
 
-To migrate from 0.1.x to 0.2.x, you'll need to change the `--path` flag to `--persister`
-(not that hard, I know).
+To migrate from 0.1.x to 0.2.x, you'll need to change the `--path` flag to 
+`--persister` (pretty simple, right?).
 
-This minor will be focused on providing support for more database systems (MongoDB or MySQL)
-along with some more file extensions (XML) and more commands to make task management simpler.
+This minor will be focused on providing support for more database systems
+(MongoDB or MySQL) along with some more file extensions (XML) and more commands
+to make task management simpler.
 
 Hope to cross paths in future versions :)
 
@@ -36,7 +72,7 @@ Features:
 - [Commands](#commands) and [flags](#flags) to manage tasks and files.
 - Supported file and database formats to persist data (described in the [persisters](#persister) flag).
 - Configuration file to change postit's behavior (more info in the [Configuration](#configuration) section).
-- Tasks are displayed differently depending on their priority and wether they are checked or not.
+- Tasks are displayed differently depending on their priority and whether they are checked or not.
 
 Roadmap:
 - [x] XML support
@@ -51,14 +87,17 @@ postit's behavior can be changed using the `.postit.toml` file.
 You can check out its possible fields in the [docs](https://docs.rs/postit/latest/postit/struct.Config.html) or down below:
 - `persister`: where tasks are stored (the `-p` or `--persister` flag can override this).\
   It can be one of the supported persisters (file or database).
-- `force_drop`: if true, allows dropping tasks without them being checked.
-- `force_copy`: if true, allows overwriting files on copy if they already exist.
-- `drop_after_copy`: if true, drops files after copying.
+- `force_drop`: if true, allows dropping tasks even if they are not checked.
+- `force_copy`: if true, allows overwriting tasks on populated persisters when
+   using the [`copy`](#copy) command.
+- `drop_after_copy`: if true, drops a persister (file or table) after copying.
 
 ## Environment variables
 
+Here is a list of the environment variables currently used:
+
 - `EDITOR`: used to open your configuration file and edit it.
-- `POSTIT_CONFIG_PATH`: specifies where the config file is located (by default, `.postit.toml`).
+- `POSTIT_CONFIG_PATH`: where the config file is located (by default, `.postit.toml`).
 
 ## Commands
 
@@ -76,11 +115,11 @@ The commands currently available are (click to go to a use example):
 
 You can also use the `--help` flag for additional help on every command.
 
-## Examples
-
 ### sample
 
 Syntax: `postit sample`
+
+Alias: `postit s`
 
 Populates a persister with fake data so you can test other commands. This command
 takes the `persister` defined at `.postit.toml` (or the `-p` flag, if provided):
@@ -100,6 +139,8 @@ postit sample
 
 Syntax: `postit view`
 
+Alias: `postit v`
+
 Takes the `persister` defined at `.postit.toml` (or the `-p` flag, if provided)
 to show the list of current tasks:
 
@@ -117,6 +158,8 @@ postit view
 ### add
 
 Syntax: `postit add <TASK>`
+
+Alias: `postit a <TASK>`
 
 Adds a task with the format `id,content,priority,checked`. 
 - **id**: a unique unsigned integer.
@@ -158,6 +201,8 @@ postit add "New task,low"
 
 Syntax: `postit check <IDS>`
 
+Alias: `postit c <IDS>`
+
 Checks tasks if they are unchecked.
 
 ```sh
@@ -174,6 +219,8 @@ postit check 2,3
 ### uncheck
 
 Syntax: `postit uncheck <IDS>`
+
+Alias: `postit uc <IDS>`
 
 Unchecks tasks if they are checked.
 
@@ -192,7 +239,9 @@ postit uncheck 2,3
 
 Syntax: `postit drop <IDS>`
 
-By default, tasks must be checked to be dropped.
+Alias: `postit d <IDS>`
+
+By default, only checked tasks can be dropped.
 
 ```sh
 postit drop 2,3
@@ -205,7 +254,7 @@ postit drop 2,3
 4,Task,none,true
 ```
 
-You can set the `force_drop` config to `true` to drop tasks wether they are checked or not.
+You can set the `force_drop` config to `true` to drop tasks whether they are checked or not.
 
 ```sh
 postit drop 2,3
@@ -221,6 +270,8 @@ postit drop 2,3
 ### copy
 
 Syntax: `postit copy <LEFT> <RIGHT>`
+
+Alias: `postit cp <LEFT> <RIGHT>`
 
 Copies a persister's contents into another:
 
@@ -240,14 +291,15 @@ simply don't want to overwrite it.
 
 You can set the `force_copy` config to `true` to overwrite it anyways.
 
-In the other hand, if you want to copy your tasks and delete the `<LEFT>` persister,
-you can do so by setting the `drop_after_copy` config to `true`.
-
-This will delete the file or table located at `<LEFT>`.
+If you want to copy your tasks and delete the `<LEFT>` persister, you can do so
+by setting the `drop_after_copy` config to `true`. This will delete the file or
+table located at `<LEFT>`.
 
 ### clean
 
 Syntax: `postit clean`
+
+Alias: `postit cl`
 
 Deletes all tasks from a persister. This command takes the `persister` defined
 at `.postit.toml` (or the `-p` flag, if provided):
@@ -260,6 +312,8 @@ postit clean
 
 Syntax: `postit remove`
 
+Alias: `postit rm`
+
 Deletes the persister completely (file or table). This command takes the
 `persister` defined at `.postit.toml` (or the `-p` flag, if provided):
 
@@ -270,6 +324,8 @@ postit remove
 ### config
 
 Syntax: `postit config <COMMAND>`
+
+Alias: `postit conf <COMMAND>`
 
 Used to manage the config file. These are the available commands:
 - `init`: creates the `.postit.toml` file.
@@ -283,9 +339,14 @@ field is explained and there is a link to the official docs.
 
 ### persister
 
-Syntax: `postit <COMMAND> --persister <PATH_OR_CONN>`
+Syntax: `postit <COMMAND> [--persister | -p] <PATH_OR_CONN>`
 
 The `--persister` or `-p` flag specifies where the tasks will be read from and saved to.
+
+A persister is the storage where tasks are saved. It can be a file (CSV, JSON, etc.)
+or a database (SQLite, etc.). The persister is defined in .postit.toml, or you can
+override it with the `-p` flag.
+
 It can be used on the following commands:
 - [sample](#sample)
 - [view](#view)
@@ -311,7 +372,9 @@ A use example:
 postit view --persister tasks.csv 
 ```
 
-## Testing
+## Development
+
+### Testing
 
 To run postit's tests, use this command:
 ```sh
