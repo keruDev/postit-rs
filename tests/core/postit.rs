@@ -53,7 +53,7 @@ fn add_panics() {
     let args = Arguments {
         command: Command::Add(AddTaskArgs {
             persister: Some(mock.to_string()),
-            task: String::from(task),
+            content: String::from(task),
         }),
     };
 
@@ -70,7 +70,7 @@ fn add_ok() {
     let args = Arguments {
         command: Command::Add(AddTaskArgs {
             persister: Some(mock.to_string()),
-            task: String::from(task),
+            content: String::from(task),
         }),
     };
 
@@ -95,7 +95,7 @@ fn add_no_priority() {
     let args = Arguments {
         command: Command::Add(AddTaskArgs {
             persister: Some(mock.to_string()),
-            task: String::from(task),
+            content: String::from(task),
         }),
     };
 

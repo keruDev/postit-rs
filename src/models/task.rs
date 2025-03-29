@@ -3,6 +3,8 @@
 use std::fmt;
 use std::ops::Deref;
 
+use clap::ValueEnum;
+
 use colored::Colorize as _;
 use serde::{Deserialize, Serialize};
 
@@ -29,7 +31,7 @@ pub mod error {
 }
 
 /// Priority of the Task, which is used to define the task's color and importance.
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, ValueEnum)]
 #[serde(rename_all = "lowercase")]
 pub enum Priority {
     /// High priority tasks are colored red.

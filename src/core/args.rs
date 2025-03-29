@@ -6,6 +6,8 @@ use clap::Parser;
 pub mod kind {
     use clap::Args;
 
+    use crate::models::Priority;
+
     /// Defines common arguments for commands that just use the persister value.
     #[derive(Args, Debug)]
     pub struct PersisterArgs {
@@ -21,9 +23,13 @@ pub mod kind {
         #[arg(long, short, value_name = "PERSISTER")]
         pub persister: Option<String>,
 
-        /// The structure of a task: 'content,priority'.
-        #[arg(value_name = "TASK")]
-        pub task: String,
+        /// Priority of the task (none, low, med or high).
+        #[arg(value_enum, value_name = "PRIORITY")]
+        pub priority: Priority,
+
+        /// The content or description of a task.
+        #[arg(value_name = "CONTENT")]
+        pub content: String,
     }
 
     /// Defines common arguments for commands related to editing task values.
@@ -119,9 +125,13 @@ pub mod cmnd {
 
 /// Manages the `Arguments` received from console.
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None, next_line_help = false)]
+#[command(author, version, about, long_about = None, next_line_help = false, disable_help_flag = true)]
 pub struct Arguments {
     /// Command to execute
     #[command(subcommand)]
     pub command: cmnd::Command,
+
+    /// Print help
+    #[clap(long, global = true, action = clap::ArgAction::HelpLong)]
+    pub help: Option<bool>,
 }
