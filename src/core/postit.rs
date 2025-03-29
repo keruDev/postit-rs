@@ -7,7 +7,7 @@ use super::args::cmnd::{Command, ConfigCommand};
 use super::args::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 use super::args::Arguments;
 use super::{Action, Config};
-use crate::models::{Priority, Task, Todo};
+use crate::models::{Task, Todo};
 
 /// Entry point where all operations are executed.
 ///
@@ -47,17 +47,7 @@ impl Postit {
 
         let id = todo.tasks.last().map_or(1, |last| last.id + 1);
 
-        let parts: Vec<&str> = args.task.split(',').map(str::trim).collect();
-
-        let content = match parts[0].parse::<u32>() {
-            Ok(_n) => panic!("Task element can't be a number"),
-            Err(_e) => parts[0],
-        };
-
-        let priority =
-            if parts.len() > 1 { Priority::from(parts.get(1).unwrap()) } else { Priority::Med };
-
-        let line = format!("{},{},{},{}", id, content, priority, false);
+        let line = format!("{},{},{},{}", id, args.content, args.priority, false);
         let task = Task::from(&line);
 
         todo.add(task);
@@ -94,11 +84,12 @@ impl Postit {
         }
 
         let left = Config::resolve_persister(Some(args.left));
-        let right = Config::resolve_persister(Some(args.right));
 
         if left.tasks() == Vec::new() {
-            panic!("'{}' doesn't exist or has no tasks to copy", left.to_string())
+            panic!("'{}' has no tasks to copy", left.to_string())
         }
+
+        let right = Config::resolve_persister(Some(args.right));
 
         let config = Config::load();
 
