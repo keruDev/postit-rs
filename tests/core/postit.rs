@@ -5,7 +5,7 @@ use postit::args::cmnd::{Command, ConfigCommand};
 use postit::args::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 use postit::args::Arguments;
 use postit::fs::{File, Format};
-use postit::models::{Task, Todo};
+use postit::models::{Priority, Task, Todo};
 use postit::traits::Persister;
 use postit::{Config, Postit};
 
@@ -45,48 +45,7 @@ fn view() {
 }
 
 #[test]
-#[should_panic]
-fn add_panics() {
-    let mock = MockPath::create(Format::Csv);
-    let task = "1,med";
-
-    let args = Arguments {
-        command: Command::Add(AddTaskArgs {
-            persister: Some(mock.to_string()),
-            content: String::from(task),
-        }),
-    };
-
-    Postit::run(args);
-}
-
-#[test]
-fn add_ok() {
-    let mock = MockPath::create(Format::Csv);
-    let task = "Test,med";
-    let line = format!("5,{task},false");
-
-    let (file, mut todo) = fakes(&mock);
-    let args = Arguments {
-        command: Command::Add(AddTaskArgs {
-            persister: Some(mock.to_string()),
-            content: String::from(task),
-        }),
-    };
-
-    Postit::run(args);
-
-    todo.add(Task::from(&line));
-    file.save(&todo);
-
-    let (expected_file, expected_todo) = expected(&mock);
-
-    assert_eq!(todo, expected_todo);
-    assert_eq!(file.read(), expected_file.read());
-}
-
-#[test]
-fn add_no_priority() {
+fn add() {
     let mock = MockPath::create(Format::Csv);
     let task = "Test";
     let line = format!("5,{task},med,false");
@@ -95,6 +54,7 @@ fn add_no_priority() {
     let args = Arguments {
         command: Command::Add(AddTaskArgs {
             persister: Some(mock.to_string()),
+            priority: Priority::Med,
             content: String::from(task),
         }),
     };

@@ -125,13 +125,9 @@ pub mod cmnd {
 
 /// Manages the `Arguments` received from console.
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None, next_line_help = false, disable_help_flag = true)]
+#[command(author, version, about, long_about = None, next_line_help = false)]
 pub struct Arguments {
     /// Command to execute
     #[command(subcommand)]
     pub command: cmnd::Command,
-
-    /// Print help
-    #[clap(long, global = true, action = clap::ArgAction::HelpLong)]
-    pub help: Option<bool>,
 }
