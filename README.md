@@ -157,36 +157,20 @@ postit view
 
 ### add
 
-Syntax: `postit add <TASK>`
+Syntax: `postit add <PRIORITY> <CONTENT>`
 
-Alias: `postit a <TASK>`
+Alias: `postit a <PRIORITY> <CONTENT>`
 
-Adds a task with the format `id,content,priority,checked`. 
+Creates a task with the format `id,content,priority,checked`. 
 - **id**: a unique unsigned integer.
 - **content**: description of the task.
-- **priority**: `high`, `med` (default), `low` or `none`.
+- **priority**: `high`, `med`, `low` or `none`.
 - **checked**: `true` or `false`.
 
-To add a task, use the format `content,priority`.
-
-If priority is left blank, then it will be assigned `med`:
+To add a task, you just have to pass the priority and the content or description:
 
 ```sh
-postit add "New task"
-```
-
-```csv
-1,Task,low,false
-2,Task,med,false
-3,Task,high,true
-4,Task,none,true
-5,New task,med,false    (new element)
-```
-
-To assign a different value to the task's priority:
-
-```sh
-postit add "New task,low"
+postit add low "New task"
 ```
 
 ```csv
