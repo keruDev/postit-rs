@@ -1,7 +1,7 @@
 use std::ops::Not;
 use std::path::PathBuf;
 
-use postit::args::cmnd::ConfigCommand;
+use postit::cmnd::ConfigSubcommand;
 use postit::db::Protocol;
 use postit::fs::Format;
 use postit::Config;
@@ -12,7 +12,7 @@ use crate::mocks::{MockConfig, MockConn, MockPath};
 fn manage_init() {
     let mock = MockConfig::new();
 
-    Config::manage(&ConfigCommand::Init);
+    Config::manage(&ConfigSubcommand::Init);
 
     let result = Config::load();
     let expect = Config::default();
@@ -27,7 +27,7 @@ fn manage_edit() {
     let value = std::env::var(key).unwrap();
 
     std::env::set_var(key, "echo");
-    Config::manage(&ConfigCommand::Edit);
+    Config::manage(&ConfigSubcommand::Edit);
 
     std::env::set_var(key, value);
 }
@@ -39,7 +39,7 @@ fn manage_edit_panics() {
     let value = std::env::var(key).unwrap();
 
     std::env::set_var(key, "");
-    Config::manage(&ConfigCommand::Edit);
+    Config::manage(&ConfigSubcommand::Edit);
 
     std::env::set_var(key, value);
 }
@@ -48,8 +48,8 @@ fn manage_edit_panics() {
 fn manage_drop() {
     let mock = MockConfig::new();
 
-    Config::manage(&ConfigCommand::Init);
-    Config::manage(&ConfigCommand::Drop);
+    Config::manage(&ConfigSubcommand::Init);
+    Config::manage(&ConfigSubcommand::Drop);
 
     assert!(mock.path().exists().not());
 }
@@ -57,7 +57,7 @@ fn manage_drop() {
 #[test]
 #[should_panic]
 fn manage_drop_panics() {
-    Config::manage(&ConfigCommand::Drop);
+    Config::manage(&ConfigSubcommand::Drop);
 }
 
 #[test]

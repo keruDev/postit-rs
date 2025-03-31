@@ -7,10 +7,11 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
-use crate::args::cmnd::ConfigCommand;
 use crate::db::Orm;
 use crate::fs::File;
 use crate::traits::Persister;
+
+use super::cli::cmnd::ConfigSubcommand;
 
 /// Contains the configuration used while running `postit`.
 ///
@@ -57,12 +58,12 @@ impl Config {
         std::env::var("EDITOR").unwrap_or(String::from("nano"))
     }
 
-    /// Manages the `.postit.toml` file using a `ConfigOptions` instance.
-    pub fn manage(option: &ConfigCommand) {
-        match option {
-            ConfigCommand::Init => Self::init(),
-            ConfigCommand::Edit => Self::edit(),
-            ConfigCommand::Drop => Self::drop(),
+    /// Manages the `.postit.toml` file using a `ConfigSubcommand` instance.
+    pub fn manage(subcommand: &ConfigSubcommand) {
+        match subcommand {
+            ConfigSubcommand::Init => Self::init(),
+            ConfigSubcommand::Edit => Self::edit(),
+            ConfigSubcommand::Drop => Self::drop(),
         }
     }
 
