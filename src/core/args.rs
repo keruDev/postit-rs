@@ -44,6 +44,38 @@ pub mod kind {
         pub ids: Vec<u32>,
     }
 
+    /// Defines common arguments for commands related to editing task values.
+    #[derive(Args, Clone, Debug)]
+    pub struct SetPriorityArgs {
+        /// Used to read from and save tasks to.
+        #[arg(long, short, value_name = "PERSISTER")]
+        pub persister: Option<String>,
+
+        /// Priority of the task (none, low, med or high).
+        #[arg(value_enum, value_name = "PRIORITY")]
+        pub priority: Priority,
+        
+        /// Identifiers of tasks separated by commas.
+        #[arg(value_name = "IDS")]
+        pub ids: Vec<u32>,
+    }
+
+    /// Defines common arguments for commands related to editing task values.
+    #[derive(Args, Clone, Debug)]
+    pub struct SetContentArgs {
+        /// Used to read from and save tasks to.
+        #[arg(long, short, value_name = "PERSISTER")]
+        pub persister: Option<String>,
+
+        /// The content or description of a task.
+        #[arg(value_name = "CONTENT")]
+        pub content: String,
+        
+        /// Identifiers of tasks separated by commas.
+        #[arg(value_name = "IDS")]
+        pub ids: Vec<u32>,
+    }
+
     /// Defines common arguments for commands related to copying files.
     #[derive(Args, Debug)]
     pub struct CopyTaskArgs {
@@ -59,9 +91,9 @@ pub mod kind {
 
 /// Contains the command enums used.
 pub mod cmnd {
-    use clap::{Subcommand, ValueEnum};
+    use clap::Subcommand;
 
-    use super::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
+    use super::kind::{AddTaskArgs, SetContentArgs, SetPriorityArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 
     /// Contains the different commands available.
     #[derive(Subcommand, Debug)]
@@ -73,6 +105,14 @@ pub mod cmnd {
         /// Adds a new task to the list.
         #[command(alias = "a")]
         Add(AddTaskArgs),
+
+        /// Changes values inside of tasks.
+        #[command(alias = "s")]
+        Set {
+            #[command(subcommand)]
+            /// Subcommand the `Set` command will use.
+            subcommand: SetSubcommand,
+        },
 
         /// Marks a task as checked.
         #[command(alias = "c")]
@@ -91,7 +131,7 @@ pub mod cmnd {
         Copy(CopyTaskArgs),
 
         /// Creates a sample of tasks. Useful to test the program's features.
-        #[command(alias = "s")]
+        #[command(alias = "sa")]
         Sample(PersisterArgs),
 
         /// Cleans the tasks from a persister
@@ -106,14 +146,23 @@ pub mod cmnd {
         #[command(alias = "conf")]
         Config {
             #[command(subcommand)]
-            /// The option the `Config` command will use.
-            option: ConfigCommand,
+            /// Subcommand the 'Config' command will use.
+            subcommand: ConfigSubcommand,
         },
     }
 
-    /// Options for managing the config file.
-    #[derive(Subcommand, Clone, Copy, Debug, ValueEnum)]
-    pub enum ConfigCommand {
+    /// Subcommands for setting the task's value.
+    #[derive(Subcommand, Clone, Debug)]
+    pub enum SetSubcommand {
+        /// Changes the 'content' value.
+        Content(SetContentArgs),
+        /// Changes the 'priority' value.
+        Priority(SetPriorityArgs),
+    }
+
+    /// Subcommands for managing the config file.
+    #[derive(Subcommand, Clone, Copy, Debug)]
+    pub enum ConfigSubcommand {
         /// Creates the config file.
         Init,
         /// Opens the default editor to edit the file.
@@ -123,7 +172,7 @@ pub mod cmnd {
     }
 }
 
-/// Manages the `Arguments` received from console.
+/// Manages the command and arguments received from console.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, next_line_help = false)]
 pub struct Arguments {
