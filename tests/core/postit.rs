@@ -1,13 +1,12 @@
 use std::ops::Not;
 use std::path::PathBuf;
 
-use postit::args::cmnd::{Command, ConfigCommand};
-use postit::args::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
-use postit::args::Arguments;
+use postit::cmnd::{Command, ConfigSubcommand};
+use postit::args::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 use postit::fs::{File, Format};
 use postit::models::{Priority, Task, Todo};
 use postit::traits::Persister;
-use postit::{Config, Postit};
+use postit::{Cli, Config, Postit};
 
 use crate::mocks::{MockConfig, MockPath};
 
@@ -32,11 +31,11 @@ fn view() {
     let mock = MockPath::create(Format::Csv);
 
     let (file, todo) = fakes(&mock);
-    let args = Arguments {
+    let cli = Cli {
         command: Command::View(PersisterArgs { persister: Some(file.to_string()) }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     let (expected_file, expected_todo) = expected(&mock);
 
@@ -51,7 +50,7 @@ fn add() {
     let line = format!("5,{task},med,false");
 
     let (file, mut todo) = fakes(&mock);
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Add(AddTaskArgs {
             persister: Some(mock.to_string()),
             priority: Priority::Med,
@@ -59,7 +58,7 @@ fn add() {
         }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     todo.add(Task::from(&line));
     file.save(&todo);
@@ -76,14 +75,14 @@ fn check() {
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Check(EditTaskArgs {
             persister: Some(file.to_string()),
             ids: ids.to_owned(),
         }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     todo.check(&ids);
     file.save(&todo);
@@ -100,14 +99,14 @@ fn uncheck() {
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Uncheck(EditTaskArgs {
             persister: Some(file.to_string()),
             ids: ids.to_owned(),
         }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     todo.check(&ids);
     file.save(&todo);
@@ -128,14 +127,14 @@ fn drop_no_force_drop() {
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Drop(EditTaskArgs {
             persister: Some(file.to_string()),
             ids: ids.to_owned(),
         }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     todo.check(&ids);
     file.save(&todo);
@@ -157,14 +156,14 @@ fn drop_force() {
 
     let (file, mut todo) = fakes(&mock);
 
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Drop(EditTaskArgs {
             persister: Some(file.to_string()),
             ids: ids.to_owned(),
         }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     todo.check(&ids);
     file.save(&todo);
@@ -184,14 +183,14 @@ fn copy() {
     let mock_left = MockPath::create(Format::Csv);
     let right = "postit_copy.json";
 
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Copy(CopyTaskArgs {
             left: mock_left.to_string(),
             right: right.to_string(),
         }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     let mock_right = MockPath::new(PathBuf::from(right));
 
@@ -208,14 +207,14 @@ fn copy_same_paths() {
     let left = MockPath::create(Format::Csv);
     let right = MockPath::create(Format::Csv);
 
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Copy(CopyTaskArgs {
             left: left.to_string(),
             right: right.to_string(),
         }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 }
 
 #[test]
@@ -224,7 +223,7 @@ fn copy_no_left_path() {
     let left = MockPath::create(Format::Csv);
     let right = MockPath::create(Format::Json);
 
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Copy(CopyTaskArgs {
             left: left.to_string(),
             right: right.to_string(),
@@ -233,7 +232,7 @@ fn copy_no_left_path() {
 
     drop(left);
 
-    Postit::run(args);
+    Postit::run(cli);
 }
 
 #[test]
@@ -246,14 +245,14 @@ fn copy_path_exists() {
     let left = MockPath::create(Format::Csv);
     let right = MockPath::create(Format::Json);
 
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Copy(CopyTaskArgs {
             left: left.to_string(),
             right: right.to_string(),
         }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 }
 
 #[test]
@@ -266,14 +265,14 @@ fn copy_drop_after_copy() {
     let left = MockPath::create(Format::Csv);
     let right = MockPath::blank(Format::Json);
 
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Copy(CopyTaskArgs {
             left: left.to_string(),
             right: right.to_string(),
         }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     assert!(left.path().exists().not());
 }
@@ -282,11 +281,11 @@ fn copy_drop_after_copy() {
 fn sample() {
     let mock = MockPath::create(Format::Csv);
 
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Sample(PersisterArgs { persister: Some(mock.to_string()) }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     let file = File::from(&mock.to_string());
 
@@ -300,11 +299,11 @@ fn sample() {
 fn clean() {
     let mock = MockPath::create(Format::Csv);
 
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Clean(PersisterArgs { persister: Some(mock.to_string()) }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     let file = File::from(&mock.to_string());
 
@@ -318,11 +317,11 @@ fn clean() {
 fn remove() {
     let mock = MockPath::create(Format::Csv);
 
-    let args = Arguments {
+    let cli = Cli {
         command: Command::Remove(PersisterArgs { persister: Some(mock.to_string()) }),
     };
 
-    Postit::run(args);
+    Postit::run(cli);
 
     assert!(mock.path().exists().not());
 }
@@ -330,13 +329,13 @@ fn remove() {
 #[test]
 fn config() {
     let mock = MockConfig::new();
-    let args = Arguments {
-        command: Command::Config { option: ConfigCommand::Init },
+    let cli = Cli {
+        command: Command::Config { subcommand: ConfigSubcommand::Init },
     };
 
     std::env::set_var("POSTIT_CONFIG_PATH", mock.path());
 
-    Postit::run(args);
+    Postit::run(cli);
 
     assert!(PathBuf::from(&mock.path()).exists());
 }

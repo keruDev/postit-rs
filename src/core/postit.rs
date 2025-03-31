@@ -3,9 +3,9 @@
 //!
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
-use super::args::cmnd::{SetSubcommand, Command, ConfigSubcommand};
-use super::args::kind::{AddTaskArgs, SetContentArgs, SetPriorityArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
-use super::args::Arguments;
+use super::cli::cmnd::{SetSubcommand, Command, ConfigSubcommand};
+use super::cli::args::{AddTaskArgs, SetContentArgs, SetPriorityArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
+use super::cli::Cli;
 use super::{Action, Config};
 use crate::models::{Task, Todo};
 
@@ -18,9 +18,9 @@ use crate::models::{Task, Todo};
 pub struct Postit;
 
 impl Postit {
-    /// Runs `Postit` commands based on the args provided.
-    pub fn run(args: Arguments) {
-        match args.command {
+    /// Runs `Postit` commands based on the commands and arguments provided.
+    pub fn run(cli: Cli) {
+        match cli.command {
             Command::View(args) => Self::view(args),
             Command::Add(args) => Self::add(args),
             Command::Set{ subcommand } => Self::set(subcommand),

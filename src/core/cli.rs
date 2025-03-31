@@ -3,7 +3,7 @@
 use clap::Parser;
 
 /// Contains the arguments struct used.
-pub mod kind {
+pub mod args {
     use clap::Args;
 
     use crate::models::Priority;
@@ -93,7 +93,7 @@ pub mod kind {
 pub mod cmnd {
     use clap::Subcommand;
 
-    use super::kind::{AddTaskArgs, SetContentArgs, SetPriorityArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
+    use super::args::{AddTaskArgs, SetContentArgs, SetPriorityArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 
     /// Contains the different commands available.
     #[derive(Subcommand, Debug)]
@@ -175,7 +175,7 @@ pub mod cmnd {
 /// Manages the command and arguments received from console.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, next_line_help = false)]
-pub struct Arguments {
+pub struct Cli {
     /// Command to execute
     #[command(subcommand)]
     pub command: cmnd::Command,

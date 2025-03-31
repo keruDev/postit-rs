@@ -1,6 +1,6 @@
 //! This is where all the task related management happens.
 
-pub mod args;
+mod cli;
 mod config;
 mod postit;
 
@@ -14,5 +14,6 @@ pub enum Action {
     Drop,
 }
 
+pub use cli::*;
 pub use config::Config;
 pub use postit::Postit;
