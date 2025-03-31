@@ -3,8 +3,8 @@
 //!
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
-use super::args::cmnd::{Command, ConfigCommand};
-use super::args::kind::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
+use super::args::cmnd::{SetSubcommand, Command, ConfigSubcommand};
+use super::args::kind::{AddTaskArgs, SetContentArgs, SetPriorityArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
 use super::args::Arguments;
 use super::{Action, Config};
 use crate::models::{Task, Todo};
@@ -23,6 +23,7 @@ impl Postit {
         match args.command {
             Command::View(args) => Self::view(args),
             Command::Add(args) => Self::add(args),
+            Command::Set{ subcommand } => Self::set(subcommand),
             Command::Check(args) => Self::edit(args, Action::Check),
             Command::Uncheck(args) => Self::edit(args, Action::Uncheck),
             Command::Drop(args) => Self::edit(args, Action::Drop),
@@ -30,7 +31,7 @@ impl Postit {
             Command::Sample(args) => Self::sample(args),
             Command::Clean(args) => Self::clean(args),
             Command::Remove(args) => Self::remove(args),
-            Command::Config { option } => Self::config(option),
+            Command::Config { subcommand } => Self::config(subcommand),
         }
     }
 
@@ -54,6 +55,38 @@ impl Postit {
         persister.save(&todo);
 
         todo.view();
+    }
+
+    /// Changes the values of a task depending on the `SetSubcommand` variant.
+    fn set(subcommand: SetSubcommand) {
+        match subcommand {
+            SetSubcommand::Priority(args) => Self::set_priority(args),
+            SetSubcommand::Content(args) => Self::set_content(args),
+        }
+    }
+
+    /// Changes the `priority` property of tasks (selected by using `args.ids`).
+    fn set_priority(args: SetPriorityArgs) {
+        let persister = Config::resolve_persister(args.persister);
+        let mut todo = Todo::from(&*persister);
+
+        let tasks = todo.get(&args.ids);
+
+        for task in tasks {
+            task.priority = args.priority.clone();
+        }
+    }
+
+    /// Changes the `content` property of tasks (selected by using `args.ids`).
+    fn set_content(args: SetContentArgs) {
+        let persister = Config::resolve_persister(args.persister);
+        let mut todo = Todo::from(&*persister);
+
+        let tasks = todo.get(&args.ids);
+
+        for task in tasks {
+            task.content.clone_from(&args.content);
+        }
     }
 
     /// Edits tasks based on the action passed.
@@ -134,7 +167,7 @@ impl Postit {
     }
 
     /// Manages the configuration file.   
-    fn config(option: ConfigCommand) {
-        Config::manage(&option);
+    fn config(subcommand: ConfigSubcommand) {
+        Config::manage(&subcommand);
     }
 }
