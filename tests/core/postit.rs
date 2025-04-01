@@ -1,8 +1,8 @@
 use std::ops::Not;
 use std::path::PathBuf;
 
-use postit::cmnd::{Command, ConfigSubcommand};
 use postit::args::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
+use postit::cmnd::{Command, ConfigSubcommand};
 use postit::fs::{File, Format};
 use postit::models::{Priority, Task, Todo};
 use postit::traits::Persister;

@@ -4,7 +4,6 @@ use std::fmt;
 use std::ops::Deref;
 
 use clap::ValueEnum;
-
 use colored::Colorize as _;
 use serde::{Deserialize, Serialize};
 
