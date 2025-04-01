@@ -1,8 +1,8 @@
 use std::ops::Not;
 use std::path::PathBuf;
 
-use postit::args::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
-use postit::cmnd::{Command, ConfigSubcommand};
+use postit::args::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs, SetContentArgs, SetPriorityArgs};
+use postit::cmnd::{Command, ConfigSubcommand, SetSubcommand};
 use postit::fs::{File, Format};
 use postit::models::{Priority, Task, Todo};
 use postit::traits::Persister;
@@ -10,8 +10,8 @@ use postit::{Cli, Config, Postit};
 
 use crate::mocks::{MockConfig, MockPath};
 
-fn fakes(path_or_conn: &MockPath) -> (Box<dyn Persister>, Todo) {
-    let persister = Config::resolve_persister(Some(path_or_conn.to_string()));
+fn fakes(mock: &MockPath) -> (Box<dyn Persister>, Todo) {
+    let persister = Config::resolve_persister(Some(mock.to_string()));
     let todo = Todo { tasks: persister.tasks() };
 
     (persister, todo)
@@ -61,6 +61,74 @@ fn add() {
     Postit::run(cli);
 
     todo.add(Task::from(&line));
+    file.save(&todo);
+
+    let (expected_file, expected_todo) = expected(&mock);
+
+    assert_eq!(todo, expected_todo);
+    assert_eq!(file.read(), expected_file.read());
+}
+
+#[test]
+fn set_priority() {
+    let mock = MockPath::create(Format::Csv);
+    let priority  = Priority::Low;
+    let ids = vec![2, 3];
+
+    let (file, mut todo) = fakes(&mock);
+
+    let cli = Cli {
+        command: Command::Set {
+            subcommand: SetSubcommand::Priority(SetPriorityArgs {
+                persister: Some(mock.to_string()),
+                priority: priority.clone(),
+                ids: ids.clone(),
+            })
+        }
+    };
+
+    Postit::run(cli);
+
+    let tasks = todo.get(&ids);
+
+    for task in tasks {
+        task.priority = priority.clone();
+    }
+
+    file.save(&todo);
+
+    let (expected_file, expected_todo) = expected(&mock);
+
+    assert_eq!(todo, expected_todo);
+    assert_eq!(file.read(), expected_file.read());
+}
+
+#[test]
+fn set_content() {
+    let mock = MockPath::create(Format::Csv);
+    let content  = String::from("New task");
+    let ids = vec![2, 3];
+
+    let (file, mut todo) = fakes(&mock);
+
+    let cli = Cli {
+        command: Command::Set {
+            subcommand: SetSubcommand::Content(SetContentArgs {
+                persister: Some(mock.to_string()),
+                content: content.clone(),
+                ids: ids.clone(),
+            })
+        }
+    };
+
+    Postit::run(cli);
+
+    let tasks = todo.get(&ids);
+
+    for task in tasks {
+        task.content = content.clone();
+    }
+
     file.save(&todo);
 
     let (expected_file, expected_todo) = expected(&mock);
