@@ -119,7 +119,7 @@ You can also use the `--help` flag for additional help on every command.
 
 Syntax: `postit sample`
 
-Alias: `postit s`
+Alias: `postit sa`
 
 Populates a persister with fake data so you can test other commands. This command
 takes the `persister` defined at `.postit.toml` (or the `-p` flag, if provided):
@@ -179,6 +179,48 @@ postit add low "New task"
 3,Task,high,true
 4,Task,none,true
 5,New task,low,false    (new element)
+```
+
+### set
+
+Syntax: `postit set <COMMAND>`
+
+Alias: `postit s <COMMAND>`
+
+Changes the value of task's properties. These are the available subcommands:
+
+#### content
+
+Syntax: `postit content <CONTENT> [IDS]...`
+
+Changes the value of the 'content' property.
+
+```sh
+postit set content "New content" 2
+```
+
+```csv
+1,Task,low,false
+2,New content,med,true  (changed)
+3,Task,high,true
+4,Task,none,true
+```
+
+#### priority
+
+Syntax: `postit priority <PRIORITY> [IDS]...`
+
+Changes the value of the 'priority' property.
+
+```sh
+postit set priority low 3
+```
+
+```csv
+1,Task,low,false
+2,Task,med,true
+3,Task,low,true         (changed)
+4,Task,none,true
 ```
 
 ### check
@@ -311,7 +353,7 @@ Syntax: `postit config <COMMAND>`
 
 Alias: `postit conf <COMMAND>`
 
-Used to manage the config file. These are the available commands:
+Used to manage the config file. These are the available subcommands:
 - `init`: creates the `.postit.toml` file.
 - `edit`: executes the editor (`EDITOR` env var) to change configs.
 - `drop`: deletes the config file (default values will be used at runtime).
