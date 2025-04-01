@@ -3,8 +3,10 @@
 //!
 //! For more info about the available commands, check [`Command`][`crate::args::Command`].
 
-use super::cli::cmnd::{SetSubcommand, Command, ConfigSubcommand};
-use super::cli::args::{AddTaskArgs, SetContentArgs, SetPriorityArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
+use super::cli::args::{
+    AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs, SetContentArgs, SetPriorityArgs,
+};
+use super::cli::cmnd::{Command, ConfigSubcommand, SetSubcommand};
 use super::cli::Cli;
 use super::{Action, Config};
 use crate::models::{Task, Todo};
@@ -23,7 +25,7 @@ impl Postit {
         match cli.command {
             Command::View(args) => Self::view(args),
             Command::Add(args) => Self::add(args),
-            Command::Set{ subcommand } => Self::set(subcommand),
+            Command::Set { subcommand } => Self::set(subcommand),
             Command::Check(args) => Self::edit(args, Action::Check),
             Command::Uncheck(args) => Self::edit(args, Action::Uncheck),
             Command::Drop(args) => Self::edit(args, Action::Drop),

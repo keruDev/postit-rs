@@ -7,11 +7,10 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
+use super::cli::cmnd::ConfigSubcommand;
 use crate::db::Orm;
 use crate::fs::File;
 use crate::traits::Persister;
-
-use super::cli::cmnd::ConfigSubcommand;
 
 /// Contains the configuration used while running `postit`.
 ///

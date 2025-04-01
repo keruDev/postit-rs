@@ -54,7 +54,7 @@ pub mod args {
         /// Priority of the task (none, low, med or high).
         #[arg(value_enum, value_name = "PRIORITY")]
         pub priority: Priority,
-        
+
         /// Identifiers of tasks separated by commas.
         #[arg(value_name = "IDS")]
         pub ids: Vec<u32>,
@@ -70,7 +70,7 @@ pub mod args {
         /// The content or description of a task.
         #[arg(value_name = "CONTENT")]
         pub content: String,
-        
+
         /// Identifiers of tasks separated by commas.
         #[arg(value_name = "IDS")]
         pub ids: Vec<u32>,
@@ -93,7 +93,9 @@ pub mod args {
 pub mod cmnd {
     use clap::Subcommand;
 
-    use super::args::{AddTaskArgs, SetContentArgs, SetPriorityArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs};
+    use super::args::{
+        AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs, SetContentArgs, SetPriorityArgs,
+    };
 
     /// Contains the different commands available.
     #[derive(Subcommand, Debug)]
