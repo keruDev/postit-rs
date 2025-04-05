@@ -12,7 +12,7 @@ pub mod args {
     #[derive(Args, Debug)]
     pub struct PersisterArgs {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PERSISTER")]
+        #[arg(long, short)]
         pub persister: Option<String>,
     }
 
@@ -20,15 +20,14 @@ pub mod args {
     #[derive(Args, Debug)]
     pub struct AddTaskArgs {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PERSISTER")]
+        #[arg(long, short)]
         pub persister: Option<String>,
 
         /// Priority of the task (none, low, med or high).
-        #[arg(value_enum, value_name = "PRIORITY")]
+        #[arg(value_enum)]
         pub priority: Priority,
 
         /// The content or description of a task.
-        #[arg(value_name = "CONTENT")]
         pub content: String,
     }
 
@@ -36,11 +35,10 @@ pub mod args {
     #[derive(Args, Debug)]
     pub struct EditTaskArgs {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PERSISTER")]
+        #[arg(long, short)]
         pub persister: Option<String>,
 
         /// Identifiers of tasks separated by commas.
-        #[arg(value_name = "IDS")]
         pub ids: Vec<u32>,
     }
 
@@ -48,15 +46,14 @@ pub mod args {
     #[derive(Args, Clone, Debug)]
     pub struct SetPriorityArgs {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PERSISTER")]
+        #[arg(long, short)]
         pub persister: Option<String>,
 
         /// Priority of the task (none, low, med or high).
-        #[arg(value_enum, value_name = "PRIORITY")]
+        #[arg(value_enum)]
         pub priority: Priority,
 
         /// Identifiers of tasks separated by commas.
-        #[arg(value_name = "IDS")]
         pub ids: Vec<u32>,
     }
 
@@ -64,15 +61,13 @@ pub mod args {
     #[derive(Args, Clone, Debug)]
     pub struct SetContentArgs {
         /// Used to read from and save tasks to.
-        #[arg(long, short, value_name = "PERSISTER")]
+        #[arg(long, short)]
         pub persister: Option<String>,
 
         /// The content or description of a task.
-        #[arg(value_name = "CONTENT")]
         pub content: String,
 
         /// Identifiers of tasks separated by commas.
-        #[arg(value_name = "IDS")]
         pub ids: Vec<u32>,
     }
 
@@ -80,11 +75,9 @@ pub mod args {
     #[derive(Args, Debug)]
     pub struct CopyTaskArgs {
         /// The persister that contains the tasks.
-        #[arg(value_name = "LEFT")]
         pub left: String,
 
         /// Where the tasks will be copied to.
-        #[arg(value_name = "RIGHT")]
         pub right: String,
     }
 }
@@ -100,6 +93,14 @@ pub mod cmnd {
     /// Contains the different commands available.
     #[derive(Subcommand, Debug)]
     pub enum Command {
+        /// Provides use examples for commands
+        #[command(alias = "ex")]
+        Example {
+            /// Subcommand the `Example` command will use.
+            #[command(subcommand)]
+            subcommand: ExampleSubcommand,
+        },
+
         /// Shows a list of the current tasks.
         #[command(alias = "v")]
         View(PersisterArgs),
@@ -111,8 +112,8 @@ pub mod cmnd {
         /// Changes values inside of tasks.
         #[command(alias = "s")]
         Set {
-            #[command(subcommand)]
             /// Subcommand the `Set` command will use.
+            #[command(subcommand)]
             subcommand: SetSubcommand,
         },
 
@@ -128,13 +129,13 @@ pub mod cmnd {
         #[command(alias = "d")]
         Drop(EditTaskArgs),
 
-        /// Creates a copy of a file (can parse formats, like csv to json).
-        #[command(alias = "cp")]
-        Copy(CopyTaskArgs),
-
         /// Creates a sample of tasks. Useful to test the program's features.
         #[command(alias = "sa")]
         Sample(PersisterArgs),
+
+        /// Creates a copy of a file (can parse formats, like csv to json).
+        #[command(alias = "cp")]
+        Copy(CopyTaskArgs),
 
         /// Cleans the tasks from a persister
         #[command(alias = "cl")]
@@ -147,8 +148,8 @@ pub mod cmnd {
         /// Manages the configuration file (.postit.toml).
         #[command(alias = "conf")]
         Config {
-            #[command(subcommand)]
             /// Subcommand the 'Config' command will use.
+            #[command(subcommand)]
             subcommand: ConfigSubcommand,
         },
     }
@@ -171,6 +172,29 @@ pub mod cmnd {
         Edit,
         /// Deletes the config
         Drop,
+    }
+
+    /// Subcommands for the 'Example' command
+    #[derive(Subcommand, Clone, Copy, Debug)]
+    pub enum ExampleSubcommand {
+        /// Use example for the 'view' command
+        View,
+        /// Use example for the 'add' command
+        Add,
+        /// Use example for the 'set' command
+        Set,
+        /// Use example for the 'check' command
+        Check,
+        /// Use example for the 'uncheck' command
+        Uncheck,
+        /// Use example for the 'drop' command
+        Drop,
+        /// Use example for the 'sample' command
+        Sample,
+        // Copy,
+        // Clean,
+        // Remove,
+        // Config,
     }
 }
 

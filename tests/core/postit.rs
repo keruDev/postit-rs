@@ -1,7 +1,9 @@
 use std::ops::Not;
 use std::path::PathBuf;
 
-use postit::args::{AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs, SetContentArgs, SetPriorityArgs};
+use postit::args::{
+    AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs, SetContentArgs, SetPriorityArgs,
+};
 use postit::cmnd::{Command, ConfigSubcommand, SetSubcommand};
 use postit::fs::{File, Format};
 use postit::models::{Priority, Task, Todo};
@@ -72,7 +74,7 @@ fn add() {
 #[test]
 fn set_priority() {
     let mock = MockPath::create(Format::Csv);
-    let priority  = Priority::Low;
+    let priority = Priority::Low;
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
@@ -83,8 +85,8 @@ fn set_priority() {
                 persister: Some(mock.to_string()),
                 priority: priority.clone(),
                 ids: ids.clone(),
-            })
-        }
+            }),
+        },
     };
 
     Postit::run(cli);
@@ -106,7 +108,7 @@ fn set_priority() {
 #[test]
 fn set_content() {
     let mock = MockPath::create(Format::Csv);
-    let content  = String::from("New task");
+    let content = String::from("New task");
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock);
@@ -117,8 +119,8 @@ fn set_content() {
                 persister: Some(mock.to_string()),
                 content: content.clone(),
                 ids: ids.clone(),
-            })
-        }
+            }),
+        },
     };
 
     Postit::run(cli);
