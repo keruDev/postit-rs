@@ -1,14 +1,11 @@
 use std::ops::Not;
 use std::path::PathBuf;
 
-use postit::args::{
-    AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs, SetContentArgs, SetPriorityArgs,
-};
-use postit::cmnd::{Command, ConfigSubcommand, SetSubcommand};
+use postit::cli::{arguments as args, subcommands as sub};
 use postit::fs::{File, Format};
 use postit::models::{Priority, Task, Todo};
 use postit::traits::Persister;
-use postit::{Cli, Config, Postit};
+use postit::{Cli, Command, Config, Postit};
 
 use crate::mocks::{MockConfig, MockPath};
 
@@ -34,7 +31,7 @@ fn view() {
 
     let (file, todo) = fakes(&mock);
     let cli = Cli {
-        command: Command::View(PersisterArgs { persister: Some(file.to_string()) }),
+        command: Command::View(args::Persister { persister: Some(file.to_string()) }),
     };
 
     Postit::run(cli);
@@ -53,7 +50,7 @@ fn add() {
 
     let (file, mut todo) = fakes(&mock);
     let cli = Cli {
-        command: Command::Add(AddTaskArgs {
+        command: Command::Add(args::Add {
             persister: Some(mock.to_string()),
             priority: Priority::Med,
             content: String::from(task),
@@ -80,13 +77,13 @@ fn set_priority() {
     let (file, mut todo) = fakes(&mock);
 
     let cli = Cli {
-        command: Command::Set {
-            subcommand: SetSubcommand::Priority(SetPriorityArgs {
-                persister: Some(mock.to_string()),
+        command: Command::Set(args::Set {
+            persister: Some(mock.to_string()),
+            subcommand: sub::Set::Priority(args::SetPriority {
                 priority: priority.clone(),
                 ids: ids.clone(),
             }),
-        },
+        }),
     };
 
     Postit::run(cli);
@@ -114,13 +111,13 @@ fn set_content() {
     let (file, mut todo) = fakes(&mock);
 
     let cli = Cli {
-        command: Command::Set {
-            subcommand: SetSubcommand::Content(SetContentArgs {
-                persister: Some(mock.to_string()),
+        command: Command::Set(args::Set {
+            persister: Some(mock.to_string()),
+            subcommand: sub::Set::Content(args::SetContent {
                 content: content.clone(),
                 ids: ids.clone(),
             }),
-        },
+        }),
     };
 
     Postit::run(cli);
@@ -146,7 +143,7 @@ fn check() {
 
     let (file, mut todo) = fakes(&mock);
     let cli = Cli {
-        command: Command::Check(EditTaskArgs {
+        command: Command::Check(args::Edit {
             persister: Some(file.to_string()),
             ids: ids.to_owned(),
         }),
@@ -170,7 +167,7 @@ fn uncheck() {
 
     let (file, mut todo) = fakes(&mock);
     let cli = Cli {
-        command: Command::Uncheck(EditTaskArgs {
+        command: Command::Uncheck(args::Edit {
             persister: Some(file.to_string()),
             ids: ids.to_owned(),
         }),
@@ -198,7 +195,7 @@ fn drop_no_force_drop() {
 
     let (file, mut todo) = fakes(&mock);
     let cli = Cli {
-        command: Command::Drop(EditTaskArgs {
+        command: Command::Drop(args::Edit {
             persister: Some(file.to_string()),
             ids: ids.to_owned(),
         }),
@@ -227,7 +224,7 @@ fn drop_force() {
     let (file, mut todo) = fakes(&mock);
 
     let cli = Cli {
-        command: Command::Drop(EditTaskArgs {
+        command: Command::Drop(args::Edit {
             persister: Some(file.to_string()),
             ids: ids.to_owned(),
         }),
@@ -254,7 +251,7 @@ fn copy() {
     let right = "postit_copy.json";
 
     let cli = Cli {
-        command: Command::Copy(CopyTaskArgs {
+        command: Command::Copy(args::Copy {
             left: mock_left.to_string(),
             right: right.to_string(),
         }),
@@ -278,7 +275,7 @@ fn copy_same_paths() {
     let right = MockPath::create(Format::Csv);
 
     let cli = Cli {
-        command: Command::Copy(CopyTaskArgs {
+        command: Command::Copy(args::Copy {
             left: left.to_string(),
             right: right.to_string(),
         }),
@@ -294,7 +291,7 @@ fn copy_no_left_path() {
     let right = MockPath::create(Format::Json);
 
     let cli = Cli {
-        command: Command::Copy(CopyTaskArgs {
+        command: Command::Copy(args::Copy {
             left: left.to_string(),
             right: right.to_string(),
         }),
@@ -316,7 +313,7 @@ fn copy_path_exists() {
     let right = MockPath::create(Format::Json);
 
     let cli = Cli {
-        command: Command::Copy(CopyTaskArgs {
+        command: Command::Copy(args::Copy {
             left: left.to_string(),
             right: right.to_string(),
         }),
@@ -336,7 +333,7 @@ fn copy_drop_after_copy() {
     let right = MockPath::blank(Format::Json);
 
     let cli = Cli {
-        command: Command::Copy(CopyTaskArgs {
+        command: Command::Copy(args::Copy {
             left: left.to_string(),
             right: right.to_string(),
         }),
@@ -352,7 +349,7 @@ fn sample() {
     let mock = MockPath::create(Format::Csv);
 
     let cli = Cli {
-        command: Command::Sample(PersisterArgs { persister: Some(mock.to_string()) }),
+        command: Command::Sample(args::Persister { persister: Some(mock.to_string()) }),
     };
 
     Postit::run(cli);
@@ -370,7 +367,7 @@ fn clean() {
     let mock = MockPath::create(Format::Csv);
 
     let cli = Cli {
-        command: Command::Clean(PersisterArgs { persister: Some(mock.to_string()) }),
+        command: Command::Clean(args::Persister { persister: Some(mock.to_string()) }),
     };
 
     Postit::run(cli);
@@ -388,7 +385,7 @@ fn remove() {
     let mock = MockPath::create(Format::Csv);
 
     let cli = Cli {
-        command: Command::Remove(PersisterArgs { persister: Some(mock.to_string()) }),
+        command: Command::Remove(args::Persister { persister: Some(mock.to_string()) }),
     };
 
     Postit::run(cli);
@@ -400,7 +397,7 @@ fn remove() {
 fn config() {
     let mock = MockConfig::new();
     let cli = Cli {
-        command: Command::Config { subcommand: ConfigSubcommand::Init },
+        command: Command::Config(args::Config { subcommand: sub::Config::Init }),
     };
 
     std::env::set_var("POSTIT_CONFIG_PATH", mock.path());
