@@ -7,7 +7,7 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
-use super::cli::cmnd::ConfigSubcommand;
+use super::cli::subcommands as sub;
 use crate::db::Orm;
 use crate::fs::File;
 use crate::traits::Persister;
@@ -58,11 +58,11 @@ impl Config {
     }
 
     /// Manages the `.postit.toml` file using a `ConfigSubcommand` instance.
-    pub fn manage(subcommand: &ConfigSubcommand) {
+    pub fn manage(subcommand: &sub::Config) {
         match subcommand {
-            ConfigSubcommand::Init => Self::init(),
-            ConfigSubcommand::Edit => Self::edit(),
-            ConfigSubcommand::Drop => Self::drop(),
+            sub::Config::Init => Self::init(),
+            sub::Config::Edit => Self::edit(),
+            sub::Config::Drop => Self::drop(),
         }
     }
 

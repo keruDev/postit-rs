@@ -1,5 +1,6 @@
 //! Collection of existing tasks. This is where major task management is made.
 
+use super::Priority;
 use crate::models::task::Task;
 use crate::traits::Persister;
 use crate::Config;
@@ -55,7 +56,23 @@ impl Todo {
         self.tasks.push(task);
     }
 
-    // pub fn set(&mut self, )
+    /// Changes the `priority` property of tasks (selected by using `ids`).
+    pub fn set_priority(&mut self, ids: &[u32], priority: &Priority) {
+        let tasks = self.get(ids);
+
+        for task in tasks {
+            task.priority = priority.clone();
+        }
+    }
+
+    /// Changes the `content` property of tasks (selected by using `ids`).
+    pub fn set_content(&mut self, ids: &[u32], content: &str) {
+        let tasks = self.get(ids);
+
+        for task in tasks {
+            task.content = String::from(content);
+        }
+    }
 
     /// Marks a task as checked.
     pub fn check(&mut self, ids: &[u32]) -> Vec<u32> {

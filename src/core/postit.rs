@@ -1,16 +1,11 @@
 //! Contains the `Postit` struct, which is used as a handler that manages the
 //! commands received in the passed arguments.
 //!
-//! For more info about the available commands, check [`Command`][`crate::args::Command`].
+//! For more info about the available commands, check [`Command`][`crate::args::args::Command`].
 
-use super::cli::args::{
-    AddTaskArgs, CopyTaskArgs, EditTaskArgs, PersisterArgs, SetContentArgs, SetPriorityArgs,
-};
-use super::cli::cmnd::{Command, ConfigSubcommand, SetSubcommand};
-use super::cli::Cli;
-use super::cmnd::ExampleSubcommand;
+use super::cli::{arguments as args, subcommands as sub};
 use super::examples::Example;
-use super::{Action, Config};
+use super::{Action, Cli, Command, Config};
 use crate::models::{Task, Todo};
 
 /// Entry point where all operations are executed.
@@ -25,10 +20,10 @@ impl Postit {
     /// Runs `Postit` commands based on the commands and arguments provided.
     pub fn run(cli: Cli) {
         match cli.command {
-            Command::Example { subcommand } => Self::example(subcommand),
+            Command::Example(args) => Self::example(args),
             Command::View(args) => Self::view(args),
             Command::Add(args) => Self::add(args),
-            Command::Set { subcommand } => Self::set(subcommand),
+            Command::Set(args) => Self::set(args),
             Command::Check(args) => Self::edit(args, Action::Check),
             Command::Uncheck(args) => Self::edit(args, Action::Uncheck),
             Command::Drop(args) => Self::edit(args, Action::Drop),
@@ -36,35 +31,35 @@ impl Postit {
             Command::Sample(args) => Self::sample(args),
             Command::Clean(args) => Self::clean(args),
             Command::Remove(args) => Self::remove(args),
-            Command::Config { subcommand } => Self::config(subcommand),
+            Command::Config(args) => Self::config(args),
         }
     }
 
-    fn example(subcommand: ExampleSubcommand) {
-        match subcommand {
-            ExampleSubcommand::View => Example::view(),
-            ExampleSubcommand::Add => Example::add(),
-            // ExampleSubcommand::Set => Example::set(),
-            // ExampleSubcommand::Check => Example::check(),
-            // ExampleSubcommand::Uncheck => Example::uncheck(),
-            // ExampleSubcommand::Drop => Example::drop(),
-            // ExampleSubcommand::Copy(args) => Example::copy(args),
-            // ExampleSubcommand::Sample(args) => Example::sample(args),
-            // ExampleSubcommand::Clean(args) => Example::clean(args),
-            // ExampleSubcommand::Remove(args) => Example::remove(args),
-            // ExampleSubcommand::Config { subcommand } => Example::config(subcommand),
+    fn example(args: args::Example) {
+        match args.subcommand {
+            sub::Example::View => Example::view(),
+            sub::Example::Add => Example::add(),
+            // sub::Example::Set => Example::set(),
+            // sub::Example::Check => Example::check(),
+            // sub::Example::Uncheck => Example::uncheck(),
+            // sub::Example::Drop => Example::drop(),
+            // sub::Example::Copy(args) => Example::copy(args),
+            // sub::Example::Sample(args) => Example::sample(args),
+            // sub::Example::Clean(args) => Example::clean(args),
+            // sub::Example::Remove(args) => Example::remove(args),
+            // sub::Example::Config { subcommand } => Example::config(subcommand),
             _ => unimplemented!(),
         }
     }
 
     /// Shows the list of current tasks.
-    fn view(args: PersisterArgs) {
+    fn view(args: args::Persister) {
         let persister = Config::resolve_persister(args.persister);
         Todo::from(&*persister).view();
     }
 
     /// Adds a new task to the list.
-    fn add(args: AddTaskArgs) {
+    fn add(args: args::Add) {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
@@ -79,40 +74,23 @@ impl Postit {
         todo.view();
     }
 
-    /// Changes the values of a task depending on the `SetSubcommand` variant.
-    fn set(subcommand: SetSubcommand) {
-        match subcommand {
-            SetSubcommand::Priority(args) => Self::set_priority(args),
-            SetSubcommand::Content(args) => Self::set_content(args),
-        }
-    }
-
-    /// Changes the `priority` property of tasks (selected by using `args.ids`).
-    fn set_priority(args: SetPriorityArgs) {
+    /// Changes the values of a task depending on the `Set` variant.
+    fn set(args: args::Set) {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
-        let tasks = todo.get(&args.ids);
-
-        for task in tasks {
-            task.priority = args.priority.clone();
+        match args.subcommand {
+            sub::Set::Priority(args) => todo.set_priority(&args.ids, &args.priority),
+            sub::Set::Content(args) => todo.set_content(&args.ids, &args.content),
         }
-    }
 
-    /// Changes the `content` property of tasks (selected by using `args.ids`).
-    fn set_content(args: SetContentArgs) {
-        let persister = Config::resolve_persister(args.persister);
-        let mut todo = Todo::from(&*persister);
+        persister.save(&todo);
 
-        let tasks = todo.get(&args.ids);
-
-        for task in tasks {
-            task.content.clone_from(&args.content);
-        }
+        todo.view();
     }
 
     /// Edits tasks based on the action passed.
-    fn edit(args: EditTaskArgs, action: Action) {
+    fn edit(args: args::Edit, action: Action) {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
@@ -133,7 +111,7 @@ impl Postit {
     /// - If both persisters are the same.
     /// - If the left persister has no tasks.
     /// - If the right persister has tasks.    
-    fn copy(args: CopyTaskArgs) {
+    fn copy(args: args::Copy) {
         if args.left == args.right {
             panic!("Both persisters are the same");
         }
@@ -165,7 +143,7 @@ impl Postit {
     }
 
     /// Populates the persister with fake data for testing purposes.
-    fn sample(args: PersisterArgs) {
+    fn sample(args: args::Persister) {
         let persister = Config::resolve_persister(args.persister);
         let todo = Todo::sample();
 
@@ -175,21 +153,21 @@ impl Postit {
     }
 
     /// Cleans the tasks from a file.
-    fn clean(args: PersisterArgs) {
+    fn clean(args: args::Persister) {
         let persister = Config::resolve_persister(args.persister);
 
         persister.clean();
     }
 
     /// Removes a persister completely (file or table).
-    fn remove(args: PersisterArgs) {
+    fn remove(args: args::Persister) {
         let persister = Config::resolve_persister(args.persister);
 
         persister.remove();
     }
 
     /// Manages the configuration file.   
-    fn config(subcommand: ConfigSubcommand) {
-        Config::manage(&subcommand);
+    fn config(args: args::Config) {
+        Config::manage(&args.subcommand);
     }
 }
