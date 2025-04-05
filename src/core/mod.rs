@@ -2,6 +2,7 @@
 
 mod cli;
 mod config;
+mod examples;
 mod postit;
 
 /// Possible actions taken when editing a persister's contents.

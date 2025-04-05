@@ -8,6 +8,8 @@ use super::cli::args::{
 };
 use super::cli::cmnd::{Command, ConfigSubcommand, SetSubcommand};
 use super::cli::Cli;
+use super::cmnd::ExampleSubcommand;
+use super::examples::Example;
 use super::{Action, Config};
 use crate::models::{Task, Todo};
 
@@ -23,6 +25,7 @@ impl Postit {
     /// Runs `Postit` commands based on the commands and arguments provided.
     pub fn run(cli: Cli) {
         match cli.command {
+            Command::Example { subcommand } => Self::example(subcommand),
             Command::View(args) => Self::view(args),
             Command::Add(args) => Self::add(args),
             Command::Set { subcommand } => Self::set(subcommand),
@@ -34,6 +37,23 @@ impl Postit {
             Command::Clean(args) => Self::clean(args),
             Command::Remove(args) => Self::remove(args),
             Command::Config { subcommand } => Self::config(subcommand),
+        }
+    }
+
+    fn example(subcommand: ExampleSubcommand) {
+        match subcommand {
+            ExampleSubcommand::View => Example::view(),
+            ExampleSubcommand::Add => Example::add(),
+            // ExampleSubcommand::Set => Example::set(),
+            // ExampleSubcommand::Check => Example::check(),
+            // ExampleSubcommand::Uncheck => Example::uncheck(),
+            // ExampleSubcommand::Drop => Example::drop(),
+            // ExampleSubcommand::Copy(args) => Example::copy(args),
+            // ExampleSubcommand::Sample(args) => Example::sample(args),
+            // ExampleSubcommand::Clean(args) => Example::clean(args),
+            // ExampleSubcommand::Remove(args) => Example::remove(args),
+            // ExampleSubcommand::Config { subcommand } => Example::config(subcommand),
+            _ => unimplemented!(),
         }
     }
 
