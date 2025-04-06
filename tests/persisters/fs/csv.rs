@@ -3,7 +3,7 @@ use std::io::Read;
 use std::ops::Not;
 
 use postit::fs::{Csv, Format};
-use postit::models::{Priority, Task};
+use postit::models::{Priority, Task, Todo};
 use postit::traits::FilePersister;
 
 use crate::mocks::MockPath;
@@ -51,17 +51,18 @@ fn format() {
 #[test]
 fn read() {
     let mock = MockPath::create(Format::Csv);
+    let todo = Todo::sample().tasks;
 
     let file = Csv::new(mock.path());
     let header = Csv::header().replace("\n", "");
 
     let result = file.read();
     let expect = vec![
-        &header,
-        "1,Task,low,false",
-        "2,Task,med,false",
-        "3,Task,high,true",
-        "4,Task,none,true",
+        header,
+        todo[0].formatted(),
+        todo[1].formatted(),
+        todo[2].formatted(),
+        todo[3].formatted(),
     ];
 
     assert_eq!(result, expect);

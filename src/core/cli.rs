@@ -10,12 +10,20 @@ pub mod arguments {
     use super::subcommands as sub;
     use crate::models::Priority;
 
-    /// Defines common arguments for commands related to editing task values.
+    /// Arguments of the 'example' command.
     #[derive(Args, Clone, Debug)]
     pub struct Example {
         /// Subcommand the `Example` command will use.
         #[command(subcommand)]
         pub subcommand: sub::Example,
+    }
+
+    /// Arguments of the 'flag' command.
+    #[derive(Args, Clone, Debug)]
+    pub struct Flag {
+        /// Subcommand the `Flag` command will use.
+        #[command(subcommand)]
+        pub subcommand: sub::Flag,
     }
 
     /// Defines a common argument for commands that just use the persister value.
@@ -65,7 +73,7 @@ pub mod arguments {
         pub subcommand: sub::Set,
     }
 
-    /// Defines common arguments for commands related to editing task values.
+    /// Arguments of the 'set priority' subcommand.
     #[derive(Args, Clone, Debug)]
     pub struct SetPriority {
         /// Priority of the task (none, low, med or high).
@@ -77,7 +85,7 @@ pub mod arguments {
         pub ids: Vec<u32>,
     }
 
-    /// Defines common arguments for commands related to editing task values.
+    /// Arguments of the 'set content' subcommand.
     #[derive(Args, Clone, Debug)]
     pub struct SetContent {
         /// The content or description of a task.
@@ -133,9 +141,18 @@ pub mod subcommands {
         Drop,
     }
 
+    /// Subcommands for the 'Flag' command
+    #[derive(Subcommand, Clone, Copy, Debug)]
+    pub enum Flag {
+        /// Use example for the 'persister' flag
+        Persister,
+    }
+
     /// Subcommands for the 'Example' command
     #[derive(Subcommand, Clone, Copy, Debug)]
     pub enum Example {
+        /// Use example for the 'sample' command
+        Sample,
         /// Use example for the 'view' command
         View,
         /// Use example for the 'add' command
@@ -148,12 +165,14 @@ pub mod subcommands {
         Uncheck,
         /// Use example for the 'drop' command
         Drop,
-        /// Use example for the 'sample' command
-        Sample,
-        // Copy,
-        // Clean,
-        // Remove,
-        // Config,
+        /// Use example for the 'copy' command
+        Copy,
+        /// Use example for the 'clean' command
+        Clean,
+        /// Use example for the 'remove' command
+        Remove,
+        /// Use example for the 'config' command
+        Config,
     }
 }
 
@@ -167,6 +186,10 @@ pub enum Command {
     /// Provides use examples for commands
     #[command(alias = "ex")]
     Example(args::Example),
+
+    /// Provides use examples for flags
+    #[command(alias = "f")]
+    Flag(args::Flag),
 
     /// Shows a list of the current tasks.
     #[command(alias = "v")]

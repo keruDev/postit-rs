@@ -1,11 +1,11 @@
 //! Contains the `Postit` struct, which is used as a handler that manages the
 //! commands received in the passed arguments.
 //!
-//! For more info about the available commands, check [`Command`][`crate::args::args::Command`].
+//! For more info about the available commands, check [`Command`].
 
 use super::cli::{arguments as args, subcommands as sub};
-use super::examples::Example;
 use super::{Action, Cli, Command, Config};
+use crate::docs::{Example, Flag};
 use crate::models::{Task, Todo};
 
 /// Entry point where all operations are executed.
@@ -21,6 +21,8 @@ impl Postit {
     pub fn run(cli: Cli) {
         match cli.command {
             Command::Example(args) => Self::example(args),
+            Command::Flag(args) => Self::flag(args),
+            Command::Sample(args) => Self::sample(args),
             Command::View(args) => Self::view(args),
             Command::Add(args) => Self::add(args),
             Command::Set(args) => Self::set(args),
@@ -28,7 +30,6 @@ impl Postit {
             Command::Uncheck(args) => Self::edit(args, Action::Uncheck),
             Command::Drop(args) => Self::edit(args, Action::Drop),
             Command::Copy(args) => Self::copy(args),
-            Command::Sample(args) => Self::sample(args),
             Command::Clean(args) => Self::clean(args),
             Command::Remove(args) => Self::remove(args),
             Command::Config(args) => Self::config(args),
@@ -37,18 +38,23 @@ impl Postit {
 
     fn example(args: args::Example) {
         match args.subcommand {
+            sub::Example::Sample => Example::sample(),
             sub::Example::View => Example::view(),
             sub::Example::Add => Example::add(),
-            // sub::Example::Set => Example::set(),
-            // sub::Example::Check => Example::check(),
-            // sub::Example::Uncheck => Example::uncheck(),
-            // sub::Example::Drop => Example::drop(),
-            // sub::Example::Copy(args) => Example::copy(args),
-            // sub::Example::Sample(args) => Example::sample(args),
-            // sub::Example::Clean(args) => Example::clean(args),
-            // sub::Example::Remove(args) => Example::remove(args),
-            // sub::Example::Config { subcommand } => Example::config(subcommand),
-            _ => unimplemented!(),
+            sub::Example::Set => Example::set(),
+            sub::Example::Check => Example::check(),
+            sub::Example::Uncheck => Example::uncheck(),
+            sub::Example::Drop => Example::drop(),
+            sub::Example::Copy => Example::copy(),
+            sub::Example::Clean => Example::clean(),
+            sub::Example::Remove => Example::remove(),
+            sub::Example::Config => Example::config(),
+        }
+    }
+
+    fn flag(args: args::Flag) {
+        match args.subcommand {
+            sub::Flag::Persister => Flag::persister(),
         }
     }
 
