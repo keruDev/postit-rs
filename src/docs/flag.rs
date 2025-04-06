@@ -1,10 +1,19 @@
 //! Contains examples of how to use every flag, including their long and short
 //! forms, a description and a use example to showcase the flags's functionalities.
 
+use crate::cli::subcommands as sub;
+
 /// Contains use cases for every flag.
 pub struct Flag;
 
 impl Flag {
+    /// Uses the [`sub::Flag`] value passed to show its corresponding example.
+    pub fn run(flag: &sub::Flag) {
+        match flag {
+            sub::Flag::Persister => Self::persister(),
+        }
+    }
+
     /// Use case of the 'persister' flag.
     pub fn persister() {
         println!(
@@ -20,12 +29,12 @@ Description:
     There are currently 4 supported persisters:
 
     - Files
-        - csv (e.g.: tasks.csv)
-        - json (e.g.: tasks.json)
-        - xml (e.g.: tasks.xml)
+      - csv     (e.g.: tasks.csv)
+      - json    (e.g.: tasks.json)
+      - xml     (e.g.: tasks.xml)
 
     - Databases
-        - SQLite (e.g.: tasks.db, tasks.sqlite or tasks.sqlite3)
+      - SQLite  (e.g.: tasks.db, tasks.sqlite or tasks.sqlite3)
 
 How to use:
     postit view --persister tasks.csv

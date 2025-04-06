@@ -4,6 +4,7 @@ use super::Priority;
 use crate::models::task::Task;
 use crate::traits::Persister;
 use crate::Config;
+use crate::cli::subcommands::Set;
 
 /// Contains all the Tasks.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -54,6 +55,14 @@ impl Todo {
     /// Adds a task to the task list.
     pub fn add(&mut self, task: Task) {
         self.tasks.push(task);
+    }
+
+    /// Changes values of tasks based on the `set` subcommand used. 
+    pub fn set(&mut self, cmnd: Set) {
+        match cmnd {
+            Set::Priority(args) => self.set_priority(&args.ids, &args.priority),
+            Set::Content(args) => self.set_content(&args.ids, &args.content),
+        }
     }
 
     /// Changes the `priority` property of tasks (selected by using `ids`).

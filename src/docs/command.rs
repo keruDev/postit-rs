@@ -3,13 +3,31 @@
 
 use std::fs;
 
+use crate::cli::subcommands as sub;
 use crate::models::{Priority, Task, Todo};
 use crate::Config;
 
 /// Contains use cases for every command.
-pub struct Example;
+pub struct Command;
 
-impl Example {
+impl Command {
+    /// Uses the [`sub::Example`] value passed to show its corresponding example.
+    pub fn run(cmnd: &sub::Example) {
+        match cmnd {
+            sub::Example::Sample => Self::sample(),
+            sub::Example::View => Self::view(),
+            sub::Example::Add => Self::add(),
+            sub::Example::Set => Self::set(),
+            sub::Example::Check => Self::check(),
+            sub::Example::Uncheck => Self::uncheck(),
+            sub::Example::Drop => Self::drop(),
+            sub::Example::Copy => Self::copy(),
+            sub::Example::Clean => Self::clean(),
+            sub::Example::Remove => Self::remove(),
+            sub::Example::Config => Self::config(),
+        }
+    }
+
     /// Use case of the 'sample' command.
     pub fn sample() {
         println!(
