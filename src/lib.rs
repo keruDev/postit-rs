@@ -32,6 +32,7 @@
 )]
 
 mod core;
+pub mod docs;
 pub mod models;
 mod persisters;
 

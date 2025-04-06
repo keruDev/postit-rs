@@ -14,16 +14,16 @@ pub mod error {
     /// Errors related to task management.
     pub enum Error {
         /// Thrown when `task.checked == true` and the user checks it again.
-        AlreadyChecked,
+        AlreadyChecked { id: u32 },
         /// Thrown when `task.checked == false` and the user unchecks it again.
-        AlreadyUnchecked,
+        AlreadyUnchecked { id: u32 },
     }
 
     impl fmt::Display for Error {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
-                Self::AlreadyChecked => write!(f, "Task was already checked"),
-                Self::AlreadyUnchecked => write!(f, "Task was already unchecked"),
+                Self::AlreadyChecked { id } => write!(f, "Task {id} was already checked"),
+                Self::AlreadyUnchecked { id } => write!(f, "Task {id} was already unchecked",),
             }
         }
     }
@@ -182,7 +182,7 @@ impl Task {
     /// If the task is already checked, an error will be returned.
     pub const fn check(&mut self) -> Result<&Self, error::Error> {
         if self.checked {
-            Err(error::Error::AlreadyChecked)
+            Err(error::Error::AlreadyChecked { id: self.id })
         } else {
             self.checked = true;
             Ok(self)
@@ -198,7 +198,7 @@ impl Task {
             self.checked = false;
             Ok(self)
         } else {
-            Err(error::Error::AlreadyUnchecked)
+            Err(error::Error::AlreadyUnchecked { id: self.id })
         }
     }
 }

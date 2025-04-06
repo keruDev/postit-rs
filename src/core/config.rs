@@ -79,10 +79,10 @@ impl Config {
         }
 
         let mut file = fs::File::create(path).unwrap();
-        let content =
+        let toml =
             toml::to_string_pretty(&Self::default()).expect("Failed to serialize config to TOML");
 
-        file.write_all(content.as_bytes())
+        file.write_all(toml.as_bytes())
             .expect("Failed to write default config to file");
 
         println!("Config file created at '{}'", path.to_str().unwrap());
@@ -102,6 +102,19 @@ impl Config {
         let content = fs::read_to_string(path).expect("Failed to read config file");
 
         toml::from_str(&content).expect("TOML was not well-formatted")
+    }
+
+    /// Saves the config instance to a file.
+    ///
+    /// # Panics
+    /// If the config file can't be saved.
+    pub fn save(&self) {
+        let mut file = fs::File::create(&Self::path()).unwrap();
+
+        let toml = toml::to_string_pretty(self).expect("Failed to save config to TOML");
+
+        file.write_all(toml.as_bytes())
+            .expect("Failed to write default config to file");
     }
 
     /// Edits the config file.
