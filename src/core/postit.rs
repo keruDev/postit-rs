@@ -20,8 +20,8 @@ impl Postit {
     /// Runs `Postit` commands based on the commands and arguments provided.
     pub fn run(cli: Cli) {
         match cli.command {
-            Command::Example(args) => Self::example(args),
-            Command::Flag(args) => Self::flag(args),
+            Command::Example(args) => Self::example(&args),
+            Command::Flag(args) => Self::flag(&args),
             Command::Sample(args) => Self::sample(args),
             Command::View(args) => Self::view(args),
             Command::Add(args) => Self::add(args),
@@ -32,11 +32,12 @@ impl Postit {
             Command::Copy(args) => Self::copy(args),
             Command::Clean(args) => Self::clean(args),
             Command::Remove(args) => Self::remove(args),
-            Command::Config(args) => Self::config(args),
+            Command::Config(args) => Self::config(&args),
         }
     }
 
-    fn example(args: args::Example) {
+    /// Shows use cases for every other command.
+    fn example(args: &args::Example) {
         match args.subcommand {
             sub::Example::Sample => Example::sample(),
             sub::Example::View => Example::view(),
@@ -52,7 +53,8 @@ impl Postit {
         }
     }
 
-    fn flag(args: args::Flag) {
+    /// Shows use cases for commonly used flags.
+    fn flag(args: &args::Flag) {
         match args.subcommand {
             sub::Flag::Persister => Flag::persister(),
         }
@@ -173,7 +175,7 @@ impl Postit {
     }
 
     /// Manages the configuration file.   
-    fn config(args: args::Config) {
+    fn config(args: &args::Config) {
         Config::manage(&args.subcommand);
     }
 }

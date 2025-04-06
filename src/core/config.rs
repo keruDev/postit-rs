@@ -109,7 +109,7 @@ impl Config {
     /// # Panics
     /// If the config file can't be saved.
     pub fn save(&self) {
-        let mut file = fs::File::create(&Self::path()).unwrap();
+        let mut file = fs::File::create(Self::path()).unwrap();
 
         let toml = toml::to_string_pretty(self).expect("Failed to save config to TOML");
 
