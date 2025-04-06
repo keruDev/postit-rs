@@ -4,8 +4,8 @@
 //! - postit example <COMMAND>
 //! - postit flag <COMMAND>
 
-mod example;
+mod command;
 mod flag;
 
-pub use example::Example;
+pub use command::Command;
 pub use flag::Flag;

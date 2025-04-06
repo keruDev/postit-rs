@@ -3,9 +3,9 @@
 //!
 //! For more info about the available commands, check [`Command`].
 
-use super::cli::{arguments as args, subcommands as sub};
+use super::cli::arguments as args;
 use super::{Action, Cli, Command, Config};
-use crate::docs::{Example, Flag};
+use crate::docs;
 use crate::models::{Task, Todo};
 
 /// Entry point where all operations are executed.
@@ -38,26 +38,12 @@ impl Postit {
 
     /// Shows use cases for every other command.
     fn example(args: &args::Example) {
-        match args.subcommand {
-            sub::Example::Sample => Example::sample(),
-            sub::Example::View => Example::view(),
-            sub::Example::Add => Example::add(),
-            sub::Example::Set => Example::set(),
-            sub::Example::Check => Example::check(),
-            sub::Example::Uncheck => Example::uncheck(),
-            sub::Example::Drop => Example::drop(),
-            sub::Example::Copy => Example::copy(),
-            sub::Example::Clean => Example::clean(),
-            sub::Example::Remove => Example::remove(),
-            sub::Example::Config => Example::config(),
-        }
+        docs::Command::run(&args.subcommand);
     }
 
     /// Shows use cases for commonly used flags.
     fn flag(args: &args::Flag) {
-        match args.subcommand {
-            sub::Flag::Persister => Flag::persister(),
-        }
+        docs::Flag::run(&args.subcommand);
     }
 
     /// Shows the list of current tasks.
@@ -87,11 +73,7 @@ impl Postit {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
-        match args.subcommand {
-            sub::Set::Priority(args) => todo.set_priority(&args.ids, &args.priority),
-            sub::Set::Content(args) => todo.set_content(&args.ids, &args.content),
-        }
-
+        todo.set(args.subcommand);
         persister.save(&todo);
 
         todo.view();
