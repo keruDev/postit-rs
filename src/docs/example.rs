@@ -1,11 +1,16 @@
+//! Contains examples of how to use every command, including their usage, alias
+//! a description and a use example to showcase the command's functionalities.
+
 use std::fs;
 
 use crate::models::{Priority, Task, Todo};
 use crate::Config;
 
+/// Contains use cases for every command.
 pub struct Example;
 
 impl Example {
+    /// Use case of the 'sample' command.
     pub fn sample() {
         println!(
             "
@@ -24,6 +29,7 @@ Sample:"
         Todo::sample().view();
     }
 
+    /// Use case of the 'view' command.
     pub fn view() {
         println!(
             "
@@ -41,6 +47,7 @@ How to use:
         Todo::sample().view();
     }
 
+    /// Use case of the 'add' command.
     pub fn add() {
         let line = "5,New task,low,false";
         let task = Task::from(line);
@@ -79,6 +86,7 @@ How to use:
         todo.view();
     }
 
+    /// Use case of the 'set' command.
     pub fn set() {
         fn set_content() {
             let mut todo = Todo::sample();
@@ -153,6 +161,7 @@ Description:
         set_priority();
     }
 
+    /// Use case of the 'check' command.
     pub fn check() {
         println!(
             "
@@ -180,6 +189,7 @@ How to use:
         todo.view();
     }
 
+    /// Use case of the 'uncheck' command.
     pub fn uncheck() {
         println!(
             "
@@ -207,6 +217,7 @@ How to use:
         todo.view();
     }
 
+    /// Use case of the 'drop' command.
     pub fn drop() {
         fn force_drop() {
             println!(
@@ -218,12 +229,9 @@ Config:
             );
 
             let path = ".example.toml";
-
             std::env::set_var("POSTIT_CONFIG_PATH", path);
 
-            let mut config = Config::default();
-            config.force_drop = true;
-            config.save();
+            Config { force_drop: true, ..Config::default() }.save();
 
             let mut todo = Todo::sample();
 
@@ -268,6 +276,7 @@ How to use:
         force_drop();
     }
 
+    /// Use case of the 'copy' command.
     pub fn copy() {
         println!(
             "
@@ -300,6 +309,7 @@ Config:
         );
     }
 
+    /// Use case of the 'clean' command.
     pub fn clean() {
         println!(
             "
@@ -314,6 +324,7 @@ How to use:
         );
     }
 
+    /// Use case of the 'remove' command.
     pub fn remove() {
         println!(
             "
@@ -328,6 +339,7 @@ How to use:
         );
     }
 
+    /// Use case of the 'config' command.
     pub fn config() {
         println!(
             "

@@ -11,7 +11,7 @@ pub mod arguments {
     use crate::models::Priority;
 
     /// Arguments of the 'example' command.
-    #[derive(Args, Clone, Debug)]
+    #[derive(Args, Debug)]
     pub struct Example {
         /// Subcommand the `Example` command will use.
         #[command(subcommand)]
@@ -19,7 +19,7 @@ pub mod arguments {
     }
 
     /// Arguments of the 'flag' command.
-    #[derive(Args, Clone, Debug)]
+    #[derive(Args, Debug)]
     pub struct Flag {
         /// Subcommand the `Flag` command will use.
         #[command(subcommand)]
@@ -62,7 +62,7 @@ pub mod arguments {
     }
 
     /// Arguments of the 'set' command.
-    #[derive(Args, Clone, Debug)]
+    #[derive(Args, Debug)]
     pub struct Set {
         /// Used to read from and save tasks to.
         #[arg(long, short)]
@@ -74,7 +74,7 @@ pub mod arguments {
     }
 
     /// Arguments of the 'set priority' subcommand.
-    #[derive(Args, Clone, Debug)]
+    #[derive(Args, Debug)]
     pub struct SetPriority {
         /// Priority of the task (none, low, med or high).
         #[arg(value_enum)]
@@ -86,7 +86,7 @@ pub mod arguments {
     }
 
     /// Arguments of the 'set content' subcommand.
-    #[derive(Args, Clone, Debug)]
+    #[derive(Args, Debug)]
     pub struct SetContent {
         /// The content or description of a task.
         pub content: String,
@@ -107,7 +107,7 @@ pub mod arguments {
     }
 
     /// Arguments of the 'config' command.
-    #[derive(Args, Clone, Copy, Debug)]
+    #[derive(Args, Debug)]
     pub struct Config {
         /// Subcommand the 'Config' command will use.
         #[command(subcommand)]
@@ -122,7 +122,7 @@ pub mod subcommands {
     use super::arguments as args;
 
     /// Subcommands for setting the task's value.
-    #[derive(Subcommand, Clone, Debug)]
+    #[derive(Subcommand, Debug)]
     pub enum Set {
         /// Changes the 'content' value.
         Content(args::SetContent),
@@ -131,7 +131,7 @@ pub mod subcommands {
     }
 
     /// Subcommands for managing the config file.
-    #[derive(Subcommand, Clone, Copy, Debug)]
+    #[derive(Subcommand, Debug)]
     pub enum Config {
         /// Creates the config file.
         Init,
@@ -142,14 +142,14 @@ pub mod subcommands {
     }
 
     /// Subcommands for the 'Flag' command
-    #[derive(Subcommand, Clone, Copy, Debug)]
+    #[derive(Subcommand, Debug)]
     pub enum Flag {
         /// Use example for the 'persister' flag
         Persister,
     }
 
     /// Subcommands for the 'Example' command
-    #[derive(Subcommand, Clone, Copy, Debug)]
+    #[derive(Subcommand, Debug)]
     pub enum Example {
         /// Use example for the 'sample' command
         Sample,
@@ -179,17 +179,9 @@ pub mod subcommands {
 /// Contains the different commands available.
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Creates a sample of tasks. Useful to test the program's features.
+    /// Creates a sample of tasks. Useful to test postit's features.
     #[command(alias = "sa")]
     Sample(args::Persister),
-
-    /// Provides use examples for commands
-    #[command(alias = "ex")]
-    Example(args::Example),
-
-    /// Provides use examples for flags
-    #[command(alias = "f")]
-    Flag(args::Flag),
 
     /// Shows a list of the current tasks.
     #[command(alias = "v")]
@@ -230,6 +222,14 @@ pub enum Command {
     /// Manages the configuration file (.postit.toml).
     #[command(alias = "conf")]
     Config(args::Config),
+
+    /// Provides use examples for commands
+    #[command(alias = "ex")]
+    Example(args::Example),
+
+    /// Provides use examples for flags
+    #[command(alias = "f")]
+    Flag(args::Flag),
 }
 
 /// Manages the command and arguments received from console.

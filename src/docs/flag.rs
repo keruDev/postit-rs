@@ -1,6 +1,11 @@
+//! Contains examples of how to use every flag, including their long and short
+//! forms, a description and a use example to showcase the flags's functionalities.
+
+/// Contains use cases for every flag.
 pub struct Flag;
 
 impl Flag {
+    /// Use case of the 'persister' flag.
     pub fn persister() {
         println!(
             "

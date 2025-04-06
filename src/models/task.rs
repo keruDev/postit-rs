@@ -14,9 +14,15 @@ pub mod error {
     /// Errors related to task management.
     pub enum Error {
         /// Thrown when `task.checked == true` and the user checks it again.
-        AlreadyChecked { id: u32 },
+        AlreadyChecked {
+            /// Identifier of the task.
+            id: u32,
+        },
         /// Thrown when `task.checked == false` and the user unchecks it again.
-        AlreadyUnchecked { id: u32 },
+        AlreadyUnchecked {
+            /// Identifier of the task.
+            id: u32,
+        },
     }
 
     impl fmt::Display for Error {
