@@ -1,10 +1,10 @@
 //! Collection of existing tasks. This is where major task management is made.
 
 use super::Priority;
+use crate::cli::subcommands::Set;
 use crate::models::task::Task;
 use crate::traits::Persister;
 use crate::Config;
-use crate::cli::subcommands::Set;
 
 /// Contains all the Tasks.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -57,7 +57,7 @@ impl Todo {
         self.tasks.push(task);
     }
 
-    /// Changes values of tasks based on the `set` subcommand used. 
+    /// Changes values of tasks based on the `set` subcommand used.
     pub fn set(&mut self, cmnd: Set) {
         match cmnd {
             Set::Priority(args) => self.set_priority(&args.ids, &args.priority),
