@@ -4,11 +4,11 @@ use assert_cmd::Command;
 use postit::docs;
 
 fn get_flag_output(flag: &str) -> Output {
-    return Command::cargo_bin("postit")
+    Command::cargo_bin("postit")
         .unwrap()
         .args(["flag", flag])
         .output()
-        .expect("Error while running the test");
+        .expect("Error while running the test")
 }
 
 #[test]

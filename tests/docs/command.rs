@@ -5,11 +5,11 @@ use postit::cli::subcommands as sub;
 use postit::docs;
 
 fn get_example_output(command: &str) -> Output {
-    return Command::cargo_bin("postit")
+    Command::cargo_bin("postit")
         .unwrap()
         .args(["example", command])
         .output()
-        .expect("Error while running the test");
+        .expect("Error while running the test")
 }
 
 #[test]
