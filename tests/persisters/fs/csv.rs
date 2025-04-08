@@ -9,6 +9,24 @@ use postit::traits::FilePersister;
 use crate::mocks::MockPath;
 
 #[test]
+fn exists_returns_true() {
+    let mock = MockPath::create(Format::Csv);
+    let csv = Csv::new(mock.path());
+
+    assert!(csv.exists());
+}
+
+#[test]
+fn exists_returns_false() {
+    let mock = MockPath::create(Format::Csv);
+    let csv = Csv::new(mock.path());
+
+    drop(mock);
+
+    assert!(csv.exists().not());
+}
+
+#[test]
 fn default() {
     let mock = MockPath::create(Format::Csv);
     let csv = Csv::new(mock.path());
