@@ -26,6 +26,24 @@ fn expected(mock: &MockPath) -> (File, Todo) {
 }
 
 #[test]
+fn example_no_panic() {
+    let cli = Cli {
+        command: Command::Example(args::Example { subcommand: sub::Example::Add }),
+    };
+
+    Postit::run(cli);
+}
+
+#[test]
+fn flag_no_panic() {
+    let cli = Cli {
+        command: Command::Flag(args::Flag { subcommand: sub::Flag::Persister }),
+    };
+
+    Postit::run(cli);
+}
+
+#[test]
 fn view() {
     let mock = MockPath::create(Format::Csv);
 

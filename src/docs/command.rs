@@ -246,7 +246,7 @@ Config:
 "
             );
 
-            let path = ".example.toml";
+            let path = ".example_postit.toml";
             std::env::set_var("POSTIT_CONFIG_PATH", path);
 
             Config { force_drop: true, ..Config::default() }.save();

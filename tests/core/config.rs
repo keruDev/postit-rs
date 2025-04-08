@@ -112,6 +112,21 @@ fn load_default() {
 }
 
 #[test]
+fn save() {
+    let key = "POSTIT_CONFIG_PATH";
+    let value = Config::editor();
+
+    std::env::set_var(key, "test_postit.toml");
+
+    let default = Config::default();
+    default.save();
+
+    assert_eq!(Config::load(), Config::default());
+
+    std::env::set_var(key, value);
+}
+
+#[test]
 fn resolve_persister_file() {
     let mock = MockPath::create(Format::Csv);
     let persister = Config::resolve_persister(Some(mock.to_string()));
