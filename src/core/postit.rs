@@ -82,9 +82,9 @@ impl Postit {
     /// Edits tasks based on the action passed.
     fn edit(args: args::Edit, action: Action) {
         let persister = Config::resolve_persister(args.persister);
-        
+
         persister.edit(&args.ids, action);
-        
+
         Todo::from(&*persister).view();
     }
 
