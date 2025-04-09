@@ -82,17 +82,10 @@ impl Postit {
     /// Edits tasks based on the action passed.
     fn edit(args: args::Edit, action: Action) {
         let persister = Config::resolve_persister(args.persister);
-        let mut todo = Todo::from(&*persister);
-
-        let changed_ids = match action {
-            Action::Check => todo.check(&args.ids),
-            Action::Uncheck => todo.uncheck(&args.ids),
-            Action::Drop => todo.drop(&args.ids),
-        };
-
-        persister.edit(&changed_ids, action);
-
-        todo.view();
+        
+        persister.edit(&args.ids, action);
+        
+        Todo::from(&*persister).view();
     }
 
     /// Copies the contents of a persister to another.
