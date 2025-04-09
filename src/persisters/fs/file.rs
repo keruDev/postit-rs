@@ -190,8 +190,16 @@ impl Persister for File {
         self.file.read()
     }
 
-    fn edit(&self, _ids: &[u32], _action: Action) {
-        self.file.write(&Todo::from(self));
+    fn edit(&self, ids: &[u32], action: Action) {
+        let mut todo = Todo::from(self);
+
+        match action {
+            Action::Check => todo.check(ids),
+            Action::Uncheck => todo.uncheck(ids),
+            Action::Drop => todo.drop(ids),
+        };
+
+        self.file.write(&todo);
     }
 
     fn save(&self, todo: &Todo) {
