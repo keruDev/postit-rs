@@ -9,6 +9,59 @@ use postit::Config;
 use crate::mocks::{MockConfig, MockConn, MockPath};
 
 #[test]
+fn manage_print_path() {
+    let mock = MockConfig::new();
+
+    Config::manage(&sub::Config::Path);
+
+    assert!(mock.path().exists());
+}
+
+#[test]
+fn manage_print_path_exists_output() {
+    let mock = MockConfig::new();
+
+    let output = assert_cmd::Command::cargo_bin("postit")
+        .unwrap()
+        .args(["config", "path"])
+        .output()
+        .expect("Error while running the test");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    assert!(output.status.success());
+    assert!(stdout.contains(mock.path().to_str().unwrap()));
+}
+
+#[test]
+fn print_path_not_exists_output() {
+    let mock = MockConfig::new();
+
+    Config::drop();
+
+    let output = assert_cmd::Command::cargo_bin("postit")
+        .unwrap()
+        .args(["config", "path"])
+        .output()
+        .expect("Error while running the test");
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success().not());
+    assert!(stderr.contains(&mock.path().parent().unwrap().to_str().unwrap()));
+}
+
+#[test]
+#[should_panic]
+fn print_path_not_exists_panics() {
+    let _mock = MockConfig::new();
+
+    Config::drop();
+
+    Config::print_path();
+}
+
+#[test]
 fn manage_init() {
     let mock = MockConfig::new();
 
@@ -71,21 +124,31 @@ fn default() {
 }
 
 #[test]
-fn path_custom() {
-    std::env::set_var("POSTIT_ROOT", "tmp");
-
-    let result = Config::path();
-    let expect = PathBuf::from("tmp/.postit.toml");
-
-    assert_eq!(result, expect);
-}
-
-#[test]
 fn path_default() {
     let expect = Config::default_config_path();
 
     let mut result = Config::default_path();
     result.push(Config::config_file_name());
+
+    assert_eq!(result, expect);
+}
+
+#[test]
+fn path_empty_env() {
+    std::env::set_var("POSTIT_ROOT", "");
+
+    let result = Config::path();
+    let expect = Config::default_config_path();
+
+    assert_eq!(result, expect);
+}
+
+#[test]
+fn path_custom() {
+    std::env::set_var("POSTIT_ROOT", "tmp");
+
+    let result = Config::path();
+    let expect = PathBuf::from("tmp/.postit.toml");
 
     assert_eq!(result, expect);
 }
@@ -118,6 +181,19 @@ fn load_default() {
 #[test]
 fn save() {
     let _mock = MockConfig::new();
+
+    let default = Config::default();
+    default.save();
+
+    assert_eq!(Config::load(), Config::default());
+}
+
+#[test]
+#[should_panic]
+fn save_file_doesnt_exist() {
+    let _mock = MockConfig::new();
+
+    std::env::set_var("POSTIT_ROOT", "");
 
     let default = Config::default();
     default.save();
