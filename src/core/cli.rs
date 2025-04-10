@@ -135,6 +135,8 @@ pub mod subcommands {
     pub enum Config {
         /// Creates the config file.
         Init,
+        /// Shows the config file path.
+        Path,
         /// Opens the default editor (via the EDITOR env var) to edit the file
         Edit,
         /// Deletes the config file
