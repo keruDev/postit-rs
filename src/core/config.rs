@@ -40,16 +40,47 @@ impl Default for Config {
 }
 
 impl Config {
-    /// Returns the path of the config file in the `POSTIT_CONFIG_PATH` env var.
-    pub fn path() -> PathBuf {
-        let env = std::env::var("POSTIT_CONFIG_PATH");
-        let config_path = env.unwrap_or(String::from(".postit.toml"));
+    /// Returns the value of the `POSTIT_ROOT` env var.
+    pub fn env_var() -> String {
+        std::env::var("POSTIT_ROOT").unwrap_or_default()
+    }
 
-        if config_path.is_empty() {
-            return PathBuf::from(".postit.toml");
+    /// Returns the name of the config file.
+    pub fn config_file_name() -> String {
+        String::from(".postit.toml")
+    }
+
+    /// Returns the default path of postit's generated files.
+    ///
+    /// # Panics
+    /// If the user's home directory can't be located.
+    pub fn default_path() -> PathBuf {
+        let mut path = dirs::home_dir().expect("Couldn't locate the user's home directory");
+        path.push(".postit");
+
+        path
+    }
+
+    /// Returns the default path of postit's config file.
+    pub fn default_config_path() -> PathBuf {
+        let mut path = Self::default_path();
+        path.push(Self::config_file_name());
+
+        path
+    }
+
+    /// Returns the path of the config file in the `POSTIT_ROOT` env var.
+    pub fn path() -> PathBuf {
+        let env = Self::env_var();
+
+        if env.is_empty() {
+            return Self::default_config_path();
         }
 
-        PathBuf::from(config_path)
+        let mut path = PathBuf::from(env);
+        path.push(Self::config_file_name());
+
+        path
     }
 
     /// Returns the editor in the `EDITOR` env var.
@@ -60,6 +91,7 @@ impl Config {
     /// Manages the `.postit.toml` file using a `ConfigSubcommand` instance.
     pub fn manage(subcommand: &sub::Config) {
         match subcommand {
+            sub::Config::Path => Self::print_path(),
             sub::Config::Init => Self::init(),
             sub::Config::Edit => Self::edit(),
             sub::Config::Drop => Self::drop(),
@@ -78,6 +110,10 @@ impl Config {
             return;
         }
 
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).unwrap();
+        }
+
         let mut file = fs::File::create(path).unwrap();
         let toml =
             toml::to_string_pretty(&Self::default()).expect("Failed to serialize config to TOML");
@@ -86,6 +122,19 @@ impl Config {
             .expect("Failed to write default config to file");
 
         println!("Config file created at '{}'", path.to_str().unwrap());
+    }
+
+    /// Prints the path of the config file.
+    pub fn print_path() {
+        let path = Self::path();
+
+        if path.exists() {
+            return println!("{}", path.display());
+        }
+
+        if let Some(parent) = path.parent() {
+            println!("The configuration file doesn't exist at {}", parent.display());
+        }
     }
 
     /// Loads the config from a file or creates it if it doesn't exist.

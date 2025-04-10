@@ -247,7 +247,7 @@ Config:
             );
 
             let path = ".example_postit.toml";
-            std::env::set_var("POSTIT_CONFIG_PATH", path);
+            std::env::set_var("POSTIT_ROOT", path);
 
             Config { force_drop: true, ..Config::default() }.save();
 
@@ -365,7 +365,7 @@ Usage: postit config <COMMAND>
 Alias: postit conf ...
 
 Description:
-    Manages the config file. Uses the 'POSTIT_CONFIG_PATH' environment variable
+    Manages the config file. Uses the 'POSTIT_ROOT' environment variable
     to locate the file.
 
     Available subcommands:
