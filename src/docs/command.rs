@@ -1,11 +1,8 @@
 //! Contains examples of how to use every command, including their usage, alias
 //! a description and a use example to showcase the command's functionalities.
 
-use std::fs;
-
 use crate::cli::subcommands as sub;
 use crate::models::{Priority, Task, Todo};
-use crate::Config;
 
 /// Contains use cases for every command.
 pub struct Command;
@@ -246,11 +243,6 @@ Config:
 "
             );
 
-            let path = ".example_postit.toml";
-            std::env::set_var("POSTIT_ROOT", path);
-
-            Config { force_drop: true, ..Config::default() }.save();
-
             let mut todo = Todo::sample();
 
             println!("Before:");
@@ -260,10 +252,9 @@ Config:
             println!();
             println!("After:");
 
+            todo.check(&[2]);
             todo.drop(&[2, 3]);
             todo.view();
-
-            fs::remove_file(path).unwrap();
         }
 
         println!(

@@ -414,11 +414,10 @@ fn remove() {
 #[test]
 fn config() {
     let mock = MockConfig::new();
+
     let cli = Cli {
         command: Command::Config(args::Config { subcommand: sub::Config::Init }),
     };
-
-    std::env::set_var("POSTIT_CONFIG_PATH", mock.path());
 
     Postit::run(cli);
 

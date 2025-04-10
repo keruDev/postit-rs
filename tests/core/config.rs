@@ -72,18 +72,22 @@ fn default() {
 
 #[test]
 fn path_custom() {
-    let key = "POSTIT_CONFIG_PATH";
-    let value = Config::editor();
+    std::env::set_var("POSTIT_ROOT", "tmp");
 
-    std::env::set_var(key, "test_postit.toml");
-    assert_eq!(Config::path().to_str().unwrap(), "test_postit.toml");
+    let result = Config::path();
+    let expect = PathBuf::from("tmp/.postit.toml");
 
-    std::env::set_var(key, value);
+    assert_eq!(result, expect);
 }
 
 #[test]
 fn path_default() {
-    assert_eq!(Config::path().to_str().unwrap(), ".postit.toml");
+    let expect = Config::default_config_path();
+
+    let mut result = Config::default_path();
+    result.push(Config::config_file_name());
+
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -103,7 +107,7 @@ fn editor_default() {
 
 #[test]
 fn load_default() {
-    let _mock = MockConfig::new();
+    std::env::set_var("POSTIT_ROOT", "tmp");
 
     let result = Config::load();
     let expect = Config::default();
@@ -113,17 +117,12 @@ fn load_default() {
 
 #[test]
 fn save() {
-    let key = "POSTIT_CONFIG_PATH";
-    let value = Config::editor();
-
-    std::env::set_var(key, "test_postit.toml");
+    let _mock = MockConfig::new();
 
     let default = Config::default();
     default.save();
 
     assert_eq!(Config::load(), Config::default());
-
-    std::env::set_var(key, value);
 }
 
 #[test]

@@ -114,7 +114,7 @@ fn example_drop_output() {
 
 #[test]
 fn example_drop_no_panic() {
-    docs::Command::run(&sub::Example::Drop)
+    docs::Command::run(&sub::Example::Drop);
 }
 
 #[test]

@@ -158,12 +158,15 @@ impl Config {
     /// # Panics
     /// If the config file can't be saved.
     pub fn save(&self) {
-        let mut file = fs::File::create(Self::path()).unwrap();
+        let path = Self::path();
+
+        let mut file = fs::File::create(&path)
+            .unwrap_or_else(|_| panic!("Failed to open the config file: {}", path.display()));
 
         let toml = toml::to_string_pretty(self).expect("Failed to save config to TOML");
 
         file.write_all(toml.as_bytes())
-            .expect("Failed to write default config to file");
+            .expect("Failed to save config to file");
     }
 
     /// Edits the config file.
@@ -192,7 +195,9 @@ impl Config {
     pub fn drop() {
         let path = &Self::path();
 
-        assert!(path.exists(), "Config file doesn't exist.");
+        if !path.exists() {
+            panic!("Config file doesn't exist.");
+        }
 
         fs::remove_file(path).expect("Config file couldn't be deleted.");
     }
