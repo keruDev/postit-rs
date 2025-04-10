@@ -149,31 +149,35 @@ pub struct MockConfig {
 impl MockConfig {
     /// Constructor of the `MockConfig` struct.
     pub fn new() -> Self {
-        let path = PathBuf::from("test_postit.toml".to_string());
-        std::env::set_var("POSTIT_CONFIG_PATH", &path);
+        std::env::set_var("POSTIT_ROOT", "tmp");
 
-        if !path.exists() {
-            fs::File::create(&path).expect("Failed to create temp file");
-        }
+        let mut tmp = PathBuf::from(std::env::var("POSTIT_ROOT").unwrap());
 
-        let mut file = fs::File::create(&path).unwrap();
+        fs::create_dir_all(&tmp).expect("Failed to create tmp directory");
 
-        let content =
+        tmp.push(Config::config_file_name());
+
+        let mut file = fs::File::create(&tmp).expect("Failed to create temp config file");
+
+        let toml =
             toml::to_string_pretty(&Config::default()).expect("Failed to serialize config to TOML");
 
-        file.write_all(content.as_bytes())
+        file.write_all(toml.as_bytes())
             .expect("Failed to write default config to file");
 
-        Self { path, config: Config::default() }
+        Self {
+            path: PathBuf::from(tmp),
+            config: Config::default(),
+        }
     }
 
     pub fn save(&mut self) {
         let mut file = fs::File::create(self.path()).unwrap();
 
-        let content =
+        let toml =
             toml::to_string_pretty(&self.config).expect("Failed to serialize config to TOML");
 
-        file.write_all(content.as_bytes())
+        file.write_all(toml.as_bytes())
             .expect("Failed to write new config to file");
     }
 
@@ -196,8 +200,8 @@ impl fmt::Display for MockConfig {
 
 impl Drop for MockConfig {
     fn drop(&mut self) {
-        if let Err(err) = fs::remove_file(&self.path) {
-            eprintln!("Failed to delete MockConfig file: {}", err);
+        if let Err(err) = fs::remove_dir_all(&self.path.parent().unwrap()) {
+            eprintln!("Failed to delete MockConfig directory ({}): {}", &self.path.display(), err);
         }
     }
 }
