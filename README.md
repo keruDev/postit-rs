@@ -29,46 +29,37 @@ To install `postit`, just use:
 cargo install postit
 ```
 
-After installing, run the `help` command to display a list of all possible commands:
+`postit` uses the path stored at the `POSTIT_ROOT` environment variable to
+generate files inside it. If not set, this path will be `$HOME/.postit`.
 
-```sh
-postit help
-```
-
-You can also use the `example` command to know how to use every other command: 
-
-```sh
-postit example
-```
-
-Another useful command is `flag`, which you can use to get information about commonly used flags:
-```sh
-postit flag
-```
-
-`postit` uses a configuration file called `.postit.toml`.\
-Use the `POSTIT_CONFIG_PATH` env var to tell `postit` where this file is:
+You can set the `POSTIT_ROOT` environment variable to override the default value:
 
 On Linux:
-```sh
-# .bashrc executes operations before every shell session
-nano ~/.bashrc
 
-# Add this line to define POSTIT_CONFIG_PATH (feel free to change the path)
-export POSTIT_CONFIG_PATH="$HOME/.postit.toml"
+```sh
+# ~/.bashrc
+
+# Feel free to change this line
+export POSTIT_ROOT="$HOME/.postit"
 ```  
 
 On Windows:
 
 ```ps1
-[Environment]::SetEnvironmentVariable("POSTIT_CONFIG_PATH", "$env:USERPROFILE\.postit.toml", "User")
+[Environment]::SetEnvironmentVariable("POSTIT_ROOT", "$env:USERPROFILE\.postit", "User")
 ```
 
-After setting it, use the command below to generate the config structure:
+The command below will generate `postit`'s configuration file inside the path
+previously mentioned:
 
 ```sh
 postit config init
 ```
+
+Here is a list of useful commands to get started:
+- `postit help`: displays a list of all possible commands.
+- `postit example`: displays an example on how to use every other command.
+- `postit flag`: displays information about commonly used flags.
 
 ## From 0.1.x to 0.2.x
 
@@ -114,13 +105,6 @@ You can check out its possible fields in the [docs](https://docs.rs/postit/lates
 ```sh
 postit example config
 ```
-
-## Environment variables
-
-Here is a list of the environment variables currently used:
-
-- `EDITOR`: used to open your configuration file and edit it.
-- `POSTIT_CONFIG_PATH`: where the config file is located (by default, `.postit.toml`).
 
 ## Development
 
