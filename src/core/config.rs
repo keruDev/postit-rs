@@ -125,6 +125,9 @@ impl Config {
     }
 
     /// Prints the path of the config file.
+    ///
+    /// # Panics
+    /// If the config file is not located at the expected path.
     pub fn print_path() {
         let path = Self::path();
 
@@ -133,7 +136,7 @@ impl Config {
         }
 
         if let Some(parent) = path.parent() {
-            println!("The configuration file doesn't exist at {}", parent.display());
+            panic!("The configuration file doesn't exist at '{}'", parent.display());
         }
     }
 
