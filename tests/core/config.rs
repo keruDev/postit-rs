@@ -48,7 +48,7 @@ fn print_path_not_exists_output() {
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     assert!(output.status.success().not());
-    assert!(stderr.contains(&mock.path().parent().unwrap().to_str().unwrap()));
+    assert!(stderr.contains(mock.path().parent().unwrap().to_str().unwrap()));
 }
 
 #[test]
