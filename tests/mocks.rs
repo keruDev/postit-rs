@@ -151,13 +151,13 @@ impl MockConfig {
     pub fn new() -> Self {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
-        let mut tmp = PathBuf::from(std::env::var("POSTIT_ROOT").unwrap());
+        let mut path = PathBuf::from(std::env::var("POSTIT_ROOT").unwrap());
 
-        fs::create_dir_all(&tmp).expect("Failed to create tmp directory");
+        fs::create_dir_all(&path).expect("Failed to create tmp directory");
 
-        tmp.push(Config::config_file_name());
+        path.push(Config::config_file_name());
 
-        let mut file = fs::File::create(&tmp).expect("Failed to create temp config file");
+        let mut file = fs::File::create(&path).expect("Failed to create temp config file");
 
         let toml =
             toml::to_string_pretty(&Config::default()).expect("Failed to serialize config to TOML");
@@ -165,10 +165,7 @@ impl MockConfig {
         file.write_all(toml.as_bytes())
             .expect("Failed to write default config to file");
 
-        Self {
-            path: PathBuf::from(tmp),
-            config: Config::default(),
-        }
+        Self { path, config: Config::default() }
     }
 
     pub fn save(&mut self) {
@@ -200,7 +197,7 @@ impl fmt::Display for MockConfig {
 
 impl Drop for MockConfig {
     fn drop(&mut self) {
-        if let Err(err) = fs::remove_dir_all(&self.path.parent().unwrap()) {
+        if let Err(err) = fs::remove_dir_all(self.path.parent().unwrap()) {
             eprintln!("Failed to delete MockConfig directory ({}): {}", &self.path.display(), err);
         }
     }
