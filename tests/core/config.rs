@@ -1,12 +1,32 @@
 use std::ops::Not;
 use std::path::PathBuf;
 
-use postit::cli::subcommands as sub;
+use postit::cli::{arguments as args, subcommands as sub};
 use postit::db::Protocol;
 use postit::fs::Format;
 use postit::Config;
 
 use crate::mocks::{MockConfig, MockConn, MockPath};
+
+#[test]
+fn fmt_display() {
+    let config = Config {
+        persister: "tasks.json".to_string(),
+        force_drop: true,
+        force_copy: false,
+        drop_after_copy: true,
+    };
+
+    let result = format!("{}", config);
+
+    let expect = "
+persister: tasks.json
+force_drop: true
+force_copy: false
+drop_after_copy: true";
+
+    assert_eq!(result.trim(), expect.trim());
+}
 
 #[test]
 fn manage_print_path() {
@@ -91,6 +111,94 @@ fn manage_drop_panics() {
 }
 
 #[test]
+fn manage_list() {
+    Config::manage(sub::Config::List);
+}
+
+#[test]
+fn manage_list_output() {
+    let _mock = MockConfig::new();
+
+    let output = assert_cmd::Command::cargo_bin("postit")
+        .unwrap()
+        .args(["config", "list"])
+        .output()
+        .expect("Error while running the test");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    let expect = "
+persister: tasks.csv
+force_drop: false
+force_copy: false
+drop_after_copy: false";
+
+    assert!(output.status.success());
+    assert!(stdout.trim().contains(expect.trim()));
+}
+
+#[test]
+#[should_panic]
+fn manage_set_all_none() {
+    let args = args::ConfigSet {
+        persister: None,
+        force_drop: None,
+        force_copy: None,
+        drop_after_copy: None,
+    };
+
+    Config::manage(sub::Config::Set(args));
+}
+
+#[test]
+fn manage_set_any() {
+    let _mock = MockConfig::new();
+
+    let args = args::ConfigSet {
+        persister: Some(String::from("tasks.json")),
+        force_drop: None,
+        force_copy: None,
+        drop_after_copy: None,
+    };
+
+    Config::manage(sub::Config::Set(args));
+
+    let result = Config::load();
+    let expect = Config {
+        persister: String::from("tasks.json"),
+        force_drop: false,
+        force_copy: false,
+        drop_after_copy: false,
+    };
+
+    assert_eq!(result, expect);
+}
+
+#[test]
+fn manage_set_all() {
+    let _mock = MockConfig::new();
+
+    let args = args::ConfigSet {
+        persister: Some(String::from("tasks.json")),
+        force_drop: Some(true),
+        force_copy: Some(true),
+        drop_after_copy: Some(true),
+    };
+
+    Config::manage(sub::Config::Set(args));
+
+    let result = Config::load();
+    let expect = Config {
+        persister: String::from("tasks.json"),
+        force_drop: true,
+        force_copy: true,
+        drop_after_copy: true,
+    };
+
+    assert_eq!(result, expect);
+}
+
+#[test]
 fn default() {
     let config = Config::default();
 
@@ -155,7 +263,7 @@ fn save() {
 fn save_file_doesnt_exist() {
     let _mock = MockConfig::new();
 
-    std::env::set_var("POSTIT_ROOT", "");
+    std::env::set_var("POSTIT_ROOT", " ");
 
     let default = Config::default();
     default.save();

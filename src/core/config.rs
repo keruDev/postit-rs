@@ -196,7 +196,18 @@ impl Config {
     }
 
     /// Sets a value for the passed key.
+    ///
+    /// # Panics
+    /// If there are no values provided.
     pub fn set(args: args::ConfigSet) {
+        if args.persister.is_none()
+            && args.force_drop.is_none()
+            && args.force_copy.is_none()
+            && args.drop_after_copy.is_none()
+        {
+            panic!("You must provide a flag and value to set");
+        }
+
         let mut config = Self::load();
 
         if let Some(persister) = args.persister {
