@@ -361,29 +361,38 @@ Description:
 
     Available subcommands:
     - init: creates the .postit.toml file.
-    - edit: executes the editor (EDITOR env var) to change configs.
-    - drop: deletes the config file (default values will be used at runtime).
+    - path: displays the path of the config file.
+    - drop: deletes the config file.
+    - list: displays a list of the current config values.
+    - set: changes the values of config properties.
 
 How to use:
     postit config init
 
-    postit config edit
+    postit config path
 
     postit config drop
+
+    postit config list
+
+    postit config set [OPTIONS]
 
 Default config:
     After running 'postit config init', postit will generate a file with the
     default settings:
 
-    - persister: where tasks are stored (the '-p' or '--persister' flag can override this).
-    It can be one of the supported persisters (file or database).
+    - persister (string): 'tasks.csv' by default.
+      Defines where tasks are stored (the '-p' or '--persister' flag can override this).
+      It can be the path to a file or a database connection string (including protocol).
 
-    - force_drop: if true, allows dropping tasks even if they are not checked.
+    - force_drop (bool): false by default.
+      If 'true', allows dropping tasks even if they are not checked.
 
-    - force_copy: if true, allows overwriting tasks on populated persisters when
-      using the 'copy' command.
+    - force_copy (bool): false by default.
+      If 'true', allows overwriting persisters when using the 'copy' command.
 
-    - drop_after_copy: if true, drops a persister (file or table) after copying.
+    - drop_after_copy (bool): false by default.
+      If 'true', drops a persister (file or table) after copying.
     
     You can also check https://docs.rs/postit/latest/postit/struct.Config.html for more info."
         );

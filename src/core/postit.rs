@@ -32,7 +32,7 @@ impl Postit {
             Command::Copy(args) => Self::copy(args),
             Command::Clean(args) => Self::clean(args),
             Command::Remove(args) => Self::remove(args),
-            Command::Config(args) => Self::config(&args),
+            Command::Config(args) => Self::config(args),
         }
     }
 
@@ -150,7 +150,7 @@ impl Postit {
     }
 
     /// Manages the configuration file.   
-    fn config(args: &args::Config) {
-        Config::manage(&args.subcommand);
+    fn config(args: args::Config) {
+        Config::manage(args.subcommand);
     }
 }

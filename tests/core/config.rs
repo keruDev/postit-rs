@@ -12,7 +12,7 @@ use crate::mocks::{MockConfig, MockConn, MockPath};
 fn manage_print_path() {
     let mock = MockConfig::new();
 
-    Config::manage(&sub::Config::Path);
+    Config::manage(sub::Config::Path);
 
     assert!(mock.path().exists());
 }
@@ -65,7 +65,7 @@ fn print_path_not_exists_panics() {
 fn manage_init() {
     let mock = MockConfig::new();
 
-    Config::manage(&sub::Config::Init);
+    Config::manage(sub::Config::Init);
 
     let result = Config::load();
     let expect = Config::default();
@@ -75,34 +75,11 @@ fn manage_init() {
 }
 
 #[test]
-fn manage_edit() {
-    let key = "EDITOR";
-    let value = std::env::var(key).unwrap();
-
-    std::env::set_var(key, "echo");
-    Config::manage(&sub::Config::Edit);
-
-    std::env::set_var(key, value);
-}
-
-#[test]
-#[should_panic]
-fn manage_edit_panics() {
-    let key = "EDITOR";
-    let value = std::env::var(key).unwrap();
-
-    std::env::set_var(key, "");
-    Config::manage(&sub::Config::Edit);
-
-    std::env::set_var(key, value);
-}
-
-#[test]
 fn manage_drop() {
     let mock = MockConfig::new();
 
-    Config::manage(&sub::Config::Init);
-    Config::manage(&sub::Config::Drop);
+    Config::manage(sub::Config::Init);
+    Config::manage(sub::Config::Drop);
 
     assert!(mock.path().exists().not());
 }
@@ -110,7 +87,7 @@ fn manage_drop() {
 #[test]
 #[should_panic]
 fn manage_drop_panics() {
-    Config::manage(&sub::Config::Drop);
+    Config::manage(sub::Config::Drop);
 }
 
 #[test]
@@ -151,21 +128,6 @@ fn path_custom() {
     let expect = PathBuf::from("tmp/.postit.toml");
 
     assert_eq!(result, expect);
-}
-
-#[test]
-fn editor_custom() {
-    let value = Config::editor();
-
-    std::env::set_var("EDITOR", "code");
-    assert!(Config::editor().contains("code"));
-
-    std::env::set_var("EDITOR", value);
-}
-
-#[test]
-fn editor_default() {
-    assert!(Config::editor().contains("nano"));
 }
 
 #[test]

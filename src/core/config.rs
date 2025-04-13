@@ -1,13 +1,12 @@
 //! Contains the `Config` struct, which has properties to specify or override behaviors.
 
-use std::fs;
 use std::io::Write as _;
 use std::path::PathBuf;
-use std::process::Command;
+use std::{fmt, fs};
 
 use serde::{Deserialize, Serialize};
 
-use super::cli::subcommands as sub;
+use super::cli::{arguments as args, subcommands as sub};
 use crate::db::Orm;
 use crate::fs::File;
 use crate::traits::Persister;
@@ -18,7 +17,7 @@ use crate::traits::Persister;
 /// in the [Default] trait implementation.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Config {
-    /// Location of the default file where tasks are stored.
+    /// Defines where tasks are stored. It can be the path to a file or a database connection string (including protocol).
     pub persister: String,
     /// If `true`, allows dropping tasks without them being checked.
     pub force_drop: bool,
@@ -36,6 +35,15 @@ impl Default for Config {
             force_copy: false,
             drop_after_copy: false,
         }
+    }
+}
+
+impl fmt::Display for Config {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "persister: {}", self.persister)?;
+        writeln!(f, "force_drop: {}", self.force_drop)?;
+        writeln!(f, "force_copy: {}", self.force_copy)?;
+        write!(f, "drop_after_copy: {}", self.drop_after_copy)
     }
 }
 
@@ -83,18 +91,14 @@ impl Config {
         path
     }
 
-    /// Returns the editor in the `EDITOR` env var.
-    pub fn editor() -> String {
-        std::env::var("EDITOR").unwrap_or(String::from("nano"))
-    }
-
     /// Manages the `.postit.toml` file using a `ConfigSubcommand` instance.
-    pub fn manage(subcommand: &sub::Config) {
+    pub fn manage(subcommand: sub::Config) {
         match subcommand {
             sub::Config::Path => Self::print_path(),
             sub::Config::Init => Self::init(),
-            sub::Config::Edit => Self::edit(),
             sub::Config::Drop => Self::drop(),
+            sub::Config::List => Self::list(),
+            sub::Config::Set(args) => Self::set(args),
         }
     }
 
@@ -172,25 +176,6 @@ impl Config {
             .expect("Failed to save config to file");
     }
 
-    /// Edits the config file.
-    ///
-    /// # Panics
-    /// If the config file can't be opened
-    pub fn edit() {
-        let path = &Self::path();
-
-        if !path.exists() {
-            Self::init();
-        }
-
-        let editor = Self::editor();
-
-        Command::new(editor)
-            .arg(path)
-            .status()
-            .expect("Error opening config file");
-    }
-
     /// Deletes the config file.
     ///
     /// # Panics
@@ -203,6 +188,34 @@ impl Config {
         }
 
         fs::remove_file(path).expect("Config file couldn't be deleted.");
+    }
+
+    /// Displays a list of the current config values.
+    pub fn list() {
+        println!("{}", Self::load());
+    }
+
+    /// Sets a value for the passed key.
+    pub fn set(args: args::ConfigSet) {
+        let mut config = Self::load();
+
+        if let Some(persister) = args.persister {
+            config.persister = persister;
+        }
+
+        if let Some(force_drop) = args.force_drop {
+            config.force_drop = force_drop;
+        }
+
+        if let Some(force_copy) = args.force_copy {
+            config.force_copy = force_copy;
+        }
+
+        if let Some(drop_after_copy) = args.drop_after_copy {
+            config.drop_after_copy = drop_after_copy;
+        }
+
+        config.save();
     }
 
     /// If the value of path is:
