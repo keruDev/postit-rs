@@ -57,7 +57,7 @@ pub mod arguments {
         pub persister: Option<String>,
 
         /// Identifiers of tasks separated by commas.
-        #[arg(value_delimiter = ',')]
+        #[arg(value_delimiter = ',', required = true)]
         pub ids: Vec<u32>,
     }
 
@@ -81,7 +81,7 @@ pub mod arguments {
         pub priority: Priority,
 
         /// Identifiers of tasks separated by commas.
-        #[arg(value_delimiter = ',')]
+        #[arg(value_delimiter = ',', required = true)]
         pub ids: Vec<u32>,
     }
 
@@ -92,7 +92,7 @@ pub mod arguments {
         pub content: String,
 
         /// Identifiers of tasks separated by commas.
-        #[arg(value_delimiter = ',')]
+        #[arg(value_delimiter = ',', required = true)]
         pub ids: Vec<u32>,
     }
 
@@ -112,6 +112,26 @@ pub mod arguments {
         /// Subcommand the 'Config' command will use.
         #[command(subcommand)]
         pub subcommand: sub::Config,
+    }
+
+    /// Arguments for the 'config set' subcommand
+    #[derive(Args, Clone, Debug, PartialEq, Eq)]
+    pub struct ConfigSet {
+        /// Defines where tasks are stored. It can be the path to a file or a database connection string (including protocol).
+        #[arg(long, value_name = "STRING")]
+        pub persister: Option<String>,
+
+        /// If 'true', allows dropping tasks without them being checked.
+        #[arg(long, value_name = "BOOL", value_parser = clap::value_parser!(bool))]
+        pub force_drop: Option<bool>,
+
+        /// If 'true', allows overwriting files if they already exist.
+        #[arg(long, value_name = "BOOL", value_parser = clap::value_parser!(bool))]
+        pub force_copy: Option<bool>,
+
+        /// If 'true', drops the old file after copying its contents to the new file.
+        #[arg(long, value_name = "BOOL", value_parser = clap::value_parser!(bool))]
+        pub drop_after_copy: Option<bool>,
     }
 }
 
@@ -137,10 +157,12 @@ pub mod subcommands {
         Init,
         /// Shows the config file path.
         Path,
-        /// Opens the default editor (via the EDITOR env var) to edit the file
-        Edit,
         /// Deletes the config file
         Drop,
+        /// Displays a list of the current config values.
+        List,
+        /// Changes the values of config properties.
+        Set(args::ConfigSet),
     }
 
     /// Subcommands for the 'Flag' command
