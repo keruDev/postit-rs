@@ -122,15 +122,15 @@ pub mod arguments {
         pub persister: Option<String>,
 
         /// If 'true', allows dropping tasks without them being checked.
-        #[arg(long, value_name = "BOOL", value_parser = clap::value_parser!(bool))]
+        #[arg(long, value_name = "BOOL")]
         pub force_drop: Option<bool>,
 
         /// If 'true', allows overwriting files if they already exist.
-        #[arg(long, value_name = "BOOL", value_parser = clap::value_parser!(bool))]
+        #[arg(long, value_name = "BOOL")]
         pub force_copy: Option<bool>,
 
         /// If 'true', drops the old file after copying its contents to the new file.
-        #[arg(long, value_name = "BOOL", value_parser = clap::value_parser!(bool))]
+        #[arg(long, value_name = "BOOL")]
         pub drop_after_copy: Option<bool>,
     }
 }

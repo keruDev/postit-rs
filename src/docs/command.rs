@@ -379,7 +379,7 @@ How to use:
 
 Default config:
     After running 'postit config init', postit will generate a file with the
-    default settings:
+    default settings, which you can change by using 'postit config set [OPTIONS]':
 
     - persister (string): 'tasks.csv' by default.
       Defines where tasks are stored (the '-p' or '--persister' flag can override this).
