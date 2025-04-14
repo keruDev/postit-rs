@@ -130,7 +130,7 @@ impl File {
 
         let file_name = path
             .file_name()
-            .unwrap_or(OsStr::new("tasks"))
+            .unwrap_or_else(|| OsStr::new("tasks"))
             .to_string_lossy()
             .into_owned();
 
