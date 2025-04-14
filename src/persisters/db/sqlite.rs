@@ -189,7 +189,7 @@ impl DbPersister for Sqlite {
         let value = match action {
             Action::Check => true,
             Action::Uncheck => false,
-            _ => unreachable!(),
+            Action::Drop => unreachable!(),
         };
 
         let ids = self.format_ids(ids);
