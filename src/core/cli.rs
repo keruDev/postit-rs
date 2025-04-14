@@ -155,10 +155,12 @@ pub mod subcommands {
     pub enum Config {
         /// Creates the config file.
         Init,
-        /// Shows the config file path.
-        Path,
         /// Deletes the config file
         Drop,
+        /// Shows the value of the `POSTIT_ROOT` env var.
+        Env,
+        /// Shows the config file path.
+        Path,
         /// Displays a list of the current config values.
         List,
         /// Changes the values of config properties.
@@ -243,7 +245,7 @@ pub enum Command {
     #[command(alias = "rm")]
     Remove(args::Persister),
 
-    /// Manages the configuration file (.postit.toml).
+    /// Manages the configuration file.
     #[command(alias = "conf")]
     Config(args::Config),
 
