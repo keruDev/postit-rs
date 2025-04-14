@@ -94,6 +94,7 @@ impl Config {
     /// Manages the `.postit.toml` file using a `ConfigSubcommand` instance.
     pub fn manage(subcommand: sub::Config) {
         match subcommand {
+            sub::Config::Env => Self::print_env(),
             sub::Config::Path => Self::print_path(),
             sub::Config::Init => Self::init(),
             sub::Config::Drop => Self::drop(),
@@ -126,6 +127,20 @@ impl Config {
             .expect("Failed to write default config to file");
 
         println!("Config file created at '{}'", path.to_str().unwrap());
+    }
+
+    /// Prints the value of the `POSTIT_ROOT` env var.
+    ///
+    /// # Panics
+    /// If `POSTIT_ROOT` is empty.
+    pub fn print_env() {
+        let env = Self::env_var();
+
+        if !env.is_empty() {
+            return println!("{env}");
+        }
+
+        panic!("The 'POSTIT_ROOT' environment variable is empty");
     }
 
     /// Prints the path of the config file.
