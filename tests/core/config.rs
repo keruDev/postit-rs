@@ -29,7 +29,7 @@ drop_after_copy: true";
 }
 
 #[test]
-fn manage_print_path() {
+fn manage_path() {
     let mock = MockConfig::new();
 
     Config::manage(sub::Config::Path);
@@ -38,7 +38,7 @@ fn manage_print_path() {
 }
 
 #[test]
-fn manage_print_path_exists_output() {
+fn path_exists_output() {
     let mock = MockConfig::new();
 
     let output = assert_cmd::Command::cargo_bin("postit")
@@ -54,7 +54,7 @@ fn manage_print_path_exists_output() {
 }
 
 #[test]
-fn print_path_not_exists_output() {
+fn path_not_exists_output() {
     let mock = MockConfig::new();
 
     Config::drop();
@@ -79,6 +79,39 @@ fn print_path_not_exists_panics() {
     Config::drop();
 
     Config::print_path();
+}
+
+#[test]
+fn manage_env() {
+    let mock = MockConfig::new();
+
+    Config::manage(sub::Config::Env);
+
+    assert!(mock.path().exists());
+}
+
+#[test]
+fn env_output() {
+    let _mock = MockConfig::new();
+
+    let output = assert_cmd::Command::cargo_bin("postit")
+        .unwrap()
+        .args(["config", "env"])
+        .output()
+        .expect("Error while running the test");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    assert!(output.status.success());
+    assert!(stdout.contains(&Config::env_var()));
+}
+
+#[test]
+#[should_panic]
+fn env_is_empty() {
+    std::env::set_var("POSTIT_ROOT", "");
+
+    Config::print_env();
 }
 
 #[test]
