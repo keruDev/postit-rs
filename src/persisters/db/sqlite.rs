@@ -18,7 +18,10 @@ pub struct Sqlite {
 
 impl Clone for Sqlite {
     fn clone(&self) -> Self {
-        Self::from(&self.conn())
+        Self {
+            conn_str: self.conn_str.clone(),
+            connection: sqlite::open(&self.conn_str).unwrap(),
+        }
     }
 }
 

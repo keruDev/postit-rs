@@ -43,7 +43,7 @@ fn check_name_ok() {
     let checked_path = File::check_name(mock_path.clone());
 
     let result = checked_path.file_name().unwrap();
-    let expect = mock_path.as_os_str();
+    let expect = mock_path.file_name().unwrap();
 
     assert_eq!(result, expect);
 }

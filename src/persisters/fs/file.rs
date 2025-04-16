@@ -12,6 +12,7 @@ use super::{Csv, Json, Xml};
 use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::traits::{FilePersister, Persister};
+use crate::Config;
 
 /// Defines errors related to file management.
 pub mod error {
@@ -79,6 +80,8 @@ impl Deref for Format {
 pub struct File {
     /// File that implements the [`FilePersister`] trait.
     file: Box<dyn FilePersister>,
+    /// Path of the file persister.
+    path: PathBuf,
 }
 
 impl fmt::Debug for File {
@@ -92,18 +95,20 @@ impl fmt::Debug for File {
 impl File {
     /// Constructor of the `File` struct, which controls instances of structs
     /// that implement the [`FilePersister`] trait.
-    pub const fn new(persister: Box<dyn FilePersister>) -> Self {
-        Self { file: persister }
+    ///
+    /// # Panics
+    /// If the file name can't be extracted from the persister path.
+    pub fn new(persister: Box<dyn FilePersister>) -> Self {
+        let path = Config::build_path(persister.path().file_name().unwrap());
+
+        Self { file: persister, path }
     }
 
     /// Creates a `File` instance from a path.
-    pub fn from(path: &str) -> Self {
-        let path = Self::check_name(PathBuf::from(path));
-        let file = Self::new(Self::get_persister(path));
+    pub fn from(file_path: &str) -> Self {
+        let file_name = Self::check_name(PathBuf::from(file_path));
 
-        file.check_content();
-
-        file
+        Self::new(Self::get_persister(file_name))
     }
 
     /// Checks the persister's contents. If the persister is empty or its path
@@ -112,10 +117,9 @@ impl File {
     /// # Panics
     /// In case the persister can't be populated with the default contents.
     pub fn check_content(&self) {
-        let path = self.file.path();
-        let is_empty = path.metadata().map_or(true, |meta| meta.len() == 0);
+        let path = &self.path;
 
-        if path.exists() && !is_empty {
+        if path.exists() {
             return;
         }
 
@@ -147,24 +151,23 @@ impl File {
 
         path.set_file_name(file_parts.join("."));
 
-        path.clone()
+        path
     }
 
     /// Returns a struct that implements the `FilePersister` trait based on the file extension.
     ///
     /// # Panics
     /// In case the file extension can't be converted to `&str`.
-    pub fn get_persister(path: PathBuf) -> Box<dyn FilePersister> {
-        let mut path = path;
+    pub fn get_persister(file: PathBuf) -> Box<dyn FilePersister> {
+        let mut file = file;
 
-        let format = Format::from(path.extension().unwrap().to_str().unwrap());
-
-        path.set_extension(format.to_str());
+        let format = Format::from(file.extension().unwrap().to_str().unwrap());
+        file.set_extension(format.to_str());
 
         match format {
-            Format::Csv => Csv::new(path).boxed(),
-            Format::Json => Json::new(path).boxed(),
-            Format::Xml => Xml::new(path).boxed(),
+            Format::Csv => Csv::new(file).boxed(),
+            Format::Json => Json::new(file).boxed(),
+            Format::Xml => Xml::new(file).boxed(),
         }
     }
 }
@@ -175,14 +178,15 @@ impl Persister for File {
     }
 
     fn to_string(&self) -> String {
-        self.file.path().to_str().unwrap().to_owned()
+        self.path.to_str().unwrap().to_owned()
     }
 
     fn exists(&self) -> bool {
-        self.file.exists()
+        self.path.exists()
     }
 
     fn tasks(&self) -> Vec<Task> {
+        self.check_content();
         self.file.tasks()
     }
 
@@ -215,7 +219,15 @@ impl Persister for File {
     }
 
     fn remove(&self) {
-        self.file.remove();
+        let path = self.file.path();
+
+        if path.exists() {
+            return self.file.remove();
+        }
+
+        if let (Some(file), Some(parent)) = (path.file_name(), path.parent()) {
+            eprintln!("The file {} doesn't exist at {}", file.display(), parent.display());
+        }
     }
 }
 

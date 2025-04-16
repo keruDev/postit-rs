@@ -1,4 +1,5 @@
 use std::ops::Not;
+use std::path::PathBuf;
 
 use postit::db::{Protocol, Sqlite};
 use postit::models::{Task, Todo};
@@ -30,7 +31,10 @@ fn count_table_doesnt_exist() {
     let mock = MockConn::create(Protocol::Sqlite);
     mock.instance.drop_database();
 
-    assert_eq!(Sqlite::from(&mock.conn()).count(), 0);
+    let path = PathBuf::from(mock.conn());
+    let file = path.file_name().unwrap().to_str().unwrap();
+
+    assert_eq!(Sqlite::from(file).count(), 0);
 }
 
 #[test]

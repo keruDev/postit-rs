@@ -179,7 +179,7 @@ impl FilePersister for Xml {
 
     fn read(&self) -> Vec<String> {
         fs::read_to_string(&self.path)
-            .expect("Should have been able to read the file")
+            .expect("Should have been able to read the XML file")
             .lines()
             .map(|line| line.replace('\r', ""))
             .filter(|line| !line.is_empty())

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use postit::db::{Protocol, Sqlite};
 use postit::fs::{Csv, Format};
 use postit::traits::{DbPersister, FilePersister};
@@ -30,7 +32,11 @@ fn file_persister_eq() {
 #[test]
 fn db_persister_eq() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let sqlite = Sqlite::from(&mock.conn());
+
+    let path = PathBuf::from(mock.conn());
+    let file = path.file_name().unwrap().to_str().unwrap();
+
+    let sqlite = Sqlite::from(file);
 
     let left = sqlite.clone().boxed();
     let right = sqlite.boxed();

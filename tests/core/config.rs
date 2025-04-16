@@ -54,6 +54,15 @@ fn path_exists_output() {
 }
 
 #[test]
+fn print_path_not_exists_error() {
+    let _mock = MockConfig::new();
+
+    Config::drop();
+
+    Config::print_path();
+}
+
+#[test]
 fn path_not_exists_output() {
     let mock = MockConfig::new();
 
@@ -67,18 +76,8 @@ fn path_not_exists_output() {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
 
-    assert!(output.status.success().not());
+    assert!(output.status.success());
     assert!(stderr.contains(mock.path().parent().unwrap().to_str().unwrap()));
-}
-
-#[test]
-#[should_panic]
-fn print_path_not_exists_panics() {
-    let _mock = MockConfig::new();
-
-    Config::drop();
-
-    Config::print_path();
 }
 
 #[test]
@@ -107,11 +106,16 @@ fn env_output() {
 }
 
 #[test]
-#[should_panic]
 fn env_is_empty() {
     std::env::set_var("POSTIT_ROOT", "");
 
     Config::print_env();
+}
+
+#[test]
+fn env_is_output() {
+    // todo!();
+    //     std::env::set_var("POSTIT_ROOT", "");
 }
 
 #[test]
@@ -296,7 +300,7 @@ fn save() {
 fn save_file_doesnt_exist() {
     let _mock = MockConfig::new();
 
-    std::env::set_var("POSTIT_ROOT", " ");
+    std::env::set_var("POSTIT_ROOT", "//");
 
     let default = Config::default();
     default.save();
@@ -309,7 +313,7 @@ fn resolve_persister_file() {
     let mock = MockPath::create(Format::Csv);
     let persister = Config::resolve_persister(Some(mock.to_string()));
 
-    assert_eq!(persister.to_string(), mock.to_string())
+    assert_eq!(PathBuf::from(persister.to_string()), mock.path())
 }
 
 #[test]
@@ -322,10 +326,12 @@ fn resolve_persister_db() {
 
 #[test]
 fn resolve_persister_none() {
-    let _mock = MockConfig::new();
     let persister = Config::resolve_persister(None).to_string();
 
-    assert_eq!(persister.to_string(), Config::load().persister);
+    let mut path = Config::get_parent_path();
+    path.push(Config::load().persister);
 
-    MockPath::new(PathBuf::from("tasks.csv"));
+    assert_eq!(persister.to_string(), path.to_str().unwrap());
+
+    MockPath::create(Format::Csv);
 }

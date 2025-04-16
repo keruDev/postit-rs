@@ -1,7 +1,7 @@
 //! Contains the `Config` struct, which has properties to specify or override behaviors.
 
 use std::io::Write as _;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{fmt, fs};
 
 use serde::{Deserialize, Serialize};
@@ -47,50 +47,8 @@ impl fmt::Display for Config {
     }
 }
 
+// Methods for managing the 'config' commands
 impl Config {
-    /// Returns the value of the `POSTIT_ROOT` env var.
-    pub fn env_var() -> String {
-        std::env::var("POSTIT_ROOT").unwrap_or_default()
-    }
-
-    /// Returns the name of the config file.
-    pub fn config_file_name() -> String {
-        String::from(".postit.toml")
-    }
-
-    /// Returns the default path of postit's generated files.
-    ///
-    /// # Panics
-    /// If the user's home directory can't be located.
-    pub fn default_path() -> PathBuf {
-        let mut path = dirs::home_dir().expect("Couldn't locate the user's home directory");
-        path.push(".postit");
-
-        path
-    }
-
-    /// Returns the default path of postit's config file.
-    pub fn default_config_path() -> PathBuf {
-        let mut path = Self::default_path();
-        path.push(Self::config_file_name());
-
-        path
-    }
-
-    /// Returns the path of the config file in the `POSTIT_ROOT` env var.
-    pub fn path() -> PathBuf {
-        let env = Self::env_var();
-
-        if env.is_empty() {
-            return Self::default_config_path();
-        }
-
-        let mut path = PathBuf::from(env);
-        path.push(Self::config_file_name());
-
-        path
-    }
-
     /// Manages the `.postit.toml` file using a `ConfigSubcommand` instance.
     pub fn manage(subcommand: sub::Config) {
         match subcommand {
@@ -140,7 +98,7 @@ impl Config {
             return println!("{env}");
         }
 
-        panic!("The 'POSTIT_ROOT' environment variable is empty");
+        eprintln!("The 'POSTIT_ROOT' environment variable is empty");
     }
 
     /// Prints the path of the config file.
@@ -155,40 +113,8 @@ impl Config {
         }
 
         if let Some(parent) = path.parent() {
-            panic!("The configuration file doesn't exist at '{}'", parent.display());
+            eprintln!("The configuration file doesn't exist at '{}'", parent.display());
         }
-    }
-
-    /// Loads the config from a file or creates it if it doesn't exist.
-    ///
-    /// # Panics
-    /// If the config file can't be loaded.
-    pub fn load() -> Self {
-        let path = &Self::path();
-
-        if !path.exists() {
-            Self::init();
-        }
-
-        let content = fs::read_to_string(path).expect("Failed to read config file");
-
-        toml::from_str(&content).expect("TOML was not well-formatted")
-    }
-
-    /// Saves the config instance to a file.
-    ///
-    /// # Panics
-    /// If the config file can't be saved.
-    pub fn save(&self) {
-        let path = Self::path();
-
-        let mut file = fs::File::create(&path)
-            .unwrap_or_else(|_| panic!("Failed to open the config file: {}", path.display()));
-
-        let toml = toml::to_string_pretty(self).expect("Failed to save config to TOML");
-
-        file.write_all(toml.as_bytes())
-            .expect("Failed to save config to file");
     }
 
     /// Deletes the config file.
@@ -242,6 +168,130 @@ impl Config {
         }
 
         config.save();
+    }
+}
+
+// Utility methods to interact with the configuration
+impl Config {
+    /// Returns the value of the `POSTIT_ROOT` env var.
+    pub fn env_var() -> String {
+        std::env::var("POSTIT_ROOT").unwrap_or_default()
+    }
+
+    /// Returns the name of the config file.
+    pub fn config_file_name() -> String {
+        String::from(".postit.toml")
+    }
+
+    /// Returns the default path of postit's generated files.
+    ///
+    /// # Panics
+    /// If the user's home directory can't be located.
+    pub fn default_path() -> PathBuf {
+        let mut path = dirs::home_dir().expect("Couldn't locate the user's home directory");
+        path.push(".postit");
+
+        path
+    }
+
+    /// Returns the default path of postit's config file.
+    ///
+    /// # Panics
+    /// If the path can't be created
+    pub fn default_config_path() -> PathBuf {
+        let mut path = Self::default_path();
+
+        if !path.exists() {
+            fs::create_dir_all(&path).unwrap();
+        }
+
+        path.push(Self::config_file_name());
+
+        path
+    }
+
+    /// Returns the path of the config file in the `POSTIT_ROOT` env var.
+    ///
+    /// # Panics
+    /// If the path can't be created
+    pub fn path() -> PathBuf {
+        let env = Self::env_var();
+
+        if env.is_empty() {
+            return Self::default_config_path();
+        }
+
+        let mut path = PathBuf::from(env);
+
+        if !path.exists() {
+            fs::create_dir_all(&path).unwrap();
+        }
+
+        path.push(Self::config_file_name());
+
+        path
+    }
+
+    /// Obtains the path for the File instance, which is the parent path that
+    /// the stores the config file.
+    ///
+    /// # Panics
+    /// If the parent path can't be extracted from the configuration path.
+    pub fn get_parent_path() -> PathBuf {
+        Self::path().parent().unwrap().to_owned()
+    }
+
+    /// Returns the path constructed from pushing the file persister path to
+    /// the parent path (the one where .postit.toml is stored).
+    ///
+    /// # Panics
+    /// - If the path can't be converted to str.
+    /// - If the parent path can't be converted to str.
+    pub fn build_path<T: AsRef<Path>>(path: T) -> PathBuf {
+        let path_str = path.as_ref().to_str().unwrap();
+
+        let mut parent = Self::get_parent_path();
+        let parent_str = parent.to_str().unwrap();
+
+        if parent_str.starts_with(path_str) || parent_str.contains(path_str) {
+            return Self::path();
+        }
+
+        parent.push(path);
+
+        parent
+    }
+
+    /// Loads the config from a file or creates it if it doesn't exist.
+    ///
+    /// # Panics
+    /// If the config file can't be loaded.
+    pub fn load() -> Self {
+        let path = &Self::path();
+
+        if !path.exists() {
+            Self::init();
+        }
+
+        let content = fs::read_to_string(path).expect("Failed to read config file");
+
+        toml::from_str(&content).expect("TOML was not well-formatted")
+    }
+
+    /// Saves the config instance to a file.
+    ///
+    /// # Panics
+    /// If the config file can't be saved.
+    pub fn save(&self) {
+        let path = Self::path();
+
+        let mut file = fs::File::create(&path)
+            .unwrap_or_else(|_| panic!("Failed to open the config file: {}", path.display()));
+
+        let toml = toml::to_string_pretty(self).expect("Failed to save config to TOML");
+
+        file.write_all(toml.as_bytes())
+            .expect("Failed to save config to file");
     }
 
     /// If the value of path is:
