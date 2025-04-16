@@ -266,18 +266,19 @@ fn copy() {
     mock_config.save();
 
     let mock_left = MockPath::create(Format::Csv);
-    let right = "postit_copy.json";
+    let right_path = Config::build_path("postit_copy.json");
+    let right_str = right_path.to_str().unwrap();
 
     let cli = Cli {
         command: Command::Copy(args::Copy {
             left: mock_left.to_string(),
-            right: right.to_string(),
+            right: right_str.to_string(),
         }),
     };
 
     Postit::run(cli);
 
-    let mock_right = MockPath::new(PathBuf::from(right));
+    let mock_right = MockPath::new(right_path);
 
     let (left_file, left_todo) = expected(&mock_left);
     let (right_file, right_todo) = expected(&mock_right);

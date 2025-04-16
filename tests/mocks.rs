@@ -2,7 +2,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{fmt, fs};
 
-use postit::db::{Orm, Protocol};
+use postit::db::{Orm, Protocol, Sqlite};
 use postit::fs::{Csv, Format, Json, Xml};
 use postit::models::Todo;
 use postit::traits::{DbPersister, FilePersister};
@@ -39,7 +39,10 @@ impl MockPath {
     }
 
     pub fn create(format: Format) -> Self {
-        let name = "sample";
+        std::env::set_var("POSTIT_ROOT", "tmp");
+
+        let path = Config::build_path("test_sample");
+        let name = path.to_str().unwrap();
 
         let file = match format {
             Format::Csv => Self::csv(name),
@@ -53,7 +56,10 @@ impl MockPath {
     }
 
     pub fn blank(format: Format) -> Self {
-        let name = "blank";
+        std::env::set_var("POSTIT_ROOT", "tmp");
+
+        let path = Config::build_path("test_blank");
+        let name = path.to_str().unwrap();
 
         let file = match format {
             Format::Csv => Self::csv(name),
@@ -65,15 +71,15 @@ impl MockPath {
     }
 
     pub fn csv(name: &str) -> Box<dyn FilePersister> {
-        Csv::new(PathBuf::from(format!("test_{name}.csv"))).boxed()
+        Csv::new(PathBuf::from(format!("{name}.csv"))).boxed()
     }
 
     pub fn json(name: &str) -> Box<dyn FilePersister> {
-        Json::new(PathBuf::from(format!("test_{name}.json"))).boxed()
+        Json::new(PathBuf::from(format!("{name}.json"))).boxed()
     }
 
     pub fn xml(name: &str) -> Box<dyn FilePersister> {
-        Xml::new(PathBuf::from(format!("test_{name}.xml"))).boxed()
+        Xml::new(PathBuf::from(format!("{name}.xml"))).boxed()
     }
 }
 
@@ -114,13 +120,17 @@ impl MockConn {
     }
 
     pub fn create(protocol: Protocol) -> Self {
+        std::env::set_var("POSTIT_ROOT", "tmp");
+
         match protocol {
             Protocol::Sqlite => Self::sqlite(),
         }
     }
 
     pub fn sqlite() -> Self {
-        Self::new("test_tasks.db")
+        let instance = Sqlite::from("test_tasks.db").boxed();
+
+        Self { instance }
     }
 }
 
@@ -151,11 +161,7 @@ impl MockConfig {
     pub fn new() -> Self {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
-        let mut path = PathBuf::from(std::env::var("POSTIT_ROOT").unwrap());
-
-        fs::create_dir_all(&path).expect("Failed to create tmp directory");
-
-        path.push(Config::config_file_name());
+        let path = Config::path();
 
         let mut file = fs::File::create(&path).expect("Failed to create temp config file");
 

@@ -10,6 +10,7 @@ use super::Sqlite;
 use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::traits::{DbPersister, Persister};
+use crate::Config;
 
 /// Defines errors related to database management.
 pub mod error {
@@ -118,6 +119,9 @@ impl Orm {
 
     /// Returns a struct that implements the [`DbPersister`] trait based on
     /// a connection string.
+    ///
+    /// # Panics
+    /// If the path can't be converted to str.
     pub fn get_persister(conn: &str) -> Box<dyn DbPersister> {
         let conn = String::from(conn);
         let mut parts: Vec<&str> = conn.split("://").collect();
@@ -134,7 +138,7 @@ impl Orm {
         }
 
         match Protocol::from(protocol) {
-            Protocol::Sqlite => Sqlite::from(&conn).boxed(),
+            Protocol::Sqlite => Sqlite::from(Config::build_path(&conn).to_str().unwrap()).boxed(),
         }
     }
 }
