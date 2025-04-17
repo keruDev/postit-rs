@@ -46,7 +46,7 @@ fn get() {
     let clone = todo.clone();
 
     let ids = vec![2, 3];
-    let tasks = todo.get(&ids);
+    let tasks = todo.get_mut(&ids);
     let expect = vec![&clone.tasks[1], &clone.tasks[2]];
 
     assert_eq!(tasks, expect);

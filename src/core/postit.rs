@@ -3,7 +3,7 @@
 //!
 //! For more info about the available commands, check [`Command`].
 
-use super::cli::arguments as args;
+use super::cli::{arguments as args, subcommands as sub};
 use super::{Action, Cli, Command, Config};
 use crate::docs;
 use crate::models::{Task, Todo};
@@ -73,8 +73,14 @@ impl Postit {
         let persister = Config::resolve_persister(args.persister);
         let mut todo = Todo::from(&*persister);
 
-        todo.set(args.subcommand);
-        persister.save(&todo);
+        todo.set(&args.subcommand);
+
+        let (ids, action) = match args.subcommand {
+            sub::Set::Content(args) => (args.ids, Action::SetContent),
+            sub::Set::Priority(args) => (args.ids, Action::SetPriority),
+        };
+
+        persister.edit(&todo, &ids, action);
 
         todo.view();
     }
@@ -82,8 +88,16 @@ impl Postit {
     /// Edits tasks based on the action passed.
     fn edit(args: args::Edit, action: Action) {
         let persister = Config::resolve_persister(args.persister);
+        let mut todo = Todo::from(&*persister);
 
-        persister.edit(&args.ids, action);
+        let changed_ids = match action {
+            Action::Check => todo.check(&args.ids),
+            Action::Uncheck => todo.uncheck(&args.ids),
+            Action::Drop => todo.drop(&args.ids),
+            _ => unreachable!(),
+        };
+
+        persister.edit(&todo, &changed_ids, action);
 
         Todo::from(&*persister).view();
     }
@@ -130,6 +144,7 @@ impl Postit {
         let persister = Config::resolve_persister(args.persister);
         let todo = Todo::sample();
 
+        persister.clean();
         persister.save(&todo);
 
         todo.view();

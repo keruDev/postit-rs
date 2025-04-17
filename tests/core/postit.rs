@@ -106,7 +106,7 @@ fn set_priority() {
 
     Postit::run(cli);
 
-    let tasks = todo.get(&ids);
+    let tasks = todo.get_mut(&ids);
 
     for task in tasks {
         task.priority = priority.clone();
@@ -140,7 +140,7 @@ fn set_content() {
 
     Postit::run(cli);
 
-    let tasks = todo.get(&ids);
+    let tasks = todo.get_mut(&ids);
 
     for task in tasks {
         task.content = content.clone();

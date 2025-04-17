@@ -7,9 +7,9 @@ use std::fmt;
 use std::ops::Deref;
 
 use super::Sqlite;
-use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::traits::{DbPersister, Persister};
+use crate::Action;
 
 /// Defines errors related to database management.
 pub mod error {
@@ -163,8 +163,12 @@ impl Persister for Orm {
         self.db.select()
     }
 
-    fn edit(&self, ids: &[u32], action: Action) {
-        self.db.update(ids, action);
+    fn edit(&self, todo: &Todo, ids: &[u32], action: Action) {
+        if matches!(action, Action::Drop) {
+            return self.db.delete(ids);
+        }
+
+        self.db.update(todo, ids, action);
     }
 
     fn save(&self, todo: &Todo) {

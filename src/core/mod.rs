@@ -4,7 +4,7 @@ pub mod cli;
 mod config;
 mod postit;
 
-/// Possible actions taken when editing a persister's contents.
+/// Possible actions taken when editing a persister's tasks.
 pub enum Action {
     /// Used to check tasks.
     Check,
@@ -12,6 +12,10 @@ pub enum Action {
     Uncheck,
     /// Used to drop tasks.
     Drop,
+    /// Used to set the content of tasks.
+    SetContent,
+    /// Used to set the priority of tasks.
+    SetPriority,
 }
 
 pub use cli::{Cli, Command};

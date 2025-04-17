@@ -9,10 +9,9 @@ use std::path::PathBuf;
 use std::{fmt, fs};
 
 use super::{Csv, Json, Xml};
-use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::traits::{FilePersister, Persister};
-use crate::Config;
+use crate::{Action, Config};
 
 /// Defines errors related to file management.
 pub mod error {
@@ -194,16 +193,8 @@ impl Persister for File {
         self.file.read()
     }
 
-    fn edit(&self, ids: &[u32], action: Action) {
-        let mut todo = Todo::from(self);
-
-        match action {
-            Action::Check => todo.check(ids),
-            Action::Uncheck => todo.uncheck(ids),
-            Action::Drop => todo.drop(ids),
-        };
-
-        self.file.write(&todo);
+    fn edit(&self, todo: &Todo, _ids: &[u32], _action: Action) {
+        self.file.write(todo);
     }
 
     fn save(&self, todo: &Todo) {
