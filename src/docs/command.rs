@@ -361,17 +361,20 @@ Description:
 
     Available subcommands:
     - init: creates the .postit.toml file.
-    - path: displays the path of the config file.
     - drop: deletes the config file.
+    - env: displays the value of the 'POSTIT_ROOT' environment variable.
+    - path: displays the path of the config file.
     - list: displays a list of the current config values.
     - set: changes the values of config properties.
 
 How to use:
     postit config init
 
-    postit config path
-
     postit config drop
+
+    postit config env
+
+    postit config path
 
     postit config list
 
