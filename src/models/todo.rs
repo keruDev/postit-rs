@@ -32,9 +32,9 @@ impl Todo {
     /// Initializes a Todo instance with fake data.
     pub fn sample() -> Self {
         Self::new(vec![
-            Task::from("1,Task,low,false"),
+            Task::from("1,Task,high,false"),
             Task::from("2,Task,med,false"),
-            Task::from("3,Task,high,true"),
+            Task::from("3,Task,low,true"),
             Task::from("4,Task,none,true"),
         ])
     }

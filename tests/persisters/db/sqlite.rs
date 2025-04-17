@@ -119,7 +119,7 @@ fn insert_and_select() {
 }
 
 #[test]
-fn update_check_ok() {
+fn update_check() {
     let mock = MockConn::create(Protocol::Sqlite);
     let mut todo = MockConn::sample();
 
@@ -149,6 +149,44 @@ fn update_uncheck() {
     mock.instance.update(&todo, &ids, action);
 
     todo.uncheck(&ids);
+
+    let selected = mock.instance.select();
+    let result: Vec<Task> = selected.iter().map(|line| Task::from(line)).collect();
+
+    assert_eq!(result, todo.tasks)
+}
+
+#[test]
+fn update_set_content() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    let mut todo = MockConn::sample();
+
+    let ids = vec![2, 3];
+    let action = Action::SetContent;
+
+    todo.set_content(&ids, "test");
+
+    mock.instance.insert(&todo);
+    mock.instance.update(&todo, &ids, action);
+
+    let selected = mock.instance.select();
+    let result: Vec<Task> = selected.iter().map(|line| Task::from(line)).collect();
+
+    assert_eq!(result, todo.tasks)
+}
+
+#[test]
+fn update_set_priority() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    let mut todo = MockConn::sample();
+
+    let ids = vec![2, 3];
+    let action = Action::SetPriority;
+
+    todo.set_priority(&ids, &postit::models::Priority::High);
+
+    mock.instance.insert(&todo);
+    mock.instance.update(&todo, &ids, action);
 
     let selected = mock.instance.select();
     let result: Vec<Task> = selected.iter().map(|line| Task::from(line)).collect();
