@@ -7,8 +7,11 @@
 
 Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
 
-Postit is a CLI utility aimed to help you complete your tasks.
-You can also save your tasks to keep track of them later.
+postit is a simple CLI utility aimed to help you manage and keep track of your tasks.
+
+> [!WARNING]
+> Some commands may not work as expected in version `0.2.1` when using `csv`, `json` or `xml` formats.
+> Please update to the latest version by running: `cargo install postit`.
 
 ## Index
 
@@ -18,7 +21,6 @@ Here is an index of this file to make it easier for you to navigate:
 - [From 0.1.x to 0.2.x](#from-01x-to-02x): brief migration guide.
 - [Features](#features): postit's functionalities and new additions roadmap. 
 - [Configuration](#configuration): describes configuration options.
-- [Environment variables](#environment-variables): environment variables used.
 - [Development](#development): things to take into account if you want to contribute to postit.
 
 ## Getting started
@@ -86,9 +88,10 @@ Here are some of its current features and some planned ones as well:
 
 Features:
 - Commands and flags to manage tasks and files.
-- Variety of supported file and database formats to persist data.
+- Variety of supported persisters:
+  - File: `csv`, `json`, `xml`.
+  - Db: `sqlite`.
 - Configuration file to change postit's behavior (more info in the [Configuration](#configuration) section).
-- Tasks are displayed differently depending on their priority and whether they are checked or not.
 
 Roadmap:
 - [x] XML support
