@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use postit::db::{Protocol, Sqlite};
 use postit::models::{Task, Todo};
 use postit::traits::DbPersister;
-use postit::Action;
+use postit::{Action, Config};
 
 use crate::mocks::MockConn;
 
@@ -61,7 +61,10 @@ fn conn() {
     let conn = "test.db";
     let mock = MockConn::new(conn);
 
-    assert_eq!(conn, &mock.conn());
+    let path = Config::build_path(conn);
+    let conn_str = path.to_str().unwrap();
+
+    assert_eq!(conn_str, &mock.conn());
 }
 
 #[test]

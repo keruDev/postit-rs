@@ -76,24 +76,24 @@ pub mod arguments {
     /// Arguments of the 'set priority' subcommand.
     #[derive(Args, Debug)]
     pub struct SetPriority {
-        /// Priority of the task (none, low, med or high).
-        #[arg(value_enum)]
-        pub priority: Priority,
-
         /// Identifiers of tasks separated by commas.
         #[arg(value_delimiter = ',', required = true)]
         pub ids: Vec<u32>,
+
+        /// Priority of the task (none, low, med or high).
+        #[arg(value_enum)]
+        pub priority: Priority,
     }
 
     /// Arguments of the 'set content' subcommand.
     #[derive(Args, Debug)]
     pub struct SetContent {
-        /// The content or description of a task.
-        pub content: String,
-
         /// Identifiers of tasks separated by commas.
         #[arg(value_delimiter = ',', required = true)]
         pub ids: Vec<u32>,
+
+        /// The content or description of a task.
+        pub content: String,
     }
 
     /// Arguments of the 'copy' command.

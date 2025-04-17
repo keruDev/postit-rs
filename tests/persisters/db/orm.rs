@@ -3,6 +3,7 @@ use std::ops::Not;
 use postit::db::{Orm, Protocol, Sqlite};
 use postit::models::Task;
 use postit::traits::{DbPersister, Persister};
+use postit::Config;
 
 use crate::mocks::MockConn;
 
@@ -60,7 +61,10 @@ fn get_persister_empty() {
     let _mock = MockConn::new(conn);
     let persister = Orm::get_persister("");
 
-    assert_eq!(persister.conn(), conn)
+    let path = Config::build_path(conn);
+    let conn_str = path.to_str().unwrap();
+
+    assert_eq!(persister.conn(), conn_str)
 }
 
 #[test]
