@@ -7,6 +7,7 @@ use sqlite::{Connection, State, Statement};
 use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::traits::DbPersister;
+use crate::Config;
 
 /// Representation of a `SQLite` database.
 pub struct Sqlite {
@@ -29,11 +30,15 @@ impl Sqlite {
     /// Creates a `Sqlite` instance from a connection string.
     ///
     /// # Panics
+    /// If the path can't be converted to str.
     /// If a connection to the `SQLite` file can't be opened.
     pub fn from(conn: &str) -> Self {
+        let path = Config::build_path(conn);
+        let path_str = path.to_str().unwrap();
+
         let instance = Self {
-            conn_str: String::from(conn),
-            connection: sqlite::open(conn).unwrap(),
+            conn_str: String::from(path_str),
+            connection: sqlite::open(path).unwrap(),
         };
 
         if !instance.exists() {

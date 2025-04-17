@@ -125,7 +125,8 @@ impl Config {
         let path = &Self::path();
 
         if !path.exists() {
-            panic!("Config file doesn't exist.");
+            eprintln!("Config file doesn't exist at {}", path.display());
+            return;
         }
 
         fs::remove_file(path).expect("Config file couldn't be deleted.");
@@ -253,8 +254,8 @@ impl Config {
         let mut parent = Self::get_parent_path();
         let parent_str = parent.to_str().unwrap();
 
-        if parent_str.starts_with(path_str) || parent_str.contains(path_str) {
-            return Self::path();
+        if path_str.starts_with(parent_str) || path_str.contains(parent_str) {
+            return path.as_ref().to_path_buf();
         }
 
         parent.push(path);

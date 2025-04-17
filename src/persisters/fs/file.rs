@@ -80,8 +80,6 @@ impl Deref for Format {
 pub struct File {
     /// File that implements the [`FilePersister`] trait.
     file: Box<dyn FilePersister>,
-    /// Path of the file persister.
-    path: PathBuf,
 }
 
 impl fmt::Debug for File {
@@ -99,9 +97,11 @@ impl File {
     /// # Panics
     /// If the file name can't be extracted from the persister path.
     pub fn new(persister: Box<dyn FilePersister>) -> Self {
-        let path = Config::build_path(persister.path().file_name().unwrap());
+        let path = persister.path();
+        let file_name = path.file_name().unwrap();
+        let file_path = Config::build_path(file_name);
 
-        Self { file: persister, path }
+        Self { file: Self::get_persister(file_path) }
     }
 
     /// Creates a `File` instance from a path.
@@ -117,7 +117,7 @@ impl File {
     /// # Panics
     /// In case the persister can't be populated with the default contents.
     pub fn check_content(&self) {
-        let path = &self.path;
+        let path = &self.file.path();
 
         if path.exists() {
             return;
@@ -178,11 +178,11 @@ impl Persister for File {
     }
 
     fn to_string(&self) -> String {
-        self.path.to_str().unwrap().to_owned()
+        self.file.path().to_str().unwrap().to_owned()
     }
 
     fn exists(&self) -> bool {
-        self.path.exists()
+        self.file.path().exists()
     }
 
     fn tasks(&self) -> Vec<Task> {

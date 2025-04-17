@@ -128,9 +128,9 @@ impl MockConn {
     }
 
     pub fn sqlite() -> Self {
-        let instance = Sqlite::from("test_tasks.db").boxed();
-
-        Self { instance }
+        Self {
+            instance: Sqlite::from("test_tasks.db").boxed(),
+        }
     }
 }
 

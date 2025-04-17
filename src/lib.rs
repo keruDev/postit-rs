@@ -24,7 +24,9 @@
     clippy::cast_sign_loss,
     clippy::cast_possible_truncation,
     clippy::manual_assert,
-    clippy::must_use_candidate
+    clippy::must_use_candidate,
+    // TEMP
+    clippy::needless_pass_by_value
 )]
 
 mod core;

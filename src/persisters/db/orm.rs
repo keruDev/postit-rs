@@ -10,7 +10,6 @@ use super::Sqlite;
 use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::traits::{DbPersister, Persister};
-use crate::Config;
 
 /// Defines errors related to database management.
 pub mod error {
@@ -138,7 +137,7 @@ impl Orm {
         }
 
         match Protocol::from(protocol) {
-            Protocol::Sqlite => Sqlite::from(Config::build_path(&conn).to_str().unwrap()).boxed(),
+            Protocol::Sqlite => Sqlite::from(&conn).boxed(),
         }
     }
 }

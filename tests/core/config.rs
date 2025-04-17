@@ -113,12 +113,6 @@ fn env_is_empty() {
 }
 
 #[test]
-fn env_is_output() {
-    // todo!();
-    //     std::env::set_var("POSTIT_ROOT", "");
-}
-
-#[test]
 fn manage_init() {
     let mock = MockConfig::new();
 
@@ -139,12 +133,6 @@ fn manage_drop() {
     Config::manage(sub::Config::Drop);
 
     assert!(mock.path().exists().not());
-}
-
-#[test]
-#[should_panic]
-fn manage_drop_panics() {
-    Config::manage(sub::Config::Drop);
 }
 
 #[test]
