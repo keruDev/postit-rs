@@ -217,7 +217,7 @@ impl Persister for File {
         }
 
         if let (Some(file), Some(parent)) = (path.file_name(), path.parent()) {
-            eprintln!("The file {} doesn't exist at {}", file.display(), parent.display());
+            eprintln!("The file {:?} doesn't exist at {}", file, parent.display());
         }
     }
 }
