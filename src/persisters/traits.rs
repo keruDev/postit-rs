@@ -3,8 +3,8 @@
 use std::path::PathBuf;
 use std::{fmt, fs};
 
-use crate::core::Action;
 use crate::models::{Task, Todo};
+use crate::Action;
 
 /// The `Persister` trait serves as a base for structures that store instances
 /// of other structs that contain either the [`FilePersister`] trait or the
@@ -26,7 +26,7 @@ pub trait Persister: fmt::Debug {
     fn read(&self) -> Vec<String>;
 
     /// Edits a persister by managing an [`Action`] variant.
-    fn edit(&self, ids: &[u32], action: Action);
+    fn edit(&self, todo: &Todo, ids: &[u32], action: Action);
 
     /// Saves a Todo instance as the persister's content.
     fn save(&self, todo: &Todo);
@@ -119,7 +119,7 @@ pub trait DbPersister {
     fn insert(&self, todo: &Todo);
 
     /// Updates data from a table.
-    fn update(&self, ids: &[u32], action: Action);
+    fn update(&self, todo: &Todo, ids: &[u32], action: Action);
 
     /// Drops data from a table.
     fn delete(&self, ids: &[u32]);

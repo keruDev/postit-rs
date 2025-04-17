@@ -1,7 +1,7 @@
 //! Collection of existing tasks. This is where major task management is made.
 
 use super::Priority;
-use crate::cli::subcommands::Set;
+use crate::cli::subcommands as sub;
 use crate::models::task::Task;
 use crate::traits::Persister;
 use crate::Config;
@@ -40,7 +40,15 @@ impl Todo {
     }
 
     /// Returns tasks based on the ids passed.
-    pub fn get(&mut self, ids: &[u32]) -> Vec<&mut Task> {
+    pub fn get(&self, ids: &[u32]) -> Vec<&Task> {
+        self.tasks
+            .iter()
+            .filter(|task| ids.contains(&task.id))
+            .collect()
+    }
+
+    /// Returns tasks based on the ids passed.
+    pub fn get_mut(&mut self, ids: &[u32]) -> Vec<&mut Task> {
         self.tasks
             .iter_mut()
             .filter(|task| ids.contains(&task.id))
@@ -58,16 +66,16 @@ impl Todo {
     }
 
     /// Changes values of tasks based on the `set` subcommand used.
-    pub fn set(&mut self, cmnd: Set) {
+    pub fn set(&mut self, cmnd: &sub::Set) {
         match cmnd {
-            Set::Priority(args) => self.set_priority(&args.ids, &args.priority),
-            Set::Content(args) => self.set_content(&args.ids, &args.content),
+            sub::Set::Priority(args) => self.set_priority(&args.ids, &args.priority),
+            sub::Set::Content(args) => self.set_content(&args.ids, &args.content),
         }
     }
 
     /// Changes the `priority` property of tasks (selected by using `ids`).
     pub fn set_priority(&mut self, ids: &[u32], priority: &Priority) {
-        let tasks = self.get(ids);
+        let tasks = self.get_mut(ids);
 
         for task in tasks {
             task.priority = priority.clone();
@@ -76,7 +84,7 @@ impl Todo {
 
     /// Changes the `content` property of tasks (selected by using `ids`).
     pub fn set_content(&mut self, ids: &[u32], content: &str) {
-        let tasks = self.get(ids);
+        let tasks = self.get_mut(ids);
 
         for task in tasks {
             task.content = String::from(content);
@@ -84,10 +92,11 @@ impl Todo {
     }
 
     /// Marks a task as checked.
+    /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     pub fn check(&mut self, ids: &[u32]) -> Vec<u32> {
         let mut changed_ids = Vec::<u32>::new();
 
-        for task in self.get(ids) {
+        for task in self.get_mut(ids) {
             match task.check() {
                 Ok(_) => changed_ids.push(task.id),
                 Err(e) => eprintln!("{e}"),
@@ -98,10 +107,11 @@ impl Todo {
     }
 
     /// Marks a task as unchecked.
+    /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     pub fn uncheck(&mut self, ids: &[u32]) -> Vec<u32> {
         let mut changed_ids = Vec::<u32>::new();
 
-        for task in self.get(ids) {
+        for task in self.get_mut(ids) {
             match task.uncheck() {
                 Ok(_) => changed_ids.push(task.id),
                 Err(e) => eprintln!("{e}"),
@@ -112,6 +122,7 @@ impl Todo {
     }
 
     /// Drops a task from the list.
+    /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     pub fn drop(&mut self, ids: &[u32]) -> Vec<u32> {
         let force_drop = Config::load().force_drop;
         let mut changed_ids = Vec::<u32>::new();

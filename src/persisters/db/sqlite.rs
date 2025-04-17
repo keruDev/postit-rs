@@ -4,10 +4,9 @@
 
 use sqlite::{Connection, State, Statement};
 
-use crate::core::Action;
 use crate::models::{Task, Todo};
 use crate::traits::DbPersister;
-use crate::Config;
+use crate::{Action, Config};
 
 /// Representation of a `SQLite` database.
 pub struct Sqlite {
@@ -189,14 +188,12 @@ impl DbPersister for Sqlite {
         });
     }
 
-    fn update(&self, ids: &[u32], action: Action) {
-        if matches!(action, Action::Drop) {
-            return self.delete(ids);
-        }
-
-        let value = match action {
-            Action::Check => true,
-            Action::Uncheck => false,
+    fn update(&self, todo: &Todo, ids: &[u32], action: Action) {
+        let (field, value) = match action {
+            Action::Check => ("checked", "1"),
+            Action::Uncheck => ("checked", "0"),
+            Action::SetContent => ("content", todo.get(ids)[0].content.as_str()),
+            Action::SetPriority => ("priority", todo.get(ids)[0].priority.to_str()),
             Action::Drop => unreachable!(),
         };
 
@@ -205,7 +202,7 @@ impl DbPersister for Sqlite {
         #[rustfmt::skip]
         let query = format!("
             UPDATE tasks
-            SET checked = {value}
+            SET {field} = \"{value}\"
             WHERE id
             IN ({ids})
         ");

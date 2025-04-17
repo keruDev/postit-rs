@@ -115,7 +115,7 @@ fn edit_check() {
     let ids = vec![2, 3];
 
     orm.save(&todo);
-    orm.edit(&ids, postit::Action::Check);
+    orm.edit(&todo, &ids, postit::Action::Check);
 
     todo.check(&ids);
 
@@ -133,7 +133,7 @@ fn edit_uncheck() {
     let ids = vec![2, 3];
 
     orm.save(&todo);
-    orm.edit(&ids, postit::Action::Uncheck);
+    orm.edit(&todo, &ids, postit::Action::Uncheck);
 
     todo.uncheck(&ids);
 
@@ -151,7 +151,7 @@ fn edit_drop() {
     let ids = vec![2, 3];
 
     orm.save(&todo);
-    orm.edit(&ids, postit::Action::Drop);
+    orm.edit(&todo, &ids, postit::Action::Drop);
 
     todo.check(&ids);
     todo.drop(&ids);

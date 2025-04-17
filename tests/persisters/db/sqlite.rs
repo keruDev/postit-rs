@@ -127,7 +127,7 @@ fn update_check_ok() {
     let action = Action::Check;
 
     mock.instance.insert(&todo);
-    mock.instance.update(&ids, action);
+    mock.instance.update(&todo, &ids, action);
 
     todo.check(&ids);
 
@@ -146,7 +146,7 @@ fn update_uncheck() {
     let action = Action::Uncheck;
 
     mock.instance.insert(&todo);
-    mock.instance.update(&ids, action);
+    mock.instance.update(&todo, &ids, action);
 
     todo.uncheck(&ids);
 
@@ -165,7 +165,7 @@ fn update_delete() {
     let action = Action::Drop;
 
     mock.instance.insert(&todo);
-    mock.instance.update(&ids, action);
+    mock.instance.update(&todo, &ids, action);
 
     todo.check(&ids);
     todo.drop(&ids);
