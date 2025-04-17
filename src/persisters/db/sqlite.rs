@@ -189,6 +189,10 @@ impl DbPersister for Sqlite {
     }
 
     fn update(&self, todo: &Todo, ids: &[u32], action: Action) {
+        if matches!(action, Action::Drop) {
+            return self.delete(ids);
+        }
+
         let (field, value) = match action {
             Action::Check => ("checked", "1"),
             Action::Uncheck => ("checked", "0"),

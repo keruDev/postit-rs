@@ -42,6 +42,20 @@ fn read() {
 fn get() {
     let mock = MockPath::create(Format::Csv);
 
+    let todo = fakes(&mock);
+    let clone = todo.clone();
+
+    let ids = vec![2, 3];
+    let tasks = todo.get(&ids);
+    let expect = vec![&clone.tasks[1], &clone.tasks[2]];
+
+    assert_eq!(tasks, expect);
+}
+
+#[test]
+fn get_mut() {
+    let mock = MockPath::create(Format::Csv);
+
     let mut todo = fakes(&mock);
     let clone = todo.clone();
 

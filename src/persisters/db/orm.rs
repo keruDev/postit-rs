@@ -164,10 +164,6 @@ impl Persister for Orm {
     }
 
     fn edit(&self, todo: &Todo, ids: &[u32], action: Action) {
-        if matches!(action, Action::Drop) {
-            return self.db.delete(ids);
-        }
-
         self.db.update(todo, ids, action);
     }
 

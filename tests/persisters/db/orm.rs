@@ -76,6 +76,14 @@ fn to_string() {
 }
 
 #[test]
+fn exists() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    let orm = Orm::from(&mock.conn());
+
+    assert!(orm.exists())
+}
+
+#[test]
 fn save_twice() {
     let mock = MockConn::create(Protocol::Sqlite);
     let mut todo = MockConn::sample();
@@ -173,6 +181,22 @@ fn tasks() {
     let result = orm.tasks();
 
     assert_eq!(result, todo.tasks)
+}
+
+#[test]
+fn replace() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    let mut todo = MockConn::sample();
+    todo.add(Task::from("5,test,med,false"));
+
+    let orm = Orm::from(&mock.instance.conn());
+
+    orm.replace(&todo);
+
+    let result = orm.tasks();
+    let expect = todo.tasks;
+
+    assert_eq!(result, expect)
 }
 
 #[test]
