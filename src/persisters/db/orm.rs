@@ -6,7 +6,7 @@
 use std::fmt;
 use std::ops::Deref;
 
-use super::Sqlite;
+use super::{Mongo, Sqlite};
 use crate::models::{Task, Todo};
 use crate::traits::{DbPersister, Persister};
 use crate::Action;
@@ -40,23 +40,30 @@ pub mod error {
 
 /// A database protocol.
 pub enum Protocol {
-    /// An Sqlite database (associated persister: [`Sqlite`]).
+    /// An `SQLite` database (associated persister: [`Sqlite`]).
     Sqlite,
+    /// A `MongoDB` database (associated persister: [`Mongo`]).
+    Mongo,
 }
 
 impl Protocol {
     /// Transforms a string slice into a `Protocol` variant.
     pub fn from(s: &str) -> Self {
-        if s != "sqlite:///" {
-            eprintln!("{}", error::Error::UnsupportedDatabase);
+        match s {
+            "sqlite" => Self::Sqlite,
+            "mongodb" => Self::Mongo,
+            _ => {
+                eprintln!("{}", error::Error::UnsupportedDatabase);
+                Self::Sqlite
+            }
         }
-        Self::Sqlite
     }
 
-    /// Returns the `Priority` value as its string representation.
+    /// Returns the `Protocol` value as its string representation.
     pub const fn to_str(&self) -> &str {
         match self {
             Self::Sqlite => "sqlite",
+            Self::Mongo => "mongo",
         }
     }
 }
@@ -65,6 +72,7 @@ impl fmt::Display for Protocol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Self::Sqlite => write!(f, "sqlite"),
+            Self::Mongo => write!(f, "mongo"),
         }
     }
 }
@@ -123,6 +131,11 @@ impl Orm {
     /// If the path can't be converted to str.
     pub fn get_persister(conn: &str) -> Box<dyn DbPersister> {
         let conn = String::from(conn);
+
+        if conn.starts_with("sqlite:///") {
+            return Sqlite::from(&conn.replace("sqlite:///", "")).boxed();
+        }
+
         let mut parts: Vec<&str> = conn.split("://").collect();
 
         if parts[0].is_empty() {
@@ -138,6 +151,7 @@ impl Orm {
 
         match Protocol::from(protocol) {
             Protocol::Sqlite => Sqlite::from(&conn).boxed(),
+            Protocol::Mongo => Mongo::from(&conn).boxed(),
         }
     }
 }

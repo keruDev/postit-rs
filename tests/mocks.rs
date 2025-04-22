@@ -124,6 +124,7 @@ impl MockConn {
 
         match protocol {
             Protocol::Sqlite => Self::sqlite(),
+            Protocol::Mongo => todo!(),
         }
     }
 

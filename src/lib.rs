@@ -18,13 +18,16 @@
     clippy::nursery,
     clippy::pedantic,
     clippy::missing_docs_in_private_items,
+    clippy::dbg_macro,
     missing_docs
 )]
 #![allow(
     clippy::cast_sign_loss,
     clippy::cast_possible_truncation,
     clippy::manual_assert,
+    clippy::multiple_crate_versions,
     clippy::must_use_candidate,
+    clippy::struct_excessive_bools,
     // TEMP
     clippy::needless_pass_by_value
 )]
