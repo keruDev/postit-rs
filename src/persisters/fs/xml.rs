@@ -162,7 +162,7 @@ impl FilePersister for Xml {
     }
 
     fn tasks(&self) -> Vec<Task> {
-        let xml = self.read().join("");
+        let xml = self.lines().join("");
         let reader = Reader::from_str(&xml);
 
         Self::xml_to_tasks(reader)
@@ -177,7 +177,7 @@ impl FilePersister for Xml {
             .expect("Should have been able to create the file")
     }
 
-    fn read(&self) -> Vec<String> {
+    fn lines(&self) -> Vec<String> {
         fs::read_to_string(&self.path)
             .expect("Should have been able to read the XML file")
             .lines()

@@ -67,14 +67,14 @@ fn format() {
 }
 
 #[test]
-fn read() {
+fn lines() {
     let mock = MockPath::create(Format::Csv);
     let todo = Todo::sample().tasks;
 
     let file = Csv::new(mock.path());
     let header = Csv::header().replace("\n", "");
 
-    let result = file.read();
+    let result = file.lines();
     let expect = vec![
         header,
         todo[0].formatted(),

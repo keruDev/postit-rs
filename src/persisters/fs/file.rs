@@ -190,7 +190,7 @@ impl Persister for File {
     }
 
     fn read(&self) -> Vec<String> {
-        self.file.read()
+        self.file.lines()
     }
 
     fn edit(&self, todo: &Todo, _ids: &[u32], _action: Action) {

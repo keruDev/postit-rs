@@ -55,7 +55,7 @@ impl FilePersister for Csv {
     }
 
     fn tasks(&self) -> Vec<Task> {
-        self.read()
+        self.lines()
             .iter()
             .skip(1)
             .map(|line| {
@@ -69,7 +69,7 @@ impl FilePersister for Csv {
         fs::File::open(&self.path).expect("Should have been able to create the file")
     }
 
-    fn read(&self) -> Vec<String> {
+    fn lines(&self) -> Vec<String> {
         fs::read_to_string(&self.path)
             .expect("Should have been able to read the CSV file")
             .lines()

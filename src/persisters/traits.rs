@@ -74,7 +74,7 @@ pub trait FilePersister {
     fn open(&self) -> fs::File;
 
     /// Returns the lines of a file.
-    fn read(&self) -> Vec<String>;
+    fn lines(&self) -> Vec<String>;
 
     /// Writes into a file.
     fn write(&self, todo: &Todo);
