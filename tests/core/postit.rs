@@ -57,7 +57,7 @@ fn view() {
     let (expected_file, expected_todo) = expected(&mock);
 
     assert_eq!(todo, expected_todo);
-    assert_eq!(file.read(), expected_file.read());
+    assert_eq!(file.tasks(), expected_file.tasks());
 }
 
 #[test]
@@ -83,7 +83,7 @@ fn add() {
     let (expected_file, expected_todo) = expected(&mock);
 
     assert_eq!(todo, expected_todo);
-    assert_eq!(file.read(), expected_file.read());
+    assert_eq!(file.tasks(), expected_file.tasks());
 }
 
 #[test]
@@ -117,7 +117,7 @@ fn set_priority() {
     let (expected_file, expected_todo) = expected(&mock);
 
     assert_eq!(todo, expected_todo);
-    assert_eq!(file.read(), expected_file.read());
+    assert_eq!(file.tasks(), expected_file.tasks());
 }
 
 #[test]
@@ -151,7 +151,7 @@ fn set_content() {
     let (expected_file, expected_todo) = expected(&mock);
 
     assert_eq!(todo, expected_todo);
-    assert_eq!(file.read(), expected_file.read());
+    assert_eq!(file.tasks(), expected_file.tasks());
 }
 
 #[test]
@@ -175,7 +175,7 @@ fn check() {
     let (expected_file, expected_todo) = expected(&mock);
 
     assert_eq!(todo, expected_todo);
-    assert_eq!(file.read(), expected_file.read());
+    assert_eq!(file.tasks(), expected_file.tasks());
 }
 
 #[test]
@@ -199,7 +199,7 @@ fn uncheck() {
     let (expected_file, expected_todo) = expected(&mock);
 
     assert_eq!(todo, expected_todo);
-    assert_eq!(file.read(), expected_file.read());
+    assert_eq!(file.tasks(), expected_file.tasks());
 }
 
 #[test]
@@ -227,7 +227,7 @@ fn drop_no_force_drop() {
     let (expected_file, expected_todo) = expected(&mock);
 
     assert_eq!(todo, expected_todo);
-    assert_eq!(file.read(), expected_file.read());
+    assert_eq!(file.tasks(), expected_file.tasks());
 }
 
 #[test]
@@ -256,7 +256,7 @@ fn drop_force() {
     let (expected_file, expected_todo) = expected(&mock);
 
     assert_eq!(todo, expected_todo);
-    assert_eq!(file.read(), expected_file.read());
+    assert_eq!(file.tasks(), expected_file.tasks());
 }
 
 #[test]
