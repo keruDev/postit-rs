@@ -1,6 +1,5 @@
 use postit::fs::{File, Format};
 use postit::models::{Task, Todo};
-use postit::traits::Persister;
 
 use crate::mocks::MockPath;
 
@@ -26,16 +25,6 @@ fn one() {
     let expect = Todo { tasks: vec![task] };
 
     assert_eq!(result, expect)
-}
-
-#[test]
-fn read() {
-    let mock = MockPath::create(Format::Csv);
-
-    let file = File::from(&mock.to_string());
-    let todo = Todo::from(&file);
-
-    assert_eq!(todo.tasks, file.tasks());
 }
 
 #[test]

@@ -95,13 +95,13 @@ fn save_twice() {
     todo.add(task);
     orm.save(&todo);
 
-    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
+    let result = orm.tasks();
 
     assert_eq!(result, todo.tasks)
 }
 
 #[test]
-fn save_read() {
+fn save_and_tasks() {
     let mock = MockConn::create(Protocol::Sqlite);
     let todo = MockConn::sample();
 
@@ -109,7 +109,7 @@ fn save_read() {
 
     orm.save(&todo);
 
-    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
+    let result = orm.tasks();
 
     assert_eq!(result, todo.tasks)
 }
@@ -127,7 +127,7 @@ fn edit_check() {
 
     todo.check(&ids);
 
-    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
+    let result = orm.tasks();
 
     assert_eq!(result, todo.tasks)
 }
@@ -145,7 +145,7 @@ fn edit_uncheck() {
 
     todo.uncheck(&ids);
 
-    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
+    let result = orm.tasks();
 
     assert_eq!(result, todo.tasks)
 }
@@ -164,7 +164,7 @@ fn edit_drop() {
     todo.check(&ids);
     todo.drop(&ids);
 
-    let result: Vec<Task> = orm.read().iter().map(|line| Task::from(line)).collect();
+    let result = orm.tasks();
 
     assert_eq!(result, todo.tasks)
 }
