@@ -3,7 +3,7 @@
 //! The `Mongo` struct implements the [`DbPersister`] trait.
 
 use mongodb::{
-    bson::{doc, Document},
+    bson::{doc, Bson, Document},
     sync::{Client, Collection, Database},
 };
 
@@ -100,15 +100,12 @@ impl DbPersister for Mongo {
     }
 
     fn select(&self) -> Vec<String> {
-        let cursor = self.collection().find(doc! {}).run().unwrap();
-
-        let mut result = Vec::new();
-
-        for doc in cursor {
-            result.push(doc.unwrap());
-        }
-
-        result
+        self.collection::<Task>()
+            .find(doc! {})
+            .run()
+            .unwrap()
+            .map(|doc| doc.unwrap().to_string())
+            .collect()
     }
 
     fn insert(&self, todo: &Todo) {
@@ -137,14 +134,16 @@ impl DbPersister for Mongo {
         }
 
         let (field, value) = match action {
-            Action::Check => ("checked", "true"),
-            Action::Uncheck => ("checked", "false"),
-            Action::SetContent => ("content", todo.get(ids)[0].content.as_str()),
-            Action::SetPriority => ("priority", todo.get(ids)[0].priority.to_str()),
+            Action::Check => ("checked", Bson::Boolean(true)),
+            Action::Uncheck => ("checked", Bson::Boolean(false)),
+            Action::SetContent => ("content", Bson::String(todo.get(ids)[0].content.to_string())),
+            Action::SetPriority => {
+                ("priority", Bson::String(todo.get(ids)[0].priority.to_string()))
+            }
             Action::Drop => unreachable!(),
         };
 
-        let query = doc! { "$in": ids };
+        let query = doc! { "id": { "$in": ids } };
         let update = doc! { "$set": { field: value } };
 
         self.collection::<Document>()
@@ -154,10 +153,10 @@ impl DbPersister for Mongo {
     }
 
     fn delete(&self, ids: &[u32]) {
-        let docs: Vec<Document> = ids.iter().map(|id| doc! { "id": id }).collect();
+        let query = doc! { "id": {"$in": ids }};
 
         self.collection::<String>()
-            .delete_many(doc! { "$or": docs })
+            .delete_many(query)
             .run()
             .unwrap();
     }
