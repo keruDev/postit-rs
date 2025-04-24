@@ -29,18 +29,24 @@ Description:
     There are currently 4 supported persisters:
 
     - Files
-      - csv     (e.g.: tasks.csv)
-      - json    (e.g.: tasks.json)
-      - xml     (e.g.: tasks.xml)
+      - csv             (e.g.: tasks.csv)
+      - json            (e.g.: tasks.json)
+      - xml             (e.g.: tasks.xml)
 
     - Databases
-      - SQLite  (e.g.: tasks.db, tasks.sqlite or tasks.sqlite3)
+      - SQLite          (e.g.: tasks.db, tasks.sqlite or tasks.sqlite3)
+      - MongoDB         (e.g.: mongodb://user:pass@host:port)
+      - MongoDB Atlas   (e.g.: mongodb+srv://user:pass@cluster)
 
 How to use:
     postit view --persister tasks.csv
-    
+
     postit view --persister tasks.db
 
+    postit view --persister mongodb://localhost:27017
+    
+    postit view --persister mongodb+srv://my_user:my_pass@cluster.mongodb.net
+    
     ..."
         );
     }

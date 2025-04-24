@@ -58,10 +58,7 @@ impl FilePersister for Csv {
         self.lines()
             .iter()
             .skip(1)
-            .map(|line| {
-                let (id, content, priority, checked) = Self::parse(line);
-                Task::new(id, content, priority, checked)
-            })
+            .map(|line| Task::from(line))
             .collect()
     }
 
