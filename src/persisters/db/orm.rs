@@ -44,6 +44,8 @@ pub enum Protocol {
     Sqlite,
     /// A `MongoDB` database (associated persister: [`Mongo`]).
     Mongo,
+    /// A `MongoDB` database on a remote server (associated persister: [`Mongo`]).
+    MongoSrv,
 }
 
 impl Protocol {
@@ -52,6 +54,7 @@ impl Protocol {
         match s {
             "sqlite" => Self::Sqlite,
             "mongodb" => Self::Mongo,
+            "mongodb+srv" => Self::MongoSrv,
             _ => {
                 eprintln!("{}", error::Error::UnsupportedDatabase);
                 Self::Sqlite
@@ -64,6 +67,7 @@ impl Protocol {
         match self {
             Self::Sqlite => "sqlite",
             Self::Mongo => "mongo",
+            Self::MongoSrv => "mongo+srv",
         }
     }
 }
@@ -73,6 +77,7 @@ impl fmt::Display for Protocol {
         match *self {
             Self::Sqlite => write!(f, "sqlite"),
             Self::Mongo => write!(f, "mongo"),
+            Self::MongoSrv => write!(f, "mongo+srv"),
         }
     }
 }
@@ -151,7 +156,7 @@ impl Orm {
 
         match Protocol::from(protocol) {
             Protocol::Sqlite => Sqlite::from(&conn).boxed(),
-            Protocol::Mongo => Mongo::from(&conn).boxed(),
+            Protocol::Mongo | Protocol::MongoSrv => Mongo::from(&conn).boxed(),
         }
     }
 }

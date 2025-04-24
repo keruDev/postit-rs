@@ -2,10 +2,8 @@
 //!
 //! The `Mongo` struct implements the [`DbPersister`] trait.
 
-use mongodb::{
-    bson::{doc, Bson, Document},
-    sync::{Client, Collection, Database},
-};
+use mongodb::bson::{doc, Bson, Document};
+use mongodb::sync::{Client, Collection, Database};
 
 use crate::models::{Task, Todo};
 use crate::traits::DbPersister;
@@ -104,7 +102,7 @@ impl DbPersister for Mongo {
             .find(doc! {})
             .run()
             .unwrap()
-            .map(|doc| doc.unwrap().to_string())
+            .map(|doc| doc.unwrap().formatted())
             .collect()
     }
 
