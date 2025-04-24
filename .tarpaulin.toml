@@ -1,5 +1,6 @@
 [global]
 exclude-files = ["src/main.rs"]
+target-dir = ".tarpaulin"
 run-types = ["Tests"]
 ignore-tests = false
 skip-clean = true

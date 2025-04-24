@@ -6,6 +6,7 @@
 /coverage
 
 # Rust - tarpaulin
+.tarpaulin
 build_rs_cov.profraw
 
 # Files

@@ -136,6 +136,16 @@ fn manage_drop() {
 }
 
 #[test]
+fn manage_drop_config_doesnt_exist() {
+    let mock = MockConfig::new();
+
+    Config::manage(sub::Config::Drop);
+    Config::manage(sub::Config::Drop);
+
+    assert!(mock.path().exists().not());
+}
+
+#[test]
 fn manage_list() {
     Config::manage(sub::Config::List);
 }
@@ -235,6 +245,8 @@ fn default() {
 
 #[test]
 fn path_default() {
+    std::env::set_var("HOME", "tmp");
+
     let expect = Config::default_config_path();
 
     let mut result = Config::default_path();
@@ -245,6 +257,7 @@ fn path_default() {
 
 #[test]
 fn path_empty_env() {
+    std::env::set_var("HOME", "tmp");
     std::env::set_var("POSTIT_ROOT", "");
 
     let result = Config::path();

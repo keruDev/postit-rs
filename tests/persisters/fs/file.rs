@@ -8,6 +8,14 @@ use postit::traits::{FilePersister, Persister};
 use crate::mocks::MockPath;
 
 #[test]
+fn exists_return_true() {
+    let mock = MockPath::create(Format::Csv);
+    let file = File::from(&mock.to_string());
+
+    assert!(file.exists());
+}
+
+#[test]
 fn format_deref() {
     assert_eq!(&*Format::Csv, "csv")
 }
@@ -170,6 +178,27 @@ fn file_persister_eq() {
     let right = File::get_persister(mock.path());
 
     assert!(left == right);
+}
+
+#[test]
+fn read() {
+    let mock = MockPath::create(Format::Csv);
+    let file = File::new(Csv::new(mock.path()).boxed());
+
+    let header = Csv::header().replace("\n", "");
+
+    let tasks = file.tasks();
+    let result = file.read();
+
+    let expect = vec![
+        header,
+        tasks[0].formatted(),
+        tasks[1].formatted(),
+        tasks[2].formatted(),
+        tasks[3].formatted(),
+    ];
+
+    assert_eq!(result, expect);
 }
 
 #[test]

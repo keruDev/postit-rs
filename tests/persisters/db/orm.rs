@@ -9,18 +9,31 @@ use crate::mocks::MockConn;
 
 #[test]
 fn protocol_from() {
-    assert_eq!(*Protocol::from("sqlite:///"), *Protocol::Sqlite);
-    assert_eq!(*Protocol::from("file:///"), *Protocol::Sqlite);
+    assert_eq!(*Protocol::from("file"), *Protocol::Sqlite);
+    assert_eq!(*Protocol::from("sqlite"), *Protocol::Sqlite);
+    assert_eq!(*Protocol::from("mongodb"), *Protocol::Mongo);
+    assert_eq!(*Protocol::from("mongodb+srv"), *Protocol::MongoSrv);
 }
 
 #[test]
 fn protocol_to_str() {
-    assert_eq!(Protocol::Sqlite.to_str(), "sqlite")
+    assert_eq!(Protocol::Sqlite.to_str(), "sqlite");
+    assert_eq!(Protocol::Mongo.to_str(), "mongo");
+    assert_eq!(Protocol::MongoSrv.to_str(), "mongo+srv");
+}
+
+#[test]
+fn display() {
+    assert_eq!(Protocol::Sqlite.to_string(), "sqlite");
+    assert_eq!(Protocol::Mongo.to_string(), "mongo");
+    assert_eq!(Protocol::MongoSrv.to_string(), "mongo+srv");
 }
 
 #[test]
 fn deref() {
-    assert_eq!(Protocol::Sqlite.to_string(), "sqlite")
+    assert_eq!(&*Protocol::Sqlite, "sqlite");
+    assert_eq!(&*Protocol::Mongo, "mongo");
+    assert_eq!(&*Protocol::MongoSrv, "mongo+srv");
 }
 
 #[test]
@@ -62,6 +75,19 @@ fn get_persister_empty() {
     let persister = Orm::get_persister("");
 
     let path = Config::build_path(conn);
+    let conn_str = path.to_str().unwrap();
+
+    assert_eq!(persister.conn(), conn_str)
+}
+
+#[test]
+fn get_persister_sqlite_protocol() {
+    let conn = "sqlite:///tasks.db";
+
+    let _mock = MockConn::new(conn);
+    let persister = Orm::get_persister(conn);
+
+    let path = Config::build_path(conn.replace("sqlite:///", ""));
     let conn_str = path.to_str().unwrap();
 
     assert_eq!(persister.conn(), conn_str)
@@ -112,6 +138,21 @@ fn save_and_tasks() {
     let result = orm.tasks();
 
     assert_eq!(result, todo.tasks)
+}
+
+#[test]
+fn read() {
+    let mock = MockConn::create(Protocol::Sqlite);
+    let todo = MockConn::sample();
+
+    let orm = Orm::from(&mock.instance.conn());
+
+    orm.save(&todo);
+
+    let result = orm.read();
+    let tasks: Vec<Task> = result.iter().map(|line| Task::from(line)).collect();
+
+    assert_eq!(tasks, todo.tasks)
 }
 
 #[test]

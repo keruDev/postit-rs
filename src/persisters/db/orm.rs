@@ -135,8 +135,6 @@ impl Orm {
     /// # Panics
     /// If the path can't be converted to str.
     pub fn get_persister(conn: &str) -> Box<dyn DbPersister> {
-        let conn = String::from(conn);
-
         if conn.starts_with("sqlite:///") {
             return Sqlite::from(&conn.replace("sqlite:///", "")).boxed();
         }
@@ -155,8 +153,8 @@ impl Orm {
         }
 
         match Protocol::from(protocol) {
-            Protocol::Sqlite => Sqlite::from(&conn).boxed(),
-            Protocol::Mongo | Protocol::MongoSrv => Mongo::from(&conn).boxed(),
+            Protocol::Sqlite => Sqlite::from(conn).boxed(),
+            Protocol::Mongo | Protocol::MongoSrv => Mongo::from(conn).boxed(),
         }
     }
 }

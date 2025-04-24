@@ -2,7 +2,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{fmt, fs};
 
-use postit::db::{Orm, Protocol, Sqlite};
+use postit::db::{Orm, Protocol};
 use postit::fs::{Csv, Format, Json, Xml};
 use postit::models::Todo;
 use postit::traits::{DbPersister, FilePersister};
@@ -124,15 +124,24 @@ impl MockConn {
 
         match protocol {
             Protocol::Sqlite => Self::sqlite(),
-            Protocol::Mongo => todo!(),
-            Protocol::MongoSrv => todo!(),
+            Protocol::Mongo | Protocol::MongoSrv => Self::mongo(),
         }
     }
 
     pub fn sqlite() -> Self {
-        Self {
-            instance: Sqlite::from("test_tasks.db").boxed(),
-        }
+        Self::new("test_tasks.db")
+
+        // Self {
+        //     instance: Sqlite::from("test_tasks.db").boxed(),
+        // }
+    }
+
+    pub fn mongo() -> Self {
+        Self::new("mongodb://localhost:27017")
+
+        // Self {
+        //     instance: Mongo::from("mongodb://localhost:27017").boxed(),
+        // }
     }
 }
 
