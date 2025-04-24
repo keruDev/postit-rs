@@ -45,7 +45,7 @@ impl FilePersister for Json {
     }
 
     fn tasks(&self) -> Vec<Task> {
-        serde_json::from_str(&self.read().join("")).expect("JSON was not well-formatted")
+        serde_json::from_str(&self.lines().join("")).expect("JSON was not well-formatted")
     }
 
     fn open(&self) -> fs::File {
@@ -57,7 +57,7 @@ impl FilePersister for Json {
             .expect("Should have been able to create the file")
     }
 
-    fn read(&self) -> Vec<String> {
+    fn lines(&self) -> Vec<String> {
         fs::read_to_string(&self.path)
             .expect("Should have been able to read the JSON file")
             .lines()
