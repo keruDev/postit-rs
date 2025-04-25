@@ -130,18 +130,10 @@ impl MockConn {
 
     pub fn sqlite() -> Self {
         Self::new("test_tasks.db")
-
-        // Self {
-        //     instance: Sqlite::from("test_tasks.db").boxed(),
-        // }
     }
 
     pub fn mongo() -> Self {
         Self::new("mongodb://localhost:27017")
-
-        // Self {
-        //     instance: Mongo::from("mongodb://localhost:27017").boxed(),
-        // }
     }
 }
 
