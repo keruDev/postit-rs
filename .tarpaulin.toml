@@ -2,10 +2,13 @@
 exclude-files = ["src/main.rs"]
 target-dir = ".tarpaulin"
 run-types = ["Tests"]
+timeout = "1m"
+
 ignore-tests = false
 skip-clean = true
 verbose = true
 line = true
+
 fail-under = 93
 
 [report]
