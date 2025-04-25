@@ -1,7 +1,7 @@
 use std::ops::Not;
 
 use postit::db::{Orm, Protocol, Sqlite};
-use postit::models::Task;
+use postit::models::{Task, Todo};
 use postit::traits::{DbPersister, Persister};
 use postit::Config;
 
@@ -40,7 +40,7 @@ fn deref() {
 fn orm_fmt_debug() {
     let mock = MockConn::create(Protocol::Sqlite);
 
-    let persister = Orm::get_persister(&mock.conn());
+    let persister = Orm::get_persister(mock.conn());
     let orm = Orm::new(persister);
 
     let debug_output = format!("{:?}", orm);
@@ -62,7 +62,7 @@ fn is_sqlite() {
 #[test]
 fn get_persister() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let persister = Orm::get_persister(&mock.conn());
+    let persister = Orm::get_persister(mock.conn());
 
     assert_eq!(persister.conn(), mock.conn())
 }
@@ -96,7 +96,7 @@ fn get_persister_sqlite_protocol() {
 #[test]
 fn to_string() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let orm = Orm::from(&mock.conn());
+    let orm = Orm::from(mock.conn());
 
     assert_eq!(orm.to_string(), mock.conn())
 }
@@ -104,7 +104,7 @@ fn to_string() {
 #[test]
 fn exists() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let orm = Orm::from(&mock.conn());
+    let orm = Orm::from(mock.conn());
 
     assert!(orm.exists())
 }
@@ -112,10 +112,10 @@ fn exists() {
 #[test]
 fn save_twice() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
     let task = Task::from("5,task,med,false");
 
-    let orm = Orm::from(&mock.instance.conn());
+    let orm = Orm::from(mock.conn());
 
     orm.save(&todo);
     todo.add(task);
@@ -129,9 +129,9 @@ fn save_twice() {
 #[test]
 fn save_and_tasks() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let todo = MockConn::sample();
+    let todo = Todo::sample();
 
-    let orm = Orm::from(&mock.instance.conn());
+    let orm = Orm::from(mock.conn());
 
     orm.save(&todo);
 
@@ -143,14 +143,14 @@ fn save_and_tasks() {
 #[test]
 fn read() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let todo = MockConn::sample();
+    let todo = Todo::sample();
 
-    let orm = Orm::from(&mock.instance.conn());
+    let orm = Orm::from(mock.conn());
 
     orm.save(&todo);
 
     let result = orm.read();
-    let tasks: Vec<Task> = result.iter().map(|line| Task::from(line)).collect();
+    let tasks: Vec<Task> = result.iter().map(Task::from).collect();
 
     assert_eq!(tasks, todo.tasks)
 }
@@ -158,9 +158,9 @@ fn read() {
 #[test]
 fn edit_check() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
 
-    let orm = Orm::from(&mock.instance.conn());
+    let orm = Orm::from(mock.conn());
     let ids = vec![2, 3];
 
     orm.save(&todo);
@@ -176,9 +176,9 @@ fn edit_check() {
 #[test]
 fn edit_uncheck() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
 
-    let orm = Orm::from(&mock.instance.conn());
+    let orm = Orm::from(mock.conn());
     let ids = vec![2, 3];
 
     orm.save(&todo);
@@ -194,9 +194,9 @@ fn edit_uncheck() {
 #[test]
 fn edit_drop() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
 
-    let orm = Orm::from(&mock.instance.conn());
+    let orm = Orm::from(mock.conn());
     let ids = vec![2, 3];
 
     orm.save(&todo);
@@ -213,9 +213,9 @@ fn edit_drop() {
 #[test]
 fn tasks() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let todo = MockConn::sample();
+    let todo = Todo::sample();
 
-    let orm = Orm::from(&mock.instance.conn());
+    let orm = Orm::from(mock.conn());
 
     orm.save(&todo);
 
@@ -227,10 +227,10 @@ fn tasks() {
 #[test]
 fn replace() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
     todo.add(Task::from("5,test,med,false"));
 
-    let orm = Orm::from(&mock.instance.conn());
+    let orm = Orm::from(mock.conn());
 
     orm.replace(&todo);
 
@@ -243,7 +243,7 @@ fn replace() {
 #[test]
 fn clean() {
     let mock = MockConn::create(Protocol::Sqlite);
-    let orm = Orm::from(&mock.instance.conn());
+    let orm = Orm::from(mock.conn());
 
     orm.clean();
 
@@ -256,7 +256,7 @@ fn clean() {
 #[test]
 fn remove() {
     let sqlite = Sqlite::from("test_tasks.db");
-    let orm = Orm::from(&sqlite.conn());
+    let orm = Orm::from(sqlite.conn());
 
     orm.remove();
 

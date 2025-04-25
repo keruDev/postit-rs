@@ -1,6 +1,7 @@
 use std::ops::Not;
 
 use postit::fs::{Format, Xml};
+use postit::models::Todo;
 use postit::traits::FilePersister as _;
 
 use crate::mocks::MockPath;
@@ -38,7 +39,7 @@ fn tasks() {
     let mock = MockPath::create(Format::Xml);
 
     let result = Xml::new(mock.path()).tasks();
-    let expect = MockPath::sample().tasks;
+    let expect = Todo::sample().tasks;
 
     assert_eq!(result, expect);
 }

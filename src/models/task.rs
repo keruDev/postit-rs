@@ -49,17 +49,19 @@ pub enum Priority {
     None,
 }
 
-impl Priority {
+impl<T: AsRef<str>> From<T> for Priority {
     /// Transforms a string slice into a `Priority` variant.
-    pub fn from(s: &str) -> Self {
-        match s {
+    fn from(s: T) -> Self {
+        match s.as_ref().to_lowercase().trim() {
             "high" => Self::High,
             "low" => Self::Low,
             "none" => Self::None,
             _ => Self::Med,
         }
     }
+}
 
+impl Priority {
     /// Returns the `Priority` value as its string representation.
     pub const fn to_str(&self) -> &str {
         match self {
@@ -141,9 +143,9 @@ impl Task {
     }
 
     /// Transforms a line with the format `id,content,priority,checked` to a Task.
-    pub fn from(line: &str) -> Self {
-        let (id, content, priority, checked) = Self::unpack(line);
-        Self::new(id, content, priority, checked)
+    pub fn from<T: AsRef<str>>(line: T) -> Self {
+        let (id, content, priority, checked) = Self::split(line.as_ref());
+        Self { id, content, priority, checked }
     }
 
     /// Splits a line with the format `id,content,priority,checked` and handles each value.
@@ -151,8 +153,8 @@ impl Task {
     /// # Panics
     /// If the `id` field can't be obtained from the first index or there is an error parsing.
     /// If the `content` field can't be obtained from the second index.
-    pub fn unpack(line: &str) -> (u32, String, Priority, bool) {
-        let list: Vec<&str> = line.split(',').map(str::trim).collect();
+    pub fn split<T: AsRef<str>>(line: T) -> (u32, String, Priority, bool) {
+        let list: Vec<&str> = line.as_ref().split(',').map(str::trim).collect();
 
         let id = list[0]
             .parse()
@@ -160,9 +162,7 @@ impl Task {
 
         let content = list[1].trim().to_owned();
 
-        let priority = list
-            .get(2)
-            .map_or(Priority::Med, |&s| Priority::from(s.trim()));
+        let priority = list.get(2).map_or(Priority::Med, Priority::from);
 
         let checked = list
             .get(3)
@@ -171,15 +171,9 @@ impl Task {
         (id, content, priority, checked)
     }
 
-    /// Returns the fields of the Task instance.
-    pub const fn fields(&self) -> (&u32, &String, &Priority, &bool) {
-        (&self.id, &self.content, &self.priority, &self.checked)
-    }
-
     /// Formats the Task into a String.
-    pub fn formatted(&self) -> String {
-        let (id, content, priority, checked) = self.fields();
-        format!("{id},{content},{priority},{checked}")
+    pub fn as_line(&self) -> String {
+        format!("{},{},{},{}", self.id, self.content, self.priority, self.checked)
     }
 
     /// Marks the task as checked.

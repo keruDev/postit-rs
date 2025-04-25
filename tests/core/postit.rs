@@ -1,5 +1,4 @@
 use std::ops::Not;
-use std::path::PathBuf;
 
 use postit::cli::{arguments as args, subcommands as sub};
 use postit::fs::{File, Format};
@@ -373,7 +372,7 @@ fn sample() {
 
     Postit::run(cli);
 
-    let file = File::from(&mock.to_string());
+    let file = File::from(mock.to_string());
 
     let result = Todo::from(&file).tasks;
     let expect = Todo::sample().tasks;
@@ -391,7 +390,7 @@ fn clean() {
 
     Postit::run(cli);
 
-    let file = File::from(&mock.to_string());
+    let file = File::from(mock.to_string());
 
     let result = Todo::from(&file).tasks;
     let expect = Vec::new();
@@ -422,5 +421,5 @@ fn config() {
 
     Postit::run(cli);
 
-    assert!(PathBuf::from(&mock.path()).exists());
+    assert!(std::path::PathBuf::from(&mock.path()).exists());
 }

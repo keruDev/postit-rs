@@ -3,9 +3,8 @@
 //! - enum [`Format`]: used to distinguish different file formats.
 //! - struct [`File`]: manages files and their operations.
 
-use std::ffi::OsStr;
 use std::ops::Deref;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{fmt, fs};
 
 use super::{Csv, Json, Xml};
@@ -43,10 +42,10 @@ pub enum Format {
     Xml,
 }
 
-impl Format {
+impl<T: AsRef<str>> From<T> for Format {
     /// Transforms a string slice into a `Format` variant.
-    pub fn from(s: &str) -> Self {
-        match s {
+    fn from(s: T) -> Self {
+        match s.as_ref().to_lowercase().trim() {
             "json" => Self::Json,
             "csv" => Self::Csv,
             "xml" => Self::Xml,
@@ -56,7 +55,9 @@ impl Format {
             }
         }
     }
+}
 
+impl Format {
     /// Returns the `Priority` value as its string representation.
     pub const fn to_str(&self) -> &str {
         match self {
@@ -104,8 +105,8 @@ impl File {
     }
 
     /// Creates a `File` instance from a path.
-    pub fn from(file_path: &str) -> Self {
-        let file_name = Self::check_name(PathBuf::from(file_path));
+    pub fn from<T: AsRef<str>>(file_path: T) -> Self {
+        let file_name = Self::check_name(file_path.as_ref());
 
         Self::new(Self::get_persister(file_name))
     }
@@ -128,14 +129,14 @@ impl File {
     }
 
     /// Checks the format of a file and return the same instance with the correct format.
-    pub fn check_name(path: PathBuf) -> PathBuf {
-        let mut path = path;
+    pub fn check_name<T: AsRef<Path>>(path: T) -> PathBuf {
+        let mut path = path.as_ref().to_path_buf();
 
         let file_name = path
             .file_name()
-            .unwrap_or_else(|| OsStr::new("tasks"))
-            .to_string_lossy()
-            .into_owned();
+            .and_then(|name| name.to_str())
+            .unwrap_or("tasks")
+            .to_owned();
 
         let mut file_parts: Vec<&str> = file_name.split('.').collect();
 
@@ -157,8 +158,8 @@ impl File {
     ///
     /// # Panics
     /// In case the file extension can't be converted to `&str`.
-    pub fn get_persister(file: PathBuf) -> Box<dyn FilePersister> {
-        let mut file = file;
+    pub fn get_persister<T: AsRef<Path>>(file: T) -> Box<dyn FilePersister> {
+        let mut file = file.as_ref().to_path_buf();
 
         let format = Format::from(file.extension().unwrap().to_str().unwrap());
         file.set_extension(format.to_str());

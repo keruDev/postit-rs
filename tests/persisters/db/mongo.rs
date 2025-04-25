@@ -1,7 +1,7 @@
 use std::ops::Not;
 
 use postit::db::{Mongo, Protocol};
-use postit::models::{Task, Todo};
+use postit::models::Todo;
 use postit::traits::DbPersister;
 use postit::Action;
 
@@ -11,7 +11,7 @@ use crate::mocks::MockConn;
 fn clone() {
     let mock = MockConn::create(Protocol::Mongo);
 
-    let expect = Mongo::from(&mock.conn());
+    let expect = Mongo::from(mock.conn());
     let result = expect.clone();
 
     assert_eq!(result.conn(), expect.conn())
@@ -20,9 +20,9 @@ fn clone() {
 #[test]
 fn count_ok() {
     let mock = MockConn::create(Protocol::Mongo);
-    mock.instance.insert(&MockConn::sample());
+    mock.instance.insert(&Todo::sample());
 
-    assert_eq!(Mongo::from(&mock.conn()).count(), 4);
+    assert_eq!(Mongo::from(mock.conn()).count(), 4);
 }
 
 #[test]
@@ -30,14 +30,14 @@ fn count_table_doesnt_exist() {
     let mock = MockConn::create(Protocol::Mongo);
     mock.instance.drop_database();
 
-    assert_eq!(Mongo::from(&mock.conn()).count(), 0);
+    assert_eq!(Mongo::from(mock.conn()).count(), 0);
 }
 
 #[test]
 fn exists() {
     let mock = MockConn::create(Protocol::Mongo);
 
-    assert!(Mongo::from(&mock.conn()).exists());
+    assert!(Mongo::from(mock.conn()).exists());
 }
 
 #[test]
@@ -45,7 +45,7 @@ fn conn() {
     let uri = "mongodb://localhost:27017";
     let mock = MockConn::new(uri);
 
-    assert_eq!(uri, &mock.conn());
+    assert_eq!(uri, mock.conn());
 }
 
 #[test]
@@ -53,7 +53,7 @@ fn boxed() {
     let uri = "mongodb://localhost:27017";
     let mock = MockConn::new(uri);
 
-    let mongo = Mongo::from(&mock.conn());
+    let mongo = Mongo::from(mock.conn());
     let result = mongo.clone().boxed();
 
     assert_eq!(result.conn(), mongo.conn());
@@ -62,10 +62,10 @@ fn boxed() {
 #[test]
 fn reset_autoincrement() {
     let mock = MockConn::create(Protocol::Mongo);
-    let todo = MockConn::sample();
-    let task = Todo::one(todo.tasks[0].clone());
+    let todo = Todo::sample();
+    let task = Todo::new(&todo.tasks[0]);
 
-    let mongo = Mongo::from(&mock.conn());
+    let mongo = Mongo::from(mock.conn());
 
     mongo.insert(&todo);
     mongo.clean();
@@ -83,18 +83,17 @@ fn create() {
 
     mock.instance.create();
 
-    assert!(Mongo::from(&mock.conn()).exists());
+    assert!(Mongo::from(mock.conn()).exists());
 }
 
 #[test]
 fn insert_and_select() {
     let mock = MockConn::create(Protocol::Mongo);
-    let todo = MockConn::sample();
+    let todo = Todo::sample();
 
     mock.instance.insert(&todo);
 
-    let selected = mock.instance.select();
-    let result: Vec<Task> = selected.iter().map(|line| Task::from(line)).collect();
+    let result = mock.instance.tasks();
 
     assert_eq!(result, todo.tasks)
 }
@@ -102,7 +101,7 @@ fn insert_and_select() {
 #[test]
 fn update_check() {
     let mock = MockConn::create(Protocol::Mongo);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
 
     let ids = vec![2, 3];
     let action = Action::Check;
@@ -112,8 +111,7 @@ fn update_check() {
 
     todo.check(&ids);
 
-    let selected = mock.instance.select();
-    let result: Vec<Task> = selected.iter().map(|line| Task::from(line)).collect();
+    let result = mock.instance.tasks();
 
     assert_eq!(result, todo.tasks)
 }
@@ -121,7 +119,7 @@ fn update_check() {
 #[test]
 fn update_uncheck() {
     let mock = MockConn::create(Protocol::Mongo);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
 
     let ids = vec![2, 3];
     let action = Action::Uncheck;
@@ -131,8 +129,7 @@ fn update_uncheck() {
 
     todo.uncheck(&ids);
 
-    let selected = mock.instance.select();
-    let result: Vec<Task> = selected.iter().map(|line| Task::from(line)).collect();
+    let result = mock.instance.tasks();
 
     assert_eq!(result, todo.tasks)
 }
@@ -140,7 +137,7 @@ fn update_uncheck() {
 #[test]
 fn update_set_content() {
     let mock = MockConn::create(Protocol::Mongo);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
 
     let ids = vec![2, 3];
     let action = Action::SetContent;
@@ -150,8 +147,7 @@ fn update_set_content() {
     mock.instance.insert(&todo);
     mock.instance.update(&todo, &ids, action);
 
-    let selected = mock.instance.select();
-    let result: Vec<Task> = selected.iter().map(|line| Task::from(line)).collect();
+    let result = mock.instance.tasks();
 
     assert_eq!(result, todo.tasks)
 }
@@ -159,7 +155,7 @@ fn update_set_content() {
 #[test]
 fn update_set_priority() {
     let mock = MockConn::create(Protocol::Mongo);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
 
     let ids = vec![2, 3];
     let action = Action::SetPriority;
@@ -169,8 +165,7 @@ fn update_set_priority() {
     mock.instance.insert(&todo);
     mock.instance.update(&todo, &ids, action);
 
-    let selected = mock.instance.select();
-    let result: Vec<Task> = selected.iter().map(|line| Task::from(line)).collect();
+    let result = mock.instance.tasks();
 
     assert_eq!(result, todo.tasks)
 }
@@ -178,7 +173,7 @@ fn update_set_priority() {
 #[test]
 fn update_delete() {
     let mock = MockConn::create(Protocol::Mongo);
-    let mut todo = MockConn::sample();
+    let mut todo = Todo::sample();
 
     let ids = vec![2, 3];
     let action = Action::Drop;
@@ -189,8 +184,7 @@ fn update_delete() {
     todo.check(&ids);
     todo.drop(&ids);
 
-    let selected = mock.instance.select();
-    let result: Vec<Task> = selected.iter().map(|line| Task::from(line)).collect();
+    let result = mock.instance.tasks();
 
     assert_eq!(result, todo.tasks)
 }
@@ -202,15 +196,15 @@ fn drop_database() {
 
     mongo.drop_database();
 
-    assert!(std::path::PathBuf::from(mongo.conn()).exists().not());
+    assert!(mongo.exists().not());
 }
 
 #[test]
 fn tasks() {
     let mock = MockConn::create(Protocol::Mongo);
-    let todo = MockConn::sample();
+    let todo = Todo::sample();
 
-    let mongo = Mongo::from(&mock.conn());
+    let mongo = Mongo::from(mock.conn());
     mongo.insert(&todo);
 
     assert_eq!(todo.tasks, mongo.tasks());
@@ -219,11 +213,10 @@ fn tasks() {
 #[test]
 fn clean() {
     let mock = MockConn::create(Protocol::Mongo);
-    let todo = MockConn::sample();
+    let todo = Todo::sample();
 
-    let mongo = Mongo::from(&mock.conn());
+    let mongo = Mongo::from(mock.conn());
     mongo.insert(&todo);
-
     mongo.clean();
 
     let result = mongo.tasks();

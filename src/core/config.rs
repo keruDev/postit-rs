@@ -302,9 +302,9 @@ impl Config {
         let path_or_conn = persister.unwrap_or_else(|| Self::load().persister);
 
         if path_or_conn.contains("://") || Orm::is_sqlite(&path_or_conn) {
-            Orm::from(&path_or_conn).boxed()
+            Orm::from(path_or_conn).boxed()
         } else {
-            File::from(&path_or_conn).boxed()
+            File::from(path_or_conn).boxed()
         }
     }
 }

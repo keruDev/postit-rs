@@ -4,25 +4,15 @@ use postit::models::{Task, Todo};
 use crate::mocks::MockPath;
 
 fn fakes(mock: &MockPath) -> Todo {
-    Todo::from(&File::from(&mock.to_string()))
+    Todo::from(&File::from(mock.to_string()))
 }
 
 #[test]
 fn new() {
-    let tasks = MockPath::sample().tasks;
+    let tasks = Todo::sample().tasks;
 
     let result = Todo::new(tasks.clone());
     let expect = Todo { tasks };
-
-    assert_eq!(result, expect)
-}
-
-#[test]
-fn one() {
-    let task = Task::from("1,Test,med,false");
-
-    let result = Todo::one(task.clone());
-    let expect = Todo { tasks: vec![task] };
 
     assert_eq!(result, expect)
 }

@@ -2,6 +2,8 @@
 //!
 //! The `Sqlite` struct implements the [`DbPersister`] trait.
 
+use std::path::Path;
+
 use sqlite::{Connection, State, Statement};
 
 use crate::models::{Task, Todo};
@@ -31,8 +33,8 @@ impl Sqlite {
     /// # Panics
     /// If the path can't be converted to str.
     /// If a connection to the `SQLite` file can't be opened.
-    pub fn from(conn: &str) -> Self {
-        let path = Config::build_path(conn);
+    pub fn from<T: AsRef<Path>>(conn: T) -> Self {
+        let path = Config::build_path(conn.as_ref());
         let path_str = path.to_str().unwrap();
 
         let instance = Self {
@@ -114,7 +116,7 @@ impl DbPersister for Sqlite {
         let mut result = vec![];
 
         while matches!(stmt.next(), Ok(State::Row)) {
-            result.push(stmt.read::<String, _>("name").unwrap().to_string());
+            result.push(stmt.read::<String, _>("name").unwrap());
         }
 
         !result.is_empty()
@@ -140,7 +142,7 @@ impl DbPersister for Sqlite {
     }
 
     fn tasks(&self) -> Vec<Task> {
-        self.select().iter().map(|row| Task::from(row)).collect()
+        self.select().iter().map(Task::from).collect()
     }
 
     fn create(&self) {

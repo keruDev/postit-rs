@@ -1,4 +1,3 @@
-use std::ffi::OsStr;
 use std::fs;
 use std::ops::Not;
 
@@ -10,14 +9,16 @@ use crate::mocks::MockPath;
 #[test]
 fn exists_return_true() {
     let mock = MockPath::create(Format::Csv);
-    let file = File::from(&mock.to_string());
+    let file = File::from(mock.to_string());
 
     assert!(file.exists());
 }
 
 #[test]
 fn format_deref() {
-    assert_eq!(&*Format::Csv, "csv")
+    assert_eq!(&*Format::Csv, "csv");
+    assert_eq!(&*Format::Json, "json");
+    assert_eq!(&*Format::Xml, "xml");
 }
 
 #[test]
@@ -37,7 +38,7 @@ fn file_fmt_debug() {
 fn from() {
     let mock = MockPath::create(Format::Csv);
 
-    let result = File::from(&mock.to_string());
+    let result = File::from(mock.to_string());
     let expect = File::new(Csv::new(mock.path()).boxed());
 
     assert_eq!(result, expect);
@@ -74,13 +75,13 @@ fn check_content_is_empty_or_exists() {
 #[test]
 fn check_name_no_name() {
     let path = ".csv";
-    let mock = MockPath::from(path);
+    let mock = MockPath::new(path);
 
     let checked_path = File::check_name(mock.path());
     let expected_path = format!("tasks{path}");
 
     let result = checked_path.file_name().unwrap();
-    let expect = OsStr::new(&expected_path);
+    let expect = expected_path.as_str();
 
     assert_eq!(result, expect);
 }
@@ -88,24 +89,24 @@ fn check_name_no_name() {
 #[test]
 fn check_name_no_ext() {
     let path = "test";
-    let mock = MockPath::from(path);
+    let mock = MockPath::new(path);
 
     let checked_path = File::check_name(mock.path());
     let expected_path = format!("{path}.csv");
 
     let result = checked_path.file_name().unwrap();
-    let expect = OsStr::new(&expected_path);
+    let expect = expected_path.as_str();
 
     assert_eq!(result, expect);
 }
 
 #[test]
 fn check_name_empty() {
-    let mock = MockPath::from(".");
+    let mock = MockPath::new(".");
 
     let checked_path = File::check_name(mock.path());
     let result = checked_path.file_name().unwrap();
-    let expect = OsStr::new("tasks.csv");
+    let expect = "tasks.csv";
 
     assert_eq!(result, expect);
 }
@@ -116,7 +117,7 @@ fn get_persister_csv() {
 
     let path = File::get_persister(mock.path()).path();
 
-    let result = path.extension().unwrap().to_str().unwrap();
+    let result = path.extension().unwrap();
     let expect = "csv";
 
     assert_eq!(result, expect);
@@ -128,7 +129,7 @@ fn get_persister_json() {
 
     let path = File::get_persister(mock.path()).path();
 
-    let result = path.extension().unwrap().to_str().unwrap();
+    let result = path.extension().unwrap();
     let expect = "json";
 
     assert_eq!(result, expect);
@@ -140,7 +141,7 @@ fn get_persister_xml() {
 
     let path = File::get_persister(mock.path()).path();
 
-    let result = path.extension().unwrap().to_str().unwrap();
+    let result = path.extension().unwrap();
     let expect = "xml";
 
     assert_eq!(result, expect);
@@ -148,11 +149,11 @@ fn get_persister_xml() {
 
 #[test]
 fn get_persister_txt() {
-    let mock = MockPath::from("test.txt");
+    let mock = MockPath::new("test.txt");
 
     let path = File::get_persister(mock.path()).path();
 
-    let result = path.extension().unwrap().to_str().unwrap();
+    let result = path.extension().unwrap();
     let expect = "csv";
 
     assert_eq!(result, expect);
@@ -160,11 +161,11 @@ fn get_persister_txt() {
 
 #[test]
 fn get_persister_any() {
-    let mock = MockPath::from("test.toml");
+    let mock = MockPath::new("test.toml");
 
     let path = File::get_persister(mock.path()).path();
 
-    let result = path.extension().unwrap().to_str().unwrap();
+    let result = path.extension().unwrap();
     let expect = "csv";
 
     assert_eq!(result, expect);
@@ -192,10 +193,10 @@ fn read() {
 
     let expect = vec![
         header,
-        tasks[0].formatted(),
-        tasks[1].formatted(),
-        tasks[2].formatted(),
-        tasks[3].formatted(),
+        tasks[0].as_line(),
+        tasks[1].as_line(),
+        tasks[2].as_line(),
+        tasks[3].as_line(),
     ];
 
     assert_eq!(result, expect);
@@ -204,7 +205,7 @@ fn read() {
 #[test]
 fn remove() {
     let mock = MockPath::create(Format::Json);
-    let file = File::from(&mock.to_string());
+    let file = File::from(mock.to_string());
 
     file.remove();
 

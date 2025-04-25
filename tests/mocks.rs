@@ -1,5 +1,5 @@
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{fmt, fs};
 
 use postit::db::{Orm, Protocol};
@@ -18,20 +18,14 @@ pub struct MockPath {
 
 impl MockPath {
     /// Constructor of the `MockPath` struct.
-    pub fn new(path: PathBuf) -> Self {
+    pub fn new<T: AsRef<Path>>(path: T) -> Self {
+        let path = path.as_ref();
+
         if !path.exists() {
-            fs::File::create(&path).expect("Failed to create temp file");
+            fs::File::create(path).expect("Failed to create temp file");
         }
 
-        Self { path }
-    }
-
-    pub fn from(path: &str) -> Self {
-        Self { path: PathBuf::from(path) }
-    }
-
-    pub fn sample() -> Todo {
-        Todo::sample()
+        Self { path: path.to_path_buf() }
     }
 
     pub fn path(&self) -> PathBuf {
@@ -50,7 +44,7 @@ impl MockPath {
             Format::Xml => Self::xml(name),
         };
 
-        file.write(&Self::sample());
+        file.write(&Todo::sample());
 
         Self { path: file.path() }
     }
@@ -71,15 +65,15 @@ impl MockPath {
     }
 
     pub fn csv(name: &str) -> Box<dyn FilePersister> {
-        Csv::new(PathBuf::from(format!("{name}.csv"))).boxed()
+        Csv::new(format!("{name}.csv")).boxed()
     }
 
     pub fn json(name: &str) -> Box<dyn FilePersister> {
-        Json::new(PathBuf::from(format!("{name}.json"))).boxed()
+        Json::new(format!("{name}.json")).boxed()
     }
 
     pub fn xml(name: &str) -> Box<dyn FilePersister> {
-        Xml::new(PathBuf::from(format!("{name}.xml"))).boxed()
+        Xml::new(format!("{name}.xml")).boxed()
     }
 }
 
@@ -113,10 +107,6 @@ impl MockConn {
 
     pub fn conn(&self) -> String {
         self.instance.conn()
-    }
-
-    pub fn sample() -> Todo {
-        Todo::sample()
     }
 
     pub fn create(protocol: Protocol) -> Self {

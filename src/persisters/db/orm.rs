@@ -48,10 +48,10 @@ pub enum Protocol {
     MongoSrv,
 }
 
-impl Protocol {
+impl<T: AsRef<str>> From<T> for Protocol {
     /// Transforms a string slice into a `Protocol` variant.
-    pub fn from(s: &str) -> Self {
-        match s {
+    fn from(s: T) -> Self {
+        match s.as_ref().to_lowercase().trim() {
             "sqlite" => Self::Sqlite,
             "mongodb" => Self::Mongo,
             "mongodb+srv" => Self::MongoSrv,
@@ -61,7 +61,9 @@ impl Protocol {
             }
         }
     }
+}
 
+impl Protocol {
     /// Returns the `Protocol` value as its string representation.
     pub const fn to_str(&self) -> &str {
         match self {
@@ -112,7 +114,7 @@ impl Orm {
     }
 
     /// Creates a `Orm` instance from a connection string.
-    pub fn from(conn: &str) -> Self {
+    pub fn from<T: AsRef<str>>(conn: T) -> Self {
         Self::new(Self::get_persister(conn))
     }
 
@@ -134,9 +136,11 @@ impl Orm {
     ///
     /// # Panics
     /// If the path can't be converted to str.
-    pub fn get_persister(conn: &str) -> Box<dyn DbPersister> {
+    pub fn get_persister<T: AsRef<str>>(conn: T) -> Box<dyn DbPersister> {
+        let conn = conn.as_ref();
+
         if conn.starts_with("sqlite:///") {
-            return Sqlite::from(&conn.replace("sqlite:///", "")).boxed();
+            return Sqlite::from(conn.replace("sqlite:///", "")).boxed();
         }
 
         let mut parts: Vec<&str> = conn.split("://").collect();
@@ -191,7 +195,7 @@ impl Persister for Orm {
 
         let last = todo.tasks.last().unwrap().to_owned();
 
-        let task = Todo::one(last);
+        let task = Todo::new(last);
         self.db.insert(&task);
     }
 
