@@ -107,7 +107,7 @@ How to use:
             let mut todo = Todo::sample();
             let new_content = "New content";
             let line = format!("2,{new_content},med,false");
-            let task = Task::from(&line);
+            let task = Task::from(line);
 
             println!(
                 "
@@ -135,7 +135,7 @@ How to use (content):
             let mut todo = Todo::sample();
             let new_priority = Priority::Low;
             let line = format!("2,Task,{new_priority},false");
-            let task = Task::from(&line);
+            let task = Task::from(line);
 
             println!(
                 "

@@ -13,23 +13,30 @@ pub struct Todo {
     pub tasks: Vec<Task>,
 }
 
+impl From<Task> for Vec<Task> {
+    fn from(task: Task) -> Self {
+        vec![task]
+    }
+}
+
+impl From<&Task> for Vec<Task> {
+    fn from(task: &Task) -> Self {
+        vec![task.to_owned()]
+    }
+}
+
 impl Todo {
     /// Creates a `Todo` instance from a vector of tasks.
-    pub const fn new(tasks: Vec<Task>) -> Self {
-        Self { tasks }
+    pub fn new<T: Into<Vec<Task>>>(tasks: T) -> Self {
+        Self { tasks: tasks.into() }
     }
 
-    /// Creates a `Todo` instance from a file's contents.
+    /// Creates a `Todo` instance from a persister's contents.
     pub fn from(persister: &dyn Persister) -> Self {
         Self { tasks: persister.tasks() }
     }
 
-    /// Adds a task to the task list.
-    pub fn one(task: Task) -> Self {
-        Self::new(vec![task])
-    }
-
-    /// Initializes a Todo instance with fake data.
+    /// Initializes a `Todo` instance with fake data.
     pub fn sample() -> Self {
         Self::new(vec![
             Task::from("1,Task,high,false"),
@@ -75,18 +82,14 @@ impl Todo {
 
     /// Changes the `priority` property of tasks (selected by using `ids`).
     pub fn set_priority(&mut self, ids: &[u32], priority: &Priority) {
-        let tasks = self.get_mut(ids);
-
-        for task in tasks {
+        for task in self.get_mut(ids) {
             task.priority = priority.clone();
         }
     }
 
     /// Changes the `content` property of tasks (selected by using `ids`).
     pub fn set_content(&mut self, ids: &[u32], content: &str) {
-        let tasks = self.get_mut(ids);
-
-        for task in tasks {
+        for task in self.get_mut(ids) {
             task.content = String::from(content);
         }
     }

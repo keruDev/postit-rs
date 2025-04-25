@@ -30,7 +30,7 @@ fn from() {
 fn unpack() {
     let line = "1,Test,med,false";
 
-    let (id, content, priority, checked) = Task::unpack(line);
+    let (id, content, priority, checked) = Task::split(line);
 
     let expected_id = 1;
     let expected_content = String::from("Test");
@@ -44,22 +44,10 @@ fn unpack() {
 }
 
 #[test]
-fn fields() {
-    let expected = fake_task_unchecked();
-
-    let (id, content, priority, checked) = expected.fields();
-
-    assert_eq!(&expected.id, id);
-    assert_eq!(&expected.content, content);
-    assert_eq!(&expected.priority, priority);
-    assert_eq!(&expected.checked, checked);
-}
-
-#[test]
 fn to_string() {
     let task = fake_task_unchecked();
 
-    let result = task.formatted();
+    let result = task.as_line();
     let expect = format!("{},{},{},{}", task.id, task.content, task.priority, task.checked,);
 
     assert_eq!(result, expect);

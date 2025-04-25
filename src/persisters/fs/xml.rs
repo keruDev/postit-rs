@@ -4,7 +4,7 @@
 
 use std::fs;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::name::QName;
@@ -22,13 +22,13 @@ pub struct Xml {
 
 impl Xml {
     /// Constructor of the `Xml` struct.
-    pub const fn new(path: PathBuf) -> Self {
-        Self { path }
+    pub fn new<T: AsRef<Path>>(path: T) -> Self {
+        Self { path: path.as_ref().to_path_buf() }
     }
 
     /// Basic structure to initialize a XML file.
     pub fn prolog() -> String {
-        String::from(r#"<?xml version="1.0" encoding="UTF-8"?>"#) + "\n"
+        String::from(r#"<?xml version="1.0" encoding="UTF-8"?>\n"#)
     }
 
     /// Document Type Definition of a XML file.
@@ -96,8 +96,8 @@ impl Xml {
     /// # Panics
     /// If a value can't be unescaped.
     pub fn xml_to_tasks(mut reader: Reader<&[u8]>) -> Vec<Task> {
-        let mut tasks: Vec<Task> = Vec::new();
-        let mut task: Option<Task> = None;
+        let mut tasks = Vec::<Task>::new();
+        let mut task = None::<Task>;
 
         loop {
             match reader.read_event() {
@@ -108,7 +108,7 @@ impl Xml {
                         let value = attr.unescape_value().unwrap();
                         match attr.key {
                             QName(b"id") => new_task.id = value.parse().unwrap_or(0),
-                            QName(b"priority") => new_task.priority = Priority::from(&value),
+                            QName(b"priority") => new_task.priority = Priority::from(value),
                             QName(b"checked") => new_task.checked = value == "true",
                             _ => {}
                         }

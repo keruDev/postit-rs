@@ -1,6 +1,7 @@
 use std::ops::Not;
 
 use postit::fs::{Format, Json};
+use postit::models::Todo;
 use postit::traits::FilePersister;
 
 use crate::mocks::MockPath;
@@ -28,7 +29,7 @@ fn tasks() {
     let mock = MockPath::create(Format::Json);
 
     let result = Json::new(mock.path()).tasks();
-    let expect = MockPath::sample().tasks;
+    let expect = Todo::sample().tasks;
 
     assert_eq!(result, expect);
 }

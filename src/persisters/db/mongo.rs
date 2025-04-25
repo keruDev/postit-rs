@@ -31,7 +31,9 @@ impl Mongo {
     ///
     /// # Panics
     /// If the URI can't be converted to str.
-    pub fn from(uri: &str) -> Self {
+    pub fn from<T: AsRef<str>>(uri: T) -> Self {
+        let uri = uri.as_ref();
+
         let instance = Self {
             conn_str: uri.to_string(),
             connection: Client::with_uri_str(uri).unwrap(),
@@ -90,7 +92,7 @@ impl DbPersister for Mongo {
     }
 
     fn tasks(&self) -> Vec<Task> {
-        self.select().iter().map(|row| Task::from(row)).collect()
+        self.select().iter().map(Task::from).collect()
     }
 
     fn create(&self) {
@@ -102,7 +104,7 @@ impl DbPersister for Mongo {
             .find(doc! {})
             .run()
             .unwrap()
-            .map(|doc| doc.unwrap().formatted())
+            .map(|doc| doc.unwrap().as_line())
             .collect()
     }
 
@@ -134,7 +136,7 @@ impl DbPersister for Mongo {
         let (field, value) = match action {
             Action::Check => ("checked", Bson::Boolean(true)),
             Action::Uncheck => ("checked", Bson::Boolean(false)),
-            Action::SetContent => ("content", Bson::String(todo.get(ids)[0].content.to_string())),
+            Action::SetContent => ("content", Bson::String(todo.get(ids)[0].content.clone())),
             Action::SetPriority => {
                 ("priority", Bson::String(todo.get(ids)[0].priority.to_string()))
             }

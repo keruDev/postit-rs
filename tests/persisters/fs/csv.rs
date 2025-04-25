@@ -3,7 +3,7 @@ use std::io::Read;
 use std::ops::Not;
 
 use postit::fs::{Csv, Format};
-use postit::models::{Priority, Task, Todo};
+use postit::models::Todo;
 use postit::traits::FilePersister;
 
 use crate::mocks::MockPath;
@@ -35,38 +35,6 @@ fn default() {
 }
 
 #[test]
-fn parse() {
-    MockPath::create(Format::Csv);
-
-    let (id, content, priority, checked) = Csv::parse("1,Test,med,false");
-
-    let expected_id = 1;
-    let expected_content = String::from("Test");
-    let expected_priority = Priority::Med;
-    let expected_checked = false;
-
-    assert_eq!(expected_id, id);
-    assert_eq!(expected_content, content);
-    assert_eq!(expected_priority, priority);
-    assert_eq!(expected_checked, checked);
-}
-
-#[test]
-fn format() {
-    MockPath::create(Format::Csv);
-
-    let tasks = vec![
-        Task::new(1, String::from("Test"), Priority::High, true),
-        Task::new(2, String::from("Test"), Priority::Med, false),
-    ];
-
-    let result = Csv::format(&tasks);
-    let expect = vec![String::from("1,Test,high,true"), String::from("2,Test,med,false")];
-
-    assert_eq!(result, expect);
-}
-
-#[test]
 fn lines() {
     let mock = MockPath::create(Format::Csv);
     let todo = Todo::sample().tasks;
@@ -75,13 +43,8 @@ fn lines() {
     let header = Csv::header().replace("\n", "");
 
     let result = file.lines();
-    let expect = vec![
-        header,
-        todo[0].formatted(),
-        todo[1].formatted(),
-        todo[2].formatted(),
-        todo[3].formatted(),
-    ];
+    let expect =
+        vec![header, todo[0].as_line(), todo[1].as_line(), todo[2].as_line(), todo[3].as_line()];
 
     assert_eq!(result, expect);
 }

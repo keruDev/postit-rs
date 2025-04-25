@@ -59,8 +59,7 @@ impl Postit {
 
         let id = todo.tasks.last().map_or(1, |last| last.id + 1);
 
-        let line = format!("{},{},{},{}", id, args.content, args.priority, false);
-        let task = Task::from(&line);
+        let task = Task::new(id, args.content, args.priority, false);
 
         todo.add(task);
         persister.save(&todo);

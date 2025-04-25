@@ -3,7 +3,7 @@
 //! The `Json` struct implements the [`FilePersister`] trait.
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::models::{Task, Todo};
 use crate::traits::FilePersister;
@@ -17,8 +17,8 @@ pub struct Json {
 
 impl Json {
     /// Constructor of the `Json` struct.
-    pub const fn new(path: PathBuf) -> Self {
-        Self { path }
+    pub fn new<T: AsRef<Path>>(path: T) -> Self {
+        Self { path: path.as_ref().to_path_buf() }
     }
 
     /// Returns the basic structure to initialize a JSON file.
