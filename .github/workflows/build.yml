@@ -1,4 +1,4 @@
-name: CI
+name: Build
 
 on: 
   push:
@@ -12,6 +12,12 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:8.0-noble
+        ports:
+          - 27017:27017
 
     steps:
     - name: Checkout Sources
@@ -31,3 +37,6 @@ jobs:
 
     - name: Build
       run: cargo build --verbose
+
+    - name: Execute tests
+      run: cargo test -- --test-threads=1
