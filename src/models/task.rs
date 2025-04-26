@@ -27,7 +27,7 @@ pub mod error {
 
     impl fmt::Display for Error {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match self {
+            match *self {
                 Self::AlreadyChecked { id } => write!(f, "Task {id} was already checked"),
                 Self::AlreadyUnchecked { id } => write!(f, "Task {id} was already unchecked",),
             }
@@ -66,7 +66,7 @@ impl Priority {
     /// Returns the `Priority` value as its string representation.
     #[inline]
     pub const fn to_str(&self) -> &str {
-        match self {
+        match *self {
             Self::High => "high",
             Self::Med => "med",
             Self::Low => "low",
@@ -99,6 +99,7 @@ impl Deref for Priority {
 /// Representation of a Task.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub struct Task {
     /// Identifier of the task.
     pub id: u32,

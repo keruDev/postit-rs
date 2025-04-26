@@ -2,6 +2,7 @@
 //!
 //! The `Sqlite` struct implements the [`DbPersister`] trait.
 
+use std::fs;
 use std::path::Path;
 
 use sqlite::{Connection, State, Statement};
@@ -133,7 +134,7 @@ impl DbPersister for Sqlite {
     #[inline]
     fn count(&self) -> u32 {
         if !self.exists() {
-            return 0_u32;
+            return 0;
         }
 
         #[rustfmt::skip]
@@ -217,15 +218,13 @@ impl DbPersister for Sqlite {
             Action::Drop => unreachable!(),
         };
 
-        let ids = self.format_ids(ids);
-
         #[rustfmt::skip]
         let query = format!("
             UPDATE tasks
             SET {field} = \"{value}\"
             WHERE id
-            IN ({ids})
-        ");
+            IN ({})
+        ", self.format_ids(ids));
 
         let mut stmt = self.connection.prepare(query).unwrap();
 
@@ -236,14 +235,12 @@ impl DbPersister for Sqlite {
 
     #[inline]
     fn delete(&self, ids: &[u32]) {
-        let ids = self.format_ids(ids);
-
         #[rustfmt::skip]
         let query = format!("
             DELETE FROM tasks
             WHERE id
-            IN ({ids})
-        ");
+            IN ({})
+        ", self.format_ids(ids));
 
         let mut stmt = self.connection.prepare(query).unwrap();
 
@@ -254,7 +251,7 @@ impl DbPersister for Sqlite {
 
     #[inline]
     fn drop_database(&self) {
-        std::fs::remove_file(self.conn()).expect("Couldn't drop the database");
+        fs::remove_file(self.conn()).expect("Couldn't drop the database");
     }
 
     #[inline]

@@ -3,6 +3,8 @@
 //!
 //! For more info about the available commands, check [`Command`].
 
+#![allow(clippy::single_call_fn)]
+
 use super::cli::{arguments as args, subcommands as sub};
 use super::{Action, Cli, Command, Config};
 use crate::docs;
@@ -14,6 +16,7 @@ use crate::models::{Task, Todo};
 ///
 /// The [`Todo`] instance is loaded using the desired [`FilePersister`][`crate::traits::FilePersister`]
 /// instance, which is modified when the `Postit` finishes working.
+#[non_exhaustive]
 pub struct Postit;
 
 impl Postit {
@@ -94,7 +97,7 @@ impl Postit {
             Action::Check => todo.check(&args.ids),
             Action::Uncheck => todo.uncheck(&args.ids),
             Action::Drop => todo.drop(&args.ids),
-            _ => unreachable!(),
+            Action::SetContent | Action::SetPriority => unreachable!(),
         };
 
         persister.edit(&todo, &changed_ids, action);

@@ -2,7 +2,7 @@
 
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
-use std::{fmt, fs};
+use std::{env, fmt, fs};
 
 use serde::{Deserialize, Serialize};
 
@@ -186,7 +186,7 @@ impl Config {
     /// Returns the value of the `POSTIT_ROOT` env var.
     #[inline]
     pub fn env_var() -> String {
-        std::env::var("POSTIT_ROOT").unwrap_or_default()
+        env::var("POSTIT_ROOT").unwrap_or_default()
     }
 
     /// Returns the name of the config file.

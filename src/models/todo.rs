@@ -8,6 +8,7 @@ use crate::Config;
 
 /// Contains all the Tasks.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Todo {
     /// List of Tasks.
     pub tasks: Vec<Task>,

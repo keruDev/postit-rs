@@ -10,7 +10,7 @@ use crate::mocks::{MockConfig, MockPath};
 
 fn fakes(mock: &MockPath) -> (Box<dyn Persister>, Todo) {
     let persister = Config::resolve_persister(Some(mock.to_string()));
-    let todo = Todo { tasks: persister.tasks() };
+    let todo = Todo::new(persister.tasks());
 
     (persister, todo)
 }

@@ -11,10 +11,9 @@ fn fakes(mock: &MockPath) -> Todo {
 fn new() {
     let tasks = Todo::sample().tasks;
 
-    let result = Todo::new(tasks.clone());
-    let expect = Todo { tasks };
+    let result = Todo::new(tasks.as_slice());
 
-    assert_eq!(result, expect)
+    assert_eq!(result.tasks, tasks)
 }
 
 #[test]

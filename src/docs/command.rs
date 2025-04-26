@@ -1,17 +1,20 @@
 //! Contains examples of how to use every command, including their usage, alias
 //! a description and a use example to showcase the command's functionalities.
 
+#![allow(clippy::single_call_fn)]
+
 use crate::cli::subcommands as sub;
 use crate::models::{Priority, Task, Todo};
 
 /// Contains use cases for every command.
+#[non_exhaustive]
 pub struct Command;
 
 impl Command {
     /// Uses the [`sub::Example`] value passed to show its corresponding example.
     #[inline]
     pub fn run(cmnd: &sub::Example) {
-        match cmnd {
+        match *cmnd {
             sub::Example::Sample => Self::sample(),
             sub::Example::View => Self::view(),
             sub::Example::Add => Self::add(),
