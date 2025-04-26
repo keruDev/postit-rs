@@ -182,27 +182,6 @@ fn file_persister_eq() {
 }
 
 #[test]
-fn read() {
-    let mock = MockPath::create(Format::Csv);
-    let file = File::new(Csv::new(mock.path()).boxed());
-
-    let header = Csv::header().replace("\n", "");
-
-    let tasks = file.tasks();
-    let result = file.read();
-
-    let expect = vec![
-        header,
-        tasks[0].as_line(),
-        tasks[1].as_line(),
-        tasks[2].as_line(),
-        tasks[3].as_line(),
-    ];
-
-    assert_eq!(result, expect);
-}
-
-#[test]
 fn remove() {
     let mock = MockPath::create(Format::Json);
     let file = File::from(mock.to_string());

@@ -2,9 +2,9 @@
 //!
 //! The `XML` struct implements the [`FilePersister`] trait.
 
-use std::fs;
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::name::QName;
@@ -152,18 +152,13 @@ impl Xml {
 
 impl FilePersister for Xml {
     #[inline]
-    fn path(&self) -> PathBuf {
-        self.path.clone()
-    }
-
-    #[inline]
     fn boxed(self) -> Box<dyn FilePersister> {
         Box::new(self)
     }
 
     #[inline]
-    fn exists(&self) -> bool {
-        fs::exists(&self.path).expect("The XML file's existence couldn't be checked")
+    fn path(&self) -> PathBuf {
+        self.path.clone()
     }
 
     #[inline]
@@ -173,49 +168,38 @@ impl FilePersister for Xml {
 
     #[inline]
     fn tasks(&self) -> Vec<Task> {
-        let xml = self.lines().join("");
-        let reader = Reader::from_str(&xml);
+        let xml = fs::read_to_string(&self.path).unwrap();
+        let reader = Reader::from_str(xml.trim());
 
         Self::xml_to_tasks(reader)
     }
 
     #[inline]
-    fn open(&self) -> fs::File {
+    fn open(&self) -> io::Result<fs::File> {
         fs::OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
             .open(&self.path)
-            .expect("Should have been able to create the file")
     }
 
     #[inline]
-    fn lines(&self) -> Vec<String> {
-        fs::read_to_string(&self.path)
-            .expect("Should have been able to read the XML file")
-            .lines()
-            .map(|line| line.replace('\r', ""))
-            .filter(|line| !line.is_empty())
-            .collect()
-    }
-
-    #[inline]
-    fn write(&self, todo: &Todo) {
+    fn write(&self, todo: &Todo) -> io::Result<()> {
         let buffer = Self::todo_to_xml(todo);
         let xml = String::from_utf8(buffer).unwrap();
 
-        let bytes = [Self::prolog().as_bytes(), Self::dtd().as_bytes(), xml.as_bytes()].concat();
+        let bytes = [Self::prolog(), Self::dtd(), xml].join("").into_bytes();
 
-        self.open().write_all(&bytes).unwrap();
+        self.open()?.write_all(&bytes)
     }
 
     #[inline]
-    fn clean(&self) {
-        fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
+    fn clean(&self) -> io::Result<()> {
+        fs::write(&self.path, self.default())
     }
 
     #[inline]
-    fn remove(&self) {
-        fs::remove_file(&self.path).expect("Should have been able to delete the XML file");
+    fn remove(&self) -> io::Result<()> {
+        fs::remove_file(&self.path)
     }
 }

@@ -7,24 +7,6 @@ use postit::traits::FilePersister;
 use crate::mocks::MockPath;
 
 #[test]
-fn exists_returns_true() {
-    let mock = MockPath::create(Format::Json);
-    let json = Json::new(mock.path());
-
-    assert!(json.exists());
-}
-
-#[test]
-fn exists_returns_false() {
-    let mock = MockPath::create(Format::Json);
-    let json = Json::new(mock.path());
-
-    drop(mock);
-
-    assert!(json.exists().not());
-}
-
-#[test]
 fn tasks() {
     let mock = MockPath::create(Format::Json);
 
@@ -37,7 +19,7 @@ fn tasks() {
 #[test]
 fn clean() {
     let mock = MockPath::create(Format::Json);
-    Json::new(mock.path()).clean();
+    Json::new(mock.path()).clean().unwrap();
 
     let result = Json::new(mock.path()).tasks();
     let expect = Vec::new();
@@ -48,7 +30,7 @@ fn clean() {
 #[test]
 fn remove() {
     let mock = MockPath::create(Format::Json);
-    Json::new(mock.path()).remove();
+    Json::new(mock.path()).remove().unwrap();
 
     assert!(mock.path().exists().not());
 }

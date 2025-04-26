@@ -1,10 +1,12 @@
 //! Contains traits related to data persisting actions, such as reading or writing.
 
 use std::path::PathBuf;
-use std::{fmt, fs};
+use std::{fmt, fs, io};
 
 use crate::models::{Task, Todo};
 use crate::Action;
+
+use super::db;
 
 /// The `Persister` trait serves as a base for structures that store instances
 /// of other structs that contain either the [`FilePersister`] trait or the
@@ -21,9 +23,6 @@ pub trait Persister: fmt::Debug {
 
     /// Returns the tasks collected from the persister's contents.
     fn tasks(&self) -> Vec<Task>;
-
-    /// Reads the persister's content and returns its lines.
-    fn read(&self) -> Vec<String>;
 
     /// Edits a persister by managing an [`Action`] variant.
     fn edit(&self, todo: &Todo, ids: &[u32], action: Action);
@@ -57,14 +56,11 @@ impl Clone for Box<dyn Persister> {
 
 /// Includes basic methods for data management in a file.
 pub trait FilePersister {
-    /// Checks if the path exists.
-    fn path(&self) -> PathBuf;
-
     /// Returns the file instance inside a [`Box`] pointer.
     fn boxed(self) -> Box<dyn FilePersister>;
 
-    /// Checks wether a persister exists or not.
-    fn exists(&self) -> bool;
+    /// Checks if the path exists.
+    fn path(&self) -> PathBuf;
 
     /// Returns a String used to initialize the file.
     fn default(&self) -> String;
@@ -73,19 +69,27 @@ pub trait FilePersister {
     fn tasks(&self) -> Vec<Task>;
 
     /// Grants access to an open file.
-    fn open(&self) -> fs::File;
-
-    /// Returns the lines of a file.
-    fn lines(&self) -> Vec<String>;
+    ///
+    /// # Errors
+    /// Returns an error if the file can't be opened.
+    fn open(&self) -> io::Result<fs::File>;
 
     /// Writes into a file.
-    fn write(&self, todo: &Todo);
+    /// # Errors
+    /// Returns an error if tasks can't be written.
+    fn write(&self, todo: &Todo) -> io::Result<()>;
 
     /// Deletes all tasks from the persister.
-    fn clean(&self);
+    ///
+    /// # Errors
+    /// Returns an error if the file can't be cleaned.
+    fn clean(&self) -> io::Result<()>;
 
-    /// Removes a persister completely (file or table).
-    fn remove(&self);
+    /// Removes or deletes a file.
+    ///
+    /// # Errors
+    /// Returns an error if the file can't be removed.
+    fn remove(&self) -> io::Result<()>;
 }
 
 impl PartialEq for Box<dyn FilePersister> {
@@ -97,11 +101,11 @@ impl PartialEq for Box<dyn FilePersister> {
 
 /// Includes basic methods for data management in a database.
 pub trait DbPersister {
-    /// Returns the connection string.
-    fn conn(&self) -> String;
-
     /// Returns the database instance inside a [`Box`] pointer.
     fn boxed(self) -> Box<dyn DbPersister>;
+
+    /// Returns the connection string.
+    fn conn(&self) -> String;
 
     /// Checks if a table exists.
     fn exists(&self) -> bool;
@@ -113,25 +117,40 @@ pub trait DbPersister {
     fn tasks(&self) -> Vec<Task>;
 
     /// Creates a table.
-    fn create(&self);
-
-    /// Selects data from a table.
-    fn select(&self) -> Vec<String>;
+    ///
+    /// # Errors
+    /// Returns an error if the table can't be created.
+    fn create(&self) -> db::Result<()>;
 
     /// Inserts data into a table.
-    fn insert(&self, todo: &Todo);
+    ///
+    /// # Errors
+    /// Returns an error if tasks can't be inserted.
+    fn insert(&self, todo: &Todo) -> db::Result<()>;
 
     /// Updates data from a table.
-    fn update(&self, todo: &Todo, ids: &[u32], action: Action);
+    ///
+    /// # Errors
+    /// Returns an error if tasks can't be updated.
+    fn update(&self, todo: &Todo, ids: &[u32], action: Action) -> db::Result<()>;
 
-    /// Drops data from a table.
-    fn delete(&self, ids: &[u32]);
+    /// Deletes data from a table.
+    ///
+    /// # Errors
+    /// Returns an error if tasks can't be deleted.
+    fn delete(&self, ids: &[u32]) -> db::Result<()>;
 
     /// Drops the specified database.
-    fn drop_database(&self);
+    ///
+    /// # Errors
+    /// Returns an error if the database can't be dropped.
+    fn drop_database(&self) -> db::Result<()>;
 
     /// Deletes all tasks from the persister.
-    fn clean(&self);
+    ///
+    /// # Errors
+    /// Returns an error if the database can't be cleaned
+    fn clean(&self) -> db::Result<()>;
 }
 
 impl PartialEq for Box<dyn DbPersister> {

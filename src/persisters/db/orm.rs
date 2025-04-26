@@ -8,36 +8,10 @@ use std::ops::Deref;
 use std::path::Path;
 
 use super::{Mongo, Sqlite};
+use crate::db::error;
 use crate::models::{Task, Todo};
 use crate::traits::{DbPersister, Persister};
-use crate::Action;
-
-/// Defines errors related to database management.
-pub mod error {
-    use std::fmt;
-
-    /// Errors related to databases and connection strings.
-    #[derive(Debug)]
-    pub enum Error {
-        /// Used when the provided connection string is not supported.
-        UnsupportedDatabase,
-        /// Used when the provided connection string is incorrect.
-        IncorrectConnectionString,
-    }
-
-    impl fmt::Display for Error {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match *self {
-                Self::UnsupportedDatabase => {
-                    write!(f, "Unsupported database; defaulting to Sqlite")
-                }
-                Self::IncorrectConnectionString => {
-                    write!(f, "The provided connection string is incorrect")
-                }
-            }
-        }
-    }
-}
+use crate::{exit, Action};
 
 /// A database protocol.
 pub enum Protocol {
@@ -195,40 +169,48 @@ impl Persister for Orm {
     }
 
     #[inline]
-    fn read(&self) -> Vec<String> {
-        self.db.select()
-    }
-
-    #[inline]
     fn edit(&self, todo: &Todo, ids: &[u32], action: Action) {
-        self.db.update(todo, ids, action);
+        if let Err(e) = self.db.update(todo, ids, action.clone()) {
+            exit!("Can't perform the '{action}' action {e}");
+        }
     }
 
     #[inline]
     fn save(&self, todo: &Todo) {
         if self.db.count() == 0 {
-            return self.db.insert(todo);
+            return self.db.insert(todo).unwrap();
         }
 
         let last = todo.tasks.last().unwrap().to_owned();
-
         let task = Todo::new(last);
-        self.db.insert(&task);
+
+        if let Err(e) = self.db.insert(&task) {
+            exit!("Can't insert into the database {e}");
+        }
     }
 
     #[inline]
     fn replace(&self, todo: &Todo) {
-        self.db.clean();
-        self.db.insert(todo);
+        if let Err(e) = self.db.clean() {
+            exit!("Can't clean the database {e}");
+        }
+
+        if let Err(e) = self.db.insert(todo) {
+            exit!("Can't insert into the database {e}");
+        }
     }
 
     #[inline]
     fn clean(&self) {
-        self.db.clean();
+        if let Err(e) = self.db.clean() {
+            exit!("Can't clean the database {e}");
+        }
     }
 
     #[inline]
     fn remove(&self) {
-        self.db.drop_database();
+        if let Err(e) = self.db.drop_database() {
+            exit!("Can't drop the database {e}");
+        }
     }
 }

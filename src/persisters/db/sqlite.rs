@@ -46,7 +46,7 @@ impl Sqlite {
         };
 
         if !instance.exists() {
-            instance.create();
+            instance.create().unwrap();
         }
 
         instance
@@ -78,10 +78,10 @@ impl Sqlite {
 
     /// Resets the autoincrement value.
     ///
-    /// # Panics
-    /// If a value can't be unwrapped.
+    /// # Errors
+    /// Returns an error if the statement can't be evaluated.
     #[inline]
-    pub fn reset_autoincrement(&self, table: &str) {
+    pub fn reset_autoincrement(&self, table: &str) -> sqlite::Result<State> {
         #[rustfmt::skip]
         let query = format!("
             UPDATE sqlite_sequence
@@ -89,23 +89,19 @@ impl Sqlite {
             WHERE NAME='{table}'
         ");
 
-        let mut stmt = self.connection.prepare(query).unwrap();
-
-        if let Err(e) = stmt.next() {
-            eprintln!("Error while cleaning table: {e}");
-        }
+        self.connection.prepare(query)?.next()
     }
 }
 
 impl DbPersister for Sqlite {
     #[inline]
-    fn conn(&self) -> String {
-        self.conn_str.clone()
+    fn boxed(self) -> Box<dyn DbPersister> {
+        Box::new(self)
     }
 
     #[inline]
-    fn boxed(self) -> Box<dyn DbPersister> {
-        Box::new(self)
+    fn conn(&self) -> String {
+        self.conn_str.clone()
     }
 
     /// Checks if a table exists.
@@ -145,7 +141,10 @@ impl DbPersister for Sqlite {
         ").unwrap();
 
         if matches!(stmt.next(), Ok(State::Row)) {
-            stmt.read::<i64, _>("count").unwrap_or(0) as u32
+            stmt.read::<i64, _>("count")
+                .unwrap_or(0)
+                .try_into()
+                .unwrap_or(0)
         } else {
             0
         }
@@ -153,12 +152,20 @@ impl DbPersister for Sqlite {
 
     #[inline]
     fn tasks(&self) -> Vec<Task> {
-        self.select().iter().map(Task::from).collect()
+        let mut stmt = self.connection.prepare("SELECT * FROM tasks").unwrap();
+
+        let mut result = vec![];
+
+        while matches!(stmt.next(), Ok(State::Row)) {
+            result.push(Task::from(self.read_row(&stmt)));
+        }
+
+        result
     }
 
     #[inline]
-    fn create(&self) {
-        #[rustfmt::skip]
+    #[rustfmt::skip]
+    fn create(&self) -> super::Result<()> {
         self.connection.execute("
             CREATE TABLE IF NOT EXISTS tasks (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -166,25 +173,13 @@ impl DbPersister for Sqlite {
                 priority    TEXT NOT NULL,
                 checked     BOOLEAN NOT NULL CHECK (checked IN (0, 1))
             )
-        ").unwrap();
+        ")
+        .map_err(super::Error::Sqlite)
     }
 
     #[inline]
-    fn select(&self) -> Vec<String> {
-        let mut stmt = self.connection.prepare("SELECT * FROM tasks").unwrap();
-
-        let mut result = vec![];
-
-        while matches!(stmt.next(), Ok(State::Row)) {
-            result.push(self.read_row(&stmt));
-        }
-
-        result
-    }
-
-    #[inline]
-    fn insert(&self, todo: &Todo) {
-        todo.tasks.iter().for_each(|task| {
+    fn insert(&self, todo: &Todo) -> super::Result<()> {
+        todo.tasks.iter().try_for_each(|task| {
             #[rustfmt::skip]
             let mut stmt = self.connection.prepare("
                 INSERT INTO tasks (content, priority, checked)
@@ -198,14 +193,12 @@ impl DbPersister for Sqlite {
                 &*i32::from(task.checked).to_string()
             ][..]).unwrap();
 
-            if let Err(e) = stmt.next() {
-                eprintln!("Error while inserting value: {e}");
-            }
-        });
+            stmt.next().map(|_| ()).map_err(super::Error::Sqlite)
+        })
     }
 
     #[inline]
-    fn update(&self, todo: &Todo, ids: &[u32], action: Action) {
+    fn update(&self, todo: &Todo, ids: &[u32], action: Action) -> super::Result<()> {
         if matches!(action, Action::Drop) {
             return self.delete(ids);
         }
@@ -228,13 +221,11 @@ impl DbPersister for Sqlite {
 
         let mut stmt = self.connection.prepare(query).unwrap();
 
-        if let Err(e) = stmt.next() {
-            eprintln!("Error while updating value: {e}");
-        }
+        stmt.next().map(|_| ()).map_err(super::Error::Sqlite)
     }
 
     #[inline]
-    fn delete(&self, ids: &[u32]) {
+    fn delete(&self, ids: &[u32]) -> super::Result<()> {
         #[rustfmt::skip]
         let query = format!("
             DELETE FROM tasks
@@ -244,18 +235,24 @@ impl DbPersister for Sqlite {
 
         let mut stmt = self.connection.prepare(query).unwrap();
 
-        if let Err(e) = stmt.next() {
-            eprintln!("Error while dropping value: {e}");
-        }
+        stmt.next().map(|_| ()).map_err(super::Error::Sqlite)
     }
 
     #[inline]
-    fn drop_database(&self) {
-        fs::remove_file(self.conn()).expect("Couldn't drop the database");
+    fn drop_database(&self) -> super::Result<()> {
+        // fs::remove_file(self.conn()).expect("Couldn't drop the database");
+
+        fs::remove_file(self.conn()).map_err(|e| {
+            let err = sqlite::Error {
+                code: Some(1),
+                message: Some(e.to_string()),
+            };
+            super::Error::Sqlite(err)
+        })
     }
 
     #[inline]
-    fn clean(&self) {
+    fn clean(&self) -> super::Result<()> {
         let table = String::from("tasks");
         let query = format!("DELETE FROM {table}");
 
@@ -265,6 +262,8 @@ impl DbPersister for Sqlite {
             eprintln!("Error while cleaning table: {e}");
         }
 
-        self.reset_autoincrement(&table);
+        self.reset_autoincrement(&table)
+            .map(|_| ())
+            .map_err(super::Error::Sqlite)
     }
 }

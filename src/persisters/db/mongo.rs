@@ -42,7 +42,7 @@ impl Mongo {
         };
 
         if !instance.exists() {
-            instance.create();
+            instance.create().unwrap();
         }
 
         instance
@@ -63,13 +63,13 @@ impl Mongo {
 
 impl DbPersister for Mongo {
     #[inline]
-    fn conn(&self) -> String {
-        self.conn_str.clone()
+    fn boxed(self) -> Box<dyn DbPersister> {
+        Box::new(self)
     }
 
     #[inline]
-    fn boxed(self) -> Box<dyn DbPersister> {
-        Box::new(self)
+    fn conn(&self) -> String {
+        self.conn_str.clone()
     }
 
     /// Checks if a table exists.
@@ -101,26 +101,24 @@ impl DbPersister for Mongo {
 
     #[inline]
     fn tasks(&self) -> Vec<Task> {
-        self.select().iter().map(Task::from).collect()
-    }
-
-    #[inline]
-    fn create(&self) {
-        self.db().create_collection("tasks").run().unwrap();
-    }
-
-    #[inline]
-    fn select(&self) -> Vec<String> {
         self.collection::<Task>()
             .find(doc! {})
             .run()
             .unwrap()
-            .map(|doc| doc.unwrap().as_line())
+            .map(|doc| doc.unwrap())
             .collect()
     }
 
     #[inline]
-    fn insert(&self, todo: &Todo) {
+    fn create(&self) -> super::Result<()> {
+        self.db()
+            .create_collection("tasks")
+            .run()
+            .map_err(super::Error::Mongo)
+    }
+
+    #[inline]
+    fn insert(&self, todo: &Todo) -> super::Result<()> {
         let docs: Vec<Document> = todo
             .tasks
             .iter()
@@ -137,11 +135,12 @@ impl DbPersister for Mongo {
         self.collection::<Document>()
             .insert_many(&docs)
             .run()
-            .unwrap();
+            .map(|_| ())
+            .map_err(super::Error::Mongo)
     }
 
     #[inline]
-    fn update(&self, todo: &Todo, ids: &[u32], action: Action) {
+    fn update(&self, todo: &Todo, ids: &[u32], action: Action) -> super::Result<()> {
         if matches!(action, Action::Drop) {
             return self.delete(ids);
         }
@@ -162,29 +161,32 @@ impl DbPersister for Mongo {
         self.collection::<Document>()
             .update_many(query, update)
             .run()
-            .unwrap();
+            .map(|_| ())
+            .map_err(super::Error::Mongo)
     }
 
     #[inline]
-    fn delete(&self, ids: &[u32]) {
+    fn delete(&self, ids: &[u32]) -> super::Result<()> {
         let query = doc! { "id": {"$in": ids }};
 
         self.collection::<String>()
             .delete_many(query)
             .run()
-            .unwrap();
+            .map(|_| ())
+            .map_err(super::Error::Mongo)
     }
 
     #[inline]
-    fn drop_database(&self) {
-        self.db().drop().run().unwrap();
+    fn drop_database(&self) -> super::Result<()> {
+        self.db().drop().run().map_err(super::Error::Mongo)
     }
 
     #[inline]
-    fn clean(&self) {
+    fn clean(&self) -> super::Result<()> {
         self.collection::<String>()
             .delete_many(doc! {})
             .run()
-            .unwrap();
+            .map(|_| ())
+            .map_err(super::Error::Mongo)
     }
 }

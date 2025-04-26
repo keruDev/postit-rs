@@ -6,7 +6,7 @@ use postit::db::{Orm, Protocol};
 use postit::fs::{Csv, Format, Json, Xml};
 use postit::models::Todo;
 use postit::traits::{DbPersister, FilePersister};
-use postit::Config;
+use postit::{exit, Config};
 
 /// A temporary path used for testing purposes.
 ///
@@ -44,7 +44,7 @@ impl MockPath {
             Format::Xml => Self::xml(name),
         };
 
-        file.write(&Todo::sample());
+        file.write(&Todo::sample()).unwrap();
 
         Self { path: file.path() }
     }
@@ -129,8 +129,7 @@ impl MockConn {
 
 impl Drop for MockConn {
     fn drop(&mut self) {
-        // TEMP
-        self.instance.drop_database();
+        self.instance.drop_database().unwrap();
     }
 }
 
@@ -161,8 +160,9 @@ impl MockConfig {
         let toml =
             toml::to_string_pretty(&Config::default()).expect("Failed to serialize config to TOML");
 
-        file.write_all(toml.as_bytes())
-            .expect("Failed to write default config to file");
+        if let Err(e) = file.write_all(toml.as_bytes()) {
+            exit!("Failed to save config to file: {e}");
+        }
 
         Self { path, config: Config::default() }
     }
@@ -173,8 +173,9 @@ impl MockConfig {
         let toml =
             toml::to_string_pretty(&self.config).expect("Failed to serialize config to TOML");
 
-        file.write_all(toml.as_bytes())
-            .expect("Failed to write new config to file");
+        if let Err(e) = file.write_all(toml.as_bytes()) {
+            exit!("Failed to save config to file: {e}");
+        }
     }
 
     pub fn path(&self) -> PathBuf {

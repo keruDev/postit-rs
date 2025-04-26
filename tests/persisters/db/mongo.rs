@@ -20,7 +20,7 @@ fn clone() {
 #[test]
 fn count_ok() {
     let mock = MockConn::create(Protocol::Mongo);
-    mock.instance.insert(&Todo::sample());
+    mock.instance.insert(&Todo::sample()).unwrap();
 
     assert_eq!(Mongo::from(mock.conn()).count(), 4);
 }
@@ -28,7 +28,7 @@ fn count_ok() {
 #[test]
 fn count_table_doesnt_exist() {
     let mock = MockConn::create(Protocol::Mongo);
-    mock.instance.drop_database();
+    mock.instance.drop_database().unwrap();
 
     assert_eq!(Mongo::from(mock.conn()).count(), 0);
 }
@@ -51,8 +51,8 @@ fn conn() {
 #[test]
 fn boxed() {
     let uri = "mongodb://localhost:27017";
-    let mock = MockConn::new(uri);
 
+    let mock = MockConn::new(uri);
     let mongo = Mongo::from(mock.conn());
     let result = mongo.clone().boxed();
 
@@ -61,15 +61,15 @@ fn boxed() {
 
 #[test]
 fn reset_autoincrement() {
-    let mock = MockConn::create(Protocol::Mongo);
     let todo = Todo::sample();
     let task = Todo::new(&todo.tasks[0]);
 
+    let mock = MockConn::create(Protocol::Mongo);
     let mongo = Mongo::from(mock.conn());
 
-    mongo.insert(&todo);
-    mongo.clean();
-    mongo.insert(&task);
+    mongo.insert(&todo).unwrap();
+    mongo.clean().unwrap();
+    mongo.insert(&task).unwrap();
 
     let result = mongo.tasks()[0].id;
     let expect = 1;
@@ -80,18 +80,17 @@ fn reset_autoincrement() {
 #[test]
 fn create() {
     let mock = MockConn::create(Protocol::Mongo);
-
-    mock.instance.create();
+    mock.instance.create().unwrap();
 
     assert!(Mongo::from(mock.conn()).exists());
 }
 
 #[test]
-fn insert_and_select() {
-    let mock = MockConn::create(Protocol::Mongo);
+fn insert_and_tasks() {
     let todo = Todo::sample();
 
-    mock.instance.insert(&todo);
+    let mock = MockConn::create(Protocol::Mongo);
+    mock.instance.insert(&todo).unwrap();
 
     let result = mock.instance.tasks();
 
@@ -100,14 +99,13 @@ fn insert_and_select() {
 
 #[test]
 fn update_check() {
-    let mock = MockConn::create(Protocol::Mongo);
     let mut todo = Todo::sample();
-
     let ids = vec![2, 3];
     let action = Action::Check;
 
-    mock.instance.insert(&todo);
-    mock.instance.update(&todo, &ids, action);
+    let mock = MockConn::create(Protocol::Mongo);
+    mock.instance.insert(&todo).unwrap();
+    mock.instance.update(&todo, &ids, action).unwrap();
 
     todo.check(&ids);
 
@@ -118,14 +116,13 @@ fn update_check() {
 
 #[test]
 fn update_uncheck() {
-    let mock = MockConn::create(Protocol::Mongo);
     let mut todo = Todo::sample();
-
     let ids = vec![2, 3];
     let action = Action::Uncheck;
 
-    mock.instance.insert(&todo);
-    mock.instance.update(&todo, &ids, action);
+    let mock = MockConn::create(Protocol::Mongo);
+    mock.instance.insert(&todo).unwrap();
+    mock.instance.update(&todo, &ids, action).unwrap();
 
     todo.uncheck(&ids);
 
@@ -136,16 +133,15 @@ fn update_uncheck() {
 
 #[test]
 fn update_set_content() {
-    let mock = MockConn::create(Protocol::Mongo);
-    let mut todo = Todo::sample();
-
     let ids = vec![2, 3];
     let action = Action::SetContent;
 
+    let mut todo = Todo::sample();
     todo.set_content(&ids, "test");
 
-    mock.instance.insert(&todo);
-    mock.instance.update(&todo, &ids, action);
+    let mock = MockConn::create(Protocol::Mongo);
+    mock.instance.insert(&todo).unwrap();
+    mock.instance.update(&todo, &ids, action).unwrap();
 
     let result = mock.instance.tasks();
 
@@ -154,16 +150,15 @@ fn update_set_content() {
 
 #[test]
 fn update_set_priority() {
-    let mock = MockConn::create(Protocol::Mongo);
-    let mut todo = Todo::sample();
-
     let ids = vec![2, 3];
     let action = Action::SetPriority;
 
+    let mut todo = Todo::sample();
     todo.set_priority(&ids, &postit::models::Priority::High);
 
-    mock.instance.insert(&todo);
-    mock.instance.update(&todo, &ids, action);
+    let mock = MockConn::create(Protocol::Mongo);
+    mock.instance.insert(&todo).unwrap();
+    mock.instance.update(&todo, &ids, action).unwrap();
 
     let result = mock.instance.tasks();
 
@@ -172,14 +167,13 @@ fn update_set_priority() {
 
 #[test]
 fn update_delete() {
-    let mock = MockConn::create(Protocol::Mongo);
     let mut todo = Todo::sample();
-
     let ids = vec![2, 3];
     let action = Action::Drop;
 
-    mock.instance.insert(&todo);
-    mock.instance.update(&todo, &ids, action);
+    let mock = MockConn::create(Protocol::Mongo);
+    mock.instance.insert(&todo).unwrap();
+    mock.instance.update(&todo, &ids, action).unwrap();
 
     todo.check(&ids);
     todo.drop(&ids);
@@ -193,8 +187,7 @@ fn update_delete() {
 fn drop_database() {
     // Doesn't use mocks because of conflicts with the Drop trait.
     let mongo = Mongo::from("mongodb://localhost:27017");
-
-    mongo.drop_database();
+    mongo.drop_database().unwrap();
 
     assert!(mongo.exists().not());
 }
@@ -205,7 +198,7 @@ fn tasks() {
     let todo = Todo::sample();
 
     let mongo = Mongo::from(mock.conn());
-    mongo.insert(&todo);
+    mongo.insert(&todo).unwrap();
 
     assert_eq!(todo.tasks, mongo.tasks());
 }
@@ -216,8 +209,8 @@ fn clean() {
     let todo = Todo::sample();
 
     let mongo = Mongo::from(mock.conn());
-    mongo.insert(&todo);
-    mongo.clean();
+    mongo.insert(&todo).unwrap();
+    mongo.clean().unwrap();
 
     let result = mongo.tasks();
     let expect = Vec::new();

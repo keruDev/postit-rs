@@ -141,21 +141,6 @@ fn save_and_tasks() {
 }
 
 #[test]
-fn read() {
-    let mock = MockConn::create(Protocol::Sqlite);
-    let todo = Todo::sample();
-
-    let orm = Orm::from(mock.conn());
-
-    orm.save(&todo);
-
-    let result = orm.read();
-    let tasks: Vec<Task> = result.iter().map(Task::from).collect();
-
-    assert_eq!(tasks, todo.tasks)
-}
-
-#[test]
 fn edit_check() {
     let mock = MockConn::create(Protocol::Sqlite);
     let mut todo = Todo::sample();

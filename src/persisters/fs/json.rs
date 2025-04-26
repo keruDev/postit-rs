@@ -2,8 +2,8 @@
 //!
 //! The `Json` struct implements the [`FilePersister`] trait.
 
-use std::fs;
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 use crate::models::{Task, Todo};
 use crate::traits::FilePersister;
@@ -31,18 +31,13 @@ impl Json {
 
 impl FilePersister for Json {
     #[inline]
-    fn path(&self) -> PathBuf {
-        self.path.clone()
-    }
-
-    #[inline]
     fn boxed(self) -> Box<dyn FilePersister> {
         Box::new(self)
     }
 
     #[inline]
-    fn exists(&self) -> bool {
-        fs::exists(&self.path).expect("The JSON file's existence couldn't be checked")
+    fn path(&self) -> PathBuf {
+        self.path.clone()
     }
 
     #[inline]
@@ -52,42 +47,33 @@ impl FilePersister for Json {
 
     #[inline]
     fn tasks(&self) -> Vec<Task> {
-        serde_json::from_str(&self.lines().join("")).expect("JSON was not well-formatted")
+        let content = fs::read_to_string(&self.path).unwrap();
+
+        serde_json::from_str(content.trim()).expect("JSON was not well-formatted")
     }
 
     #[inline]
-    fn open(&self) -> fs::File {
+    fn open(&self) -> io::Result<fs::File> {
         fs::OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
             .open(&self.path)
-            .expect("Should have been able to create the file")
     }
 
     #[inline]
-    fn lines(&self) -> Vec<String> {
-        fs::read_to_string(&self.path)
-            .expect("Should have been able to read the JSON file")
-            .lines()
-            .map(|line| line.replace('\r', ""))
-            .filter(|line| !line.is_empty())
-            .collect()
+    fn write(&self, todo: &Todo) -> io::Result<()> {
+        serde_json::to_writer_pretty(self.open()?, &todo.tasks)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
     }
 
     #[inline]
-    fn write(&self, todo: &Todo) {
-        serde_json::to_writer_pretty(self.open(), &todo.tasks)
-            .expect("Should have been able to write into the JSON file");
+    fn clean(&self) -> io::Result<()> {
+        fs::write(&self.path, self.default())
     }
 
     #[inline]
-    fn clean(&self) {
-        fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
-    }
-
-    #[inline]
-    fn remove(&self) {
-        fs::remove_file(&self.path).expect("Should have been able to delete the JSON file");
+    fn remove(&self) -> io::Result<()> {
+        fs::remove_file(&self.path)
     }
 }
