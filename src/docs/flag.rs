@@ -1,16 +1,19 @@
 //! Contains examples of how to use every flag, including their long and short
 //! forms, a description and a use example to showcase the flags's functionalities.
 
+#![allow(clippy::single_call_fn)]
+
 use crate::cli::subcommands as sub;
 
 /// Contains use cases for every flag.
+#[non_exhaustive]
 pub struct Flag;
 
 impl Flag {
     /// Uses the [`sub::Flag`] value passed to show its corresponding example.
     #[inline]
     pub fn run(flag: &sub::Flag) {
-        match flag {
+        match *flag {
             sub::Flag::Persister => Self::persister(),
         }
     }

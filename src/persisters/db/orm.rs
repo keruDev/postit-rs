@@ -5,6 +5,7 @@
 
 use std::fmt;
 use std::ops::Deref;
+use std::path::Path;
 
 use super::{Mongo, Sqlite};
 use crate::models::{Task, Todo};
@@ -26,7 +27,7 @@ pub mod error {
 
     impl fmt::Display for Error {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match self {
+            match *self {
                 Self::UnsupportedDatabase => {
                     write!(f, "Unsupported database; defaulting to Sqlite")
                 }
@@ -68,7 +69,7 @@ impl Protocol {
     /// Returns the `Protocol` value as its string representation.
     #[inline]
     pub const fn to_str(&self) -> &str {
-        match self {
+        match *self {
             Self::Sqlite => "sqlite",
             Self::Mongo => "mongo",
             Self::MongoSrv => "mongo+srv",
@@ -131,7 +132,7 @@ impl Orm {
     /// In case the extension can't be converted to str.
     #[inline]
     pub fn is_sqlite(conn: &str) -> bool {
-        let path = std::path::Path::new(conn);
+        let path = Path::new(conn);
 
         conn.eq(":memory:")
             || path

@@ -25,7 +25,7 @@ pub mod error {
 
     impl fmt::Display for Error {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match self {
+            match *self {
                 Self::UnsupportedFormat => write!(f, "Unsupported file format; defaulting to CSV"),
             }
         }
@@ -62,7 +62,7 @@ impl Format {
     /// Returns the `Priority` value as its string representation.
     #[inline]
     pub const fn to_str(&self) -> &str {
-        match self {
+        match *self {
             Self::Csv => "csv",
             Self::Json => "json",
             Self::Xml => "xml",
@@ -167,8 +167,8 @@ impl File {
     /// # Panics
     /// In case the file extension can't be converted to `&str`.
     #[inline]
-    pub fn get_persister<T: AsRef<Path>>(file: T) -> Box<dyn FilePersister> {
-        let mut file = file.as_ref().to_path_buf();
+    pub fn get_persister<T: AsRef<Path>>(path: T) -> Box<dyn FilePersister> {
+        let mut file = path.as_ref().to_path_buf();
 
         let format = Format::from(file.extension().unwrap().to_str().unwrap());
         file.set_extension(format.to_str());

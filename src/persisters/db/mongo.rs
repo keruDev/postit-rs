@@ -88,7 +88,7 @@ impl DbPersister for Mongo {
     #[inline]
     fn count(&self) -> u32 {
         if !self.exists() {
-            return 0_u32;
+            return 0;
         }
 
         self.collection::<u32>()

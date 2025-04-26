@@ -3,7 +3,7 @@
 //! The `XML` struct implements the [`FilePersister`] trait.
 
 use std::fs;
-use std::io::Write;
+use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
@@ -107,7 +107,7 @@ impl Xml {
 
         loop {
             match reader.read_event() {
-                Ok(Event::Start(ref e)) if e.name() == QName(b"Task") => {
+                Ok(Event::Start(e)) if e.name() == QName(b"Task") => {
                     let mut new_task = Task::default();
 
                     for attr in e.attributes().flatten() {
@@ -124,12 +124,12 @@ impl Xml {
                 }
 
                 Ok(Event::Text(e)) => {
-                    if let Some(ref mut t) = task {
+                    if let Some(t) = &mut task {
                         t.content = e.unescape().unwrap().into_owned();
                     }
                 }
 
-                Ok(Event::End(ref e)) if e.name() == QName(b"Task") => {
+                Ok(Event::End(e)) if e.name() == QName(b"Task") => {
                     if let Some(t) = task.take() {
                         tasks.push(t);
                     }

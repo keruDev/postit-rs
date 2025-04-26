@@ -5,6 +5,7 @@ mod config;
 mod postit;
 
 /// Possible actions taken when editing a persister's tasks.
+#[non_exhaustive]
 pub enum Action {
     /// Used to check tasks.
     Check,
