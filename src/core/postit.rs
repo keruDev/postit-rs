@@ -18,6 +18,7 @@ pub struct Postit;
 
 impl Postit {
     /// Runs `Postit` commands based on the commands and arguments provided.
+    #[inline]
     pub fn run(cli: Cli) {
         match cli.command {
             Command::Example(args) => Self::example(&args),

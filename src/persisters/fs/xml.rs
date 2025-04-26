@@ -22,17 +22,20 @@ pub struct Xml {
 
 impl Xml {
     /// Constructor of the `Xml` struct.
+    #[inline]
     pub fn new<T: AsRef<Path>>(path: T) -> Self {
         Self { path: path.as_ref().to_path_buf() }
     }
 
     /// Basic structure to initialize a XML file.
+    #[inline]
     pub fn prolog() -> String {
         String::from(r#"<?xml version="1.0" encoding="UTF-8"?>\n"#)
     }
 
     /// Document Type Definition of a XML file.
     #[rustfmt::skip]
+    #[inline]
     pub fn dtd() -> String {
         String::from(
 "<!DOCTYPE Tasks [
@@ -51,6 +54,7 @@ impl Xml {
     ///
     /// # Panics
     /// In case the XML Event can't be written.
+    #[inline]
     pub fn todo_to_xml(todo: &Todo) -> Vec<u8> {
         let mut buffer = Vec::new();
         let mut writer = Writer::new_with_indent(&mut buffer, b' ', 4);
@@ -74,6 +78,7 @@ impl Xml {
     ///
     /// # Panics
     /// In case the XML Event can't be written.
+    #[inline]
     pub fn task_to_xml(writer: &mut Writer<&mut Vec<u8>>, task: &Task) {
         let mut task_bytes = BytesStart::new("Task");
         task_bytes.push_attribute(("id", &*task.id.to_string()));
@@ -95,6 +100,7 @@ impl Xml {
     ///
     /// # Panics
     /// If a value can't be unescaped.
+    #[inline]
     pub fn xml_to_tasks(mut reader: Reader<&[u8]>) -> Vec<Task> {
         let mut tasks = Vec::<Task>::new();
         let mut task = None::<Task>;
@@ -145,22 +151,27 @@ impl Xml {
 }
 
 impl FilePersister for Xml {
+    #[inline]
     fn path(&self) -> PathBuf {
         self.path.clone()
     }
 
+    #[inline]
     fn boxed(self) -> Box<dyn FilePersister> {
         Box::new(self)
     }
 
+    #[inline]
     fn exists(&self) -> bool {
         fs::exists(&self.path).expect("The XML file's existence couldn't be checked")
     }
 
+    #[inline]
     fn default(&self) -> String {
         Self::prolog()
     }
 
+    #[inline]
     fn tasks(&self) -> Vec<Task> {
         let xml = self.lines().join("");
         let reader = Reader::from_str(&xml);
@@ -168,6 +179,7 @@ impl FilePersister for Xml {
         Self::xml_to_tasks(reader)
     }
 
+    #[inline]
     fn open(&self) -> fs::File {
         fs::OpenOptions::new()
             .write(true)
@@ -177,6 +189,7 @@ impl FilePersister for Xml {
             .expect("Should have been able to create the file")
     }
 
+    #[inline]
     fn lines(&self) -> Vec<String> {
         fs::read_to_string(&self.path)
             .expect("Should have been able to read the XML file")
@@ -186,6 +199,7 @@ impl FilePersister for Xml {
             .collect()
     }
 
+    #[inline]
     fn write(&self, todo: &Todo) {
         let buffer = Self::todo_to_xml(todo);
         let xml = String::from_utf8(buffer).unwrap();
@@ -195,10 +209,12 @@ impl FilePersister for Xml {
         self.open().write_all(&bytes).unwrap();
     }
 
+    #[inline]
     fn clean(&self) {
         fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
     }
 
+    #[inline]
     fn remove(&self) {
         fs::remove_file(&self.path).expect("Should have been able to delete the XML file");
     }

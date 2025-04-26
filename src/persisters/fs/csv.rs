@@ -17,41 +17,50 @@ pub struct Csv {
 
 impl Csv {
     /// Constructor of the `Csv` struct.
+    #[inline]
     pub fn new<T: AsRef<Path>>(path: T) -> Self {
         Self { path: path.as_ref().to_path_buf() }
     }
 
     /// Returns the header of a the csv file.
+    #[inline]
     pub fn header() -> String {
         String::from("id,content,priority,checked\n")
     }
 }
 
 impl FilePersister for Csv {
+    #[inline]
     fn path(&self) -> PathBuf {
         self.path.clone()
     }
 
+    #[inline]
     fn boxed(self) -> Box<dyn FilePersister> {
         Box::new(self)
     }
 
+    #[inline]
     fn exists(&self) -> bool {
         fs::exists(&self.path).expect("The CSV file's existence couldn't be checked")
     }
 
+    #[inline]
     fn default(&self) -> String {
         Self::header()
     }
 
+    #[inline]
     fn tasks(&self) -> Vec<Task> {
         self.lines().iter().skip(1).map(Task::from).collect()
     }
 
+    #[inline]
     fn open(&self) -> fs::File {
         fs::File::open(&self.path).expect("Should have been able to create the file")
     }
 
+    #[inline]
     fn lines(&self) -> Vec<String> {
         fs::read_to_string(&self.path)
             .expect("Should have been able to read the CSV file")
@@ -61,6 +70,7 @@ impl FilePersister for Csv {
             .collect()
     }
 
+    #[inline]
     fn write(&self, todo: &Todo) {
         let sep = if cfg!(windows) { "\r\n" } else { "\n" };
 
@@ -78,10 +88,12 @@ impl FilePersister for Csv {
         fs::write(&self.path, bytes).expect("Should have been able to write into the CSV file");
     }
 
+    #[inline]
     fn clean(&self) {
         fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
     }
 
+    #[inline]
     fn remove(&self) {
         fs::remove_file(&self.path).expect("Should have been able to delete the CSV file");
     }

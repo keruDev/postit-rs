@@ -50,6 +50,7 @@ pub enum Protocol {
 
 impl<T: AsRef<str>> From<T> for Protocol {
     /// Transforms a string slice into a `Protocol` variant.
+    #[inline]
     fn from(s: T) -> Self {
         match s.as_ref().to_lowercase().trim() {
             "sqlite" => Self::Sqlite,
@@ -65,6 +66,7 @@ impl<T: AsRef<str>> From<T> for Protocol {
 
 impl Protocol {
     /// Returns the `Protocol` value as its string representation.
+    #[inline]
     pub const fn to_str(&self) -> &str {
         match self {
             Self::Sqlite => "sqlite",
@@ -75,6 +77,7 @@ impl Protocol {
 }
 
 impl fmt::Display for Protocol {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Self::Sqlite => write!(f, "sqlite"),
@@ -87,6 +90,7 @@ impl fmt::Display for Protocol {
 impl Deref for Protocol {
     type Target = str;
 
+    #[inline]
     fn deref(&self) -> &Self::Target {
         self.to_str()
     }
@@ -99,6 +103,7 @@ pub struct Orm {
 }
 
 impl fmt::Debug for Orm {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Orm")
             .field("db", &"Box<dyn DbPersister>")
@@ -109,11 +114,13 @@ impl fmt::Debug for Orm {
 impl Orm {
     /// Constructor of the `Orm` struct, which controls instances of structs
     /// that implement the [`DbPersister`] trait.
+    #[inline]
     pub const fn new(persister: Box<dyn DbPersister>) -> Self {
         Self { db: persister }
     }
 
     /// Creates a `Orm` instance from a connection string.
+    #[inline]
     pub fn from<T: AsRef<str>>(conn: T) -> Self {
         Self::new(Self::get_persister(conn))
     }
@@ -122,6 +129,7 @@ impl Orm {
     ///
     /// # Panics
     /// In case the extension can't be converted to str.
+    #[inline]
     pub fn is_sqlite(conn: &str) -> bool {
         let path = std::path::Path::new(conn);
 
@@ -136,6 +144,7 @@ impl Orm {
     ///
     /// # Panics
     /// If the path can't be converted to str.
+    #[inline]
     pub fn get_persister<T: AsRef<str>>(conn: T) -> Box<dyn DbPersister> {
         let conn = conn.as_ref();
 
@@ -164,30 +173,37 @@ impl Orm {
 }
 
 impl Persister for Orm {
+    #[inline]
     fn boxed(self) -> Box<dyn Persister> {
         Box::new(self)
     }
 
+    #[inline]
     fn to_string(&self) -> String {
         self.db.conn()
     }
 
+    #[inline]
     fn exists(&self) -> bool {
         self.db.exists()
     }
 
+    #[inline]
     fn tasks(&self) -> Vec<Task> {
         self.db.tasks()
     }
 
+    #[inline]
     fn read(&self) -> Vec<String> {
         self.db.select()
     }
 
+    #[inline]
     fn edit(&self, todo: &Todo, ids: &[u32], action: Action) {
         self.db.update(todo, ids, action);
     }
 
+    #[inline]
     fn save(&self, todo: &Todo) {
         if self.db.count() == 0 {
             return self.db.insert(todo);
@@ -199,15 +215,18 @@ impl Persister for Orm {
         self.db.insert(&task);
     }
 
+    #[inline]
     fn replace(&self, todo: &Todo) {
         self.db.clean();
         self.db.insert(todo);
     }
 
+    #[inline]
     fn clean(&self) {
         self.db.clean();
     }
 
+    #[inline]
     fn remove(&self) {
         self.db.drop_database();
     }

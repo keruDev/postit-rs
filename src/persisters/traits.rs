@@ -42,12 +42,14 @@ pub trait Persister: fmt::Debug {
 }
 
 impl PartialEq for Box<dyn Persister> {
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
         (self.to_string() == other.to_string()) && (self.tasks() == other.tasks())
     }
 }
 
 impl Clone for Box<dyn Persister> {
+    #[inline]
     fn clone(&self) -> Self {
         crate::Config::resolve_persister(Some(self.to_string()))
     }
@@ -87,6 +89,7 @@ pub trait FilePersister {
 }
 
 impl PartialEq for Box<dyn FilePersister> {
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
         (self.path() == other.path()) && (self.tasks() == other.tasks())
     }
@@ -132,6 +135,7 @@ pub trait DbPersister {
 }
 
 impl PartialEq for Box<dyn DbPersister> {
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
         (self.conn() == other.conn()) && (self.tasks() == other.tasks())
     }

@@ -9,6 +9,7 @@ pub struct Command;
 
 impl Command {
     /// Uses the [`sub::Example`] value passed to show its corresponding example.
+    #[inline]
     pub fn run(cmnd: &sub::Example) {
         match cmnd {
             sub::Example::Sample => Self::sample(),
@@ -26,6 +27,7 @@ impl Command {
     }
 
     /// Use case of the 'sample' command.
+    #[inline]
     pub fn sample() {
         println!(
             "
@@ -45,6 +47,7 @@ Sample:"
     }
 
     /// Use case of the 'view' command.
+    #[inline]
     pub fn view() {
         println!(
             "
@@ -63,6 +66,7 @@ How to use:
     }
 
     /// Use case of the 'add' command.
+    #[inline]
     pub fn add() {
         let line = "5,New task,low,false";
         let task = Task::from(line);
@@ -102,6 +106,7 @@ How to use:
     }
 
     /// Use case of the 'set' command.
+    #[inline]
     pub fn set() {
         fn set_content() {
             let mut todo = Todo::sample();
@@ -177,6 +182,7 @@ Description:
     }
 
     /// Use case of the 'check' command.
+    #[inline]
     pub fn check() {
         println!(
             "
@@ -205,6 +211,7 @@ How to use:
     }
 
     /// Use case of the 'uncheck' command.
+    #[inline]
     pub fn uncheck() {
         println!(
             "
@@ -233,6 +240,7 @@ How to use:
     }
 
     /// Use case of the 'drop' command.
+    #[inline]
     pub fn drop() {
         fn force_drop() {
             println!(
@@ -286,6 +294,7 @@ How to use:
     }
 
     /// Use case of the 'copy' command.
+    #[inline]
     pub fn copy() {
         println!(
             "
@@ -319,6 +328,7 @@ Config:
     }
 
     /// Use case of the 'clean' command.
+    #[inline]
     pub fn clean() {
         println!(
             "
@@ -334,6 +344,7 @@ How to use:
     }
 
     /// Use case of the 'remove' command.
+    #[inline]
     pub fn remove() {
         println!(
             "
@@ -349,6 +360,7 @@ How to use:
     }
 
     /// Use case of the 'config' command.
+    #[inline]
     pub fn config() {
         println!(
             "

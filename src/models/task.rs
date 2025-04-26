@@ -51,6 +51,7 @@ pub enum Priority {
 
 impl<T: AsRef<str>> From<T> for Priority {
     /// Transforms a string slice into a `Priority` variant.
+    #[inline]
     fn from(s: T) -> Self {
         match s.as_ref().to_lowercase().trim() {
             "high" => Self::High,
@@ -63,6 +64,7 @@ impl<T: AsRef<str>> From<T> for Priority {
 
 impl Priority {
     /// Returns the `Priority` value as its string representation.
+    #[inline]
     pub const fn to_str(&self) -> &str {
         match self {
             Self::High => "high",
@@ -74,6 +76,7 @@ impl Priority {
 }
 
 impl fmt::Display for Priority {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Self::High => write!(f, "high"),
@@ -87,6 +90,7 @@ impl fmt::Display for Priority {
 impl Deref for Priority {
     type Target = str;
 
+    #[inline]
     fn deref(&self) -> &Self::Target {
         self.to_str()
     }
@@ -107,6 +111,7 @@ pub struct Task {
 }
 
 impl fmt::Display for Task {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let msg = format!("Task({}: {})", self.id, self.content);
 
@@ -126,6 +131,7 @@ impl fmt::Display for Task {
 }
 
 impl Default for Task {
+    #[inline]
     fn default() -> Self {
         Self {
             id: 0,
@@ -138,11 +144,13 @@ impl Default for Task {
 
 impl Task {
     /// Constructor of the `Task` struct.
+    #[inline]
     pub const fn new(id: u32, content: String, priority: Priority, checked: bool) -> Self {
         Self { id, content, priority, checked }
     }
 
     /// Transforms a line with the format `id,content,priority,checked` to a Task.
+    #[inline]
     pub fn from<T: AsRef<str>>(line: T) -> Self {
         let (id, content, priority, checked) = Self::split(line.as_ref());
         Self { id, content, priority, checked }
@@ -153,6 +161,7 @@ impl Task {
     /// # Panics
     /// If the `id` field can't be obtained from the first index or there is an error parsing.
     /// If the `content` field can't be obtained from the second index.
+    #[inline]
     pub fn split<T: AsRef<str>>(line: T) -> (u32, String, Priority, bool) {
         let list: Vec<&str> = line.as_ref().split(',').map(str::trim).collect();
 
@@ -172,6 +181,7 @@ impl Task {
     }
 
     /// Formats the Task into a String.
+    #[inline]
     pub fn as_line(&self) -> String {
         format!("{},{},{},{}", self.id, self.content, self.priority, self.checked)
     }
@@ -180,6 +190,7 @@ impl Task {
     ///
     /// # Errors
     /// If the task is already checked, an error will be returned.
+    #[inline]
     pub const fn check(&mut self) -> Result<&Self, error::Error> {
         if self.checked {
             Err(error::Error::AlreadyChecked { id: self.id })
@@ -193,6 +204,7 @@ impl Task {
     ///
     /// # Errors
     /// If the task is already unchecked, an error will be returned.
+    #[inline]
     pub const fn uncheck(&mut self) -> Result<&Self, error::Error> {
         if self.checked {
             self.checked = false;
