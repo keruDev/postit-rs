@@ -17,37 +17,45 @@ pub struct Json {
 
 impl Json {
     /// Constructor of the `Json` struct.
+    #[inline]
     pub fn new<T: AsRef<Path>>(path: T) -> Self {
         Self { path: path.as_ref().to_path_buf() }
     }
 
     /// Returns the basic structure to initialize a JSON file.
+    #[inline]
     pub fn array() -> String {
         String::from("[]")
     }
 }
 
 impl FilePersister for Json {
+    #[inline]
     fn path(&self) -> PathBuf {
         self.path.clone()
     }
 
+    #[inline]
     fn boxed(self) -> Box<dyn FilePersister> {
         Box::new(self)
     }
 
+    #[inline]
     fn exists(&self) -> bool {
         fs::exists(&self.path).expect("The JSON file's existence couldn't be checked")
     }
 
+    #[inline]
     fn default(&self) -> String {
         Self::array()
     }
 
+    #[inline]
     fn tasks(&self) -> Vec<Task> {
         serde_json::from_str(&self.lines().join("")).expect("JSON was not well-formatted")
     }
 
+    #[inline]
     fn open(&self) -> fs::File {
         fs::OpenOptions::new()
             .write(true)
@@ -57,6 +65,7 @@ impl FilePersister for Json {
             .expect("Should have been able to create the file")
     }
 
+    #[inline]
     fn lines(&self) -> Vec<String> {
         fs::read_to_string(&self.path)
             .expect("Should have been able to read the JSON file")
@@ -66,15 +75,18 @@ impl FilePersister for Json {
             .collect()
     }
 
+    #[inline]
     fn write(&self, todo: &Todo) {
         serde_json::to_writer_pretty(self.open(), &todo.tasks)
             .expect("Should have been able to write into the JSON file");
     }
 
+    #[inline]
     fn clean(&self) {
         fs::write(&self.path, self.default()).expect("Should have been able to clean the CSV file");
     }
 
+    #[inline]
     fn remove(&self) {
         fs::remove_file(&self.path).expect("Should have been able to delete the JSON file");
     }

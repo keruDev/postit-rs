@@ -28,6 +28,7 @@ pub struct Config {
 }
 
 impl Default for Config {
+    #[inline]
     fn default() -> Self {
         Self {
             persister: String::from("tasks.csv"),
@@ -39,6 +40,7 @@ impl Default for Config {
 }
 
 impl fmt::Display for Config {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "persister: {}", self.persister)?;
         writeln!(f, "force_drop: {}", self.force_drop)?;
@@ -50,6 +52,7 @@ impl fmt::Display for Config {
 // Methods for managing the 'config' commands
 impl Config {
     /// Manages the `.postit.toml` file using a `ConfigSubcommand` instance.
+    #[inline]
     pub fn manage(subcommand: sub::Config) {
         match subcommand {
             sub::Config::Env => Self::print_env(),
@@ -65,6 +68,7 @@ impl Config {
     ///
     /// # Panics
     /// If there is any error while creating, reading or writing the config file.
+    #[inline]
     pub fn init() {
         let path = &Self::path();
 
@@ -91,6 +95,7 @@ impl Config {
     ///
     /// # Panics
     /// If `POSTIT_ROOT` is empty.
+    #[inline]
     pub fn print_env() {
         let env = Self::env_var();
 
@@ -105,6 +110,7 @@ impl Config {
     ///
     /// # Panics
     /// If the config file is not located at the expected path.
+    #[inline]
     pub fn print_path() {
         let path = Self::path();
 
@@ -121,6 +127,7 @@ impl Config {
     ///
     /// # Panics
     /// If the config file can't be deleted.
+    #[inline]
     pub fn drop() {
         let path = &Self::path();
 
@@ -133,6 +140,7 @@ impl Config {
     }
 
     /// Displays a list of the current config values.
+    #[inline]
     pub fn list() {
         println!("{}", Self::load());
     }
@@ -141,6 +149,7 @@ impl Config {
     ///
     /// # Panics
     /// If there are no values provided.
+    #[inline]
     pub fn set(args: args::ConfigSet) {
         if args.persister.is_none()
             && args.force_drop.is_none()
@@ -175,11 +184,13 @@ impl Config {
 // Utility methods to interact with the configuration
 impl Config {
     /// Returns the value of the `POSTIT_ROOT` env var.
+    #[inline]
     pub fn env_var() -> String {
         std::env::var("POSTIT_ROOT").unwrap_or_default()
     }
 
     /// Returns the name of the config file.
+    #[inline]
     pub fn config_file_name() -> String {
         String::from(".postit.toml")
     }
@@ -188,17 +199,18 @@ impl Config {
     ///
     /// # Panics
     /// If the user's home directory can't be located.
+    #[inline]
     pub fn default_path() -> PathBuf {
-        let mut path = dirs::home_dir().expect("Couldn't locate the user's home directory");
-        path.push(".postit");
-
-        path
+        dirs::home_dir()
+            .expect("Couldn't locate the user's home directory")
+            .join(".postit")
     }
 
     /// Returns the default path of postit's config file.
     ///
     /// # Panics
     /// If the path can't be created
+    #[inline]
     pub fn default_config_path() -> PathBuf {
         let mut path = Self::default_path();
 
@@ -215,6 +227,7 @@ impl Config {
     ///
     /// # Panics
     /// If the path can't be created
+    #[inline]
     pub fn path() -> PathBuf {
         let env = Self::env_var();
 
@@ -238,6 +251,7 @@ impl Config {
     ///
     /// # Panics
     /// If the parent path can't be extracted from the configuration path.
+    #[inline]
     pub fn get_parent_path() -> PathBuf {
         Self::path().parent().unwrap().to_owned()
     }
@@ -248,6 +262,7 @@ impl Config {
     /// # Panics
     /// - If the path can't be converted to str.
     /// - If the parent path can't be converted to str.
+    #[inline]
     pub fn build_path<T: AsRef<Path>>(path: T) -> PathBuf {
         let path_str = path.as_ref().to_str().unwrap();
 
@@ -267,6 +282,7 @@ impl Config {
     ///
     /// # Panics
     /// If the config file can't be loaded.
+    #[inline]
     pub fn load() -> Self {
         let path = &Self::path();
 
@@ -283,6 +299,7 @@ impl Config {
     ///
     /// # Panics
     /// If the config file can't be saved.
+    #[inline]
     pub fn save(&self) {
         let path = Self::path();
 
@@ -298,6 +315,7 @@ impl Config {
     /// If the value of path is:
     /// - `Some`: returns itself.
     /// - `None`: returns the path stored in the config file.
+    #[inline]
     pub fn resolve_persister(persister: Option<String>) -> Box<dyn Persister> {
         let path_or_conn = persister.unwrap_or_else(|| Self::load().persister);
 

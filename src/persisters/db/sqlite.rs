@@ -19,6 +19,7 @@ pub struct Sqlite {
 }
 
 impl Clone for Sqlite {
+    #[inline]
     fn clone(&self) -> Self {
         Self {
             conn_str: self.conn_str.clone(),
@@ -33,6 +34,7 @@ impl Sqlite {
     /// # Panics
     /// If the path can't be converted to str.
     /// If a connection to the `SQLite` file can't be opened.
+    #[inline]
     pub fn from<T: AsRef<Path>>(conn: T) -> Self {
         let path = Config::build_path(conn.as_ref());
         let path_str = path.to_str().unwrap();
@@ -50,6 +52,7 @@ impl Sqlite {
     }
 
     /// Returns the desired ids format to be used in a query.
+    #[inline]
     pub fn format_ids(&self, ids: &[u32]) -> String {
         ids.iter()
             .map(|&n| n.to_string())
@@ -61,6 +64,7 @@ impl Sqlite {
     ///
     /// # Panics
     /// If a value can't be unwrapped.
+    #[inline]
     pub fn read_row(&self, stmt: &Statement) -> String {
         format!(
             "{},{},{},{}",
@@ -75,6 +79,7 @@ impl Sqlite {
     ///
     /// # Panics
     /// If a value can't be unwrapped.
+    #[inline]
     pub fn reset_autoincrement(&self, table: &str) {
         #[rustfmt::skip]
         let query = format!("
@@ -92,10 +97,12 @@ impl Sqlite {
 }
 
 impl DbPersister for Sqlite {
+    #[inline]
     fn conn(&self) -> String {
         self.conn_str.clone()
     }
 
+    #[inline]
     fn boxed(self) -> Box<dyn DbPersister> {
         Box::new(self)
     }
@@ -104,6 +111,7 @@ impl DbPersister for Sqlite {
     ///
     /// # Panics
     /// In case the statement can't be prepared.
+    #[inline]
     fn exists(&self) -> bool {
         #[rustfmt::skip]
         let mut stmt = self.connection.prepare("
@@ -122,6 +130,7 @@ impl DbPersister for Sqlite {
         !result.is_empty()
     }
 
+    #[inline]
     fn count(&self) -> u32 {
         if !self.exists() {
             return 0_u32;
@@ -141,10 +150,12 @@ impl DbPersister for Sqlite {
         }
     }
 
+    #[inline]
     fn tasks(&self) -> Vec<Task> {
         self.select().iter().map(Task::from).collect()
     }
 
+    #[inline]
     fn create(&self) {
         #[rustfmt::skip]
         self.connection.execute("
@@ -157,6 +168,7 @@ impl DbPersister for Sqlite {
         ").unwrap();
     }
 
+    #[inline]
     fn select(&self) -> Vec<String> {
         let mut stmt = self.connection.prepare("SELECT * FROM tasks").unwrap();
 
@@ -169,6 +181,7 @@ impl DbPersister for Sqlite {
         result
     }
 
+    #[inline]
     fn insert(&self, todo: &Todo) {
         todo.tasks.iter().for_each(|task| {
             #[rustfmt::skip]
@@ -190,6 +203,7 @@ impl DbPersister for Sqlite {
         });
     }
 
+    #[inline]
     fn update(&self, todo: &Todo, ids: &[u32], action: Action) {
         if matches!(action, Action::Drop) {
             return self.delete(ids);
@@ -220,6 +234,7 @@ impl DbPersister for Sqlite {
         }
     }
 
+    #[inline]
     fn delete(&self, ids: &[u32]) {
         let ids = self.format_ids(ids);
 
@@ -237,10 +252,12 @@ impl DbPersister for Sqlite {
         }
     }
 
+    #[inline]
     fn drop_database(&self) {
         std::fs::remove_file(self.conn()).expect("Couldn't drop the database");
     }
 
+    #[inline]
     fn clean(&self) {
         let table = String::from("tasks");
         let query = format!("DELETE FROM {table}");

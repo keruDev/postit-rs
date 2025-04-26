@@ -8,6 +8,7 @@ pub struct Flag;
 
 impl Flag {
     /// Uses the [`sub::Flag`] value passed to show its corresponding example.
+    #[inline]
     pub fn run(flag: &sub::Flag) {
         match flag {
             sub::Flag::Persister => Self::persister(),
@@ -15,6 +16,7 @@ impl Flag {
     }
 
     /// Use case of the 'persister' flag.
+    #[inline]
     pub fn persister() {
         println!(
             "

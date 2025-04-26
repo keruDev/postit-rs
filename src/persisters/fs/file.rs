@@ -44,6 +44,7 @@ pub enum Format {
 
 impl<T: AsRef<str>> From<T> for Format {
     /// Transforms a string slice into a `Format` variant.
+    #[inline]
     fn from(s: T) -> Self {
         match s.as_ref().to_lowercase().trim() {
             "json" => Self::Json,
@@ -59,6 +60,7 @@ impl<T: AsRef<str>> From<T> for Format {
 
 impl Format {
     /// Returns the `Priority` value as its string representation.
+    #[inline]
     pub const fn to_str(&self) -> &str {
         match self {
             Self::Csv => "csv",
@@ -71,6 +73,7 @@ impl Format {
 impl Deref for Format {
     type Target = str;
 
+    #[inline]
     fn deref(&self) -> &Self::Target {
         self.to_str()
     }
@@ -83,6 +86,7 @@ pub struct File {
 }
 
 impl fmt::Debug for File {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("File")
             .field("file", &"Box<dyn FilePersister>")
@@ -96,6 +100,7 @@ impl File {
     ///
     /// # Panics
     /// If the file name can't be extracted from the persister path.
+    #[inline]
     pub fn new(persister: Box<dyn FilePersister>) -> Self {
         let path = persister.path();
         let file_name = path.file_name().unwrap();
@@ -105,6 +110,7 @@ impl File {
     }
 
     /// Creates a `File` instance from a path.
+    #[inline]
     pub fn from<T: AsRef<str>>(file_path: T) -> Self {
         let file_name = Self::check_name(file_path.as_ref());
 
@@ -116,6 +122,7 @@ impl File {
     ///
     /// # Panics
     /// In case the persister can't be populated with the default contents.
+    #[inline]
     pub fn check_content(&self) {
         let path = &self.file.path();
 
@@ -129,6 +136,7 @@ impl File {
     }
 
     /// Checks the format of a file and return the same instance with the correct format.
+    #[inline]
     pub fn check_name<T: AsRef<Path>>(path: T) -> PathBuf {
         let mut path = path.as_ref().to_path_buf();
 
@@ -158,6 +166,7 @@ impl File {
     ///
     /// # Panics
     /// In case the file extension can't be converted to `&str`.
+    #[inline]
     pub fn get_persister<T: AsRef<Path>>(file: T) -> Box<dyn FilePersister> {
         let mut file = file.as_ref().to_path_buf();
 
@@ -173,43 +182,53 @@ impl File {
 }
 
 impl Persister for File {
+    #[inline]
     fn boxed(self) -> Box<dyn Persister> {
         Box::new(self)
     }
 
+    #[inline]
     fn to_string(&self) -> String {
         self.file.path().to_str().unwrap().to_owned()
     }
 
+    #[inline]
     fn exists(&self) -> bool {
         self.file.path().exists()
     }
 
+    #[inline]
     fn tasks(&self) -> Vec<Task> {
         self.check_content();
         self.file.tasks()
     }
 
+    #[inline]
     fn read(&self) -> Vec<String> {
         self.file.lines()
     }
 
+    #[inline]
     fn edit(&self, todo: &Todo, _ids: &[u32], _action: Action) {
         self.file.write(todo);
     }
 
+    #[inline]
     fn save(&self, todo: &Todo) {
         self.file.write(todo);
     }
 
+    #[inline]
     fn replace(&self, todo: &Todo) {
         self.file.write(todo);
     }
 
+    #[inline]
     fn clean(&self) {
         self.file.clean();
     }
 
+    #[inline]
     fn remove(&self) {
         let path = self.file.path();
 
@@ -224,6 +243,7 @@ impl Persister for File {
 }
 
 impl PartialEq for File {
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
         (self.to_string() == other.to_string()) && (self.tasks() == other.tasks())
     }
