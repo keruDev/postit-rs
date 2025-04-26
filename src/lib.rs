@@ -19,6 +19,24 @@
     clippy::pedantic,
     clippy::missing_docs_in_private_items,
     clippy::dbg_macro,
+    clippy::correctness,
+    clippy::suspicious,
+    clippy::style,
+    clippy::complexity,
+    clippy::perf,
+
+    clippy::single_match_else,
+    clippy::implicit_clone,
+    clippy::str_to_string,
+    clippy::missing_inline_in_public_items,
+    clippy::unused_trait_names,
+    clippy::wildcard_enum_match_arm,
+    clippy::single_call_fn,
+    clippy::absolute_paths,
+    clippy::as_conversions,
+    clippy::panic,
+    // clippy::expect_used,
+    // clippy::unwrap_used,
     missing_docs
 )]
 #![allow(

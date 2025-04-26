@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use super::cli::{arguments as args, subcommands as sub};
 use crate::db::Orm;
+use crate::exit;
 use crate::fs::File;
 use crate::traits::Persister;
 
@@ -85,8 +86,9 @@ impl Config {
         let toml =
             toml::to_string_pretty(&Self::default()).expect("Failed to serialize config to TOML");
 
-        file.write_all(toml.as_bytes())
-            .expect("Failed to write default config to file");
+        if let Err(e) = file.write_all(toml.as_bytes()) {
+            exit!("Failed to write default config to file: {e}");
+        }
 
         println!("Config file created at '{}'", path.to_str().unwrap());
     }
@@ -156,7 +158,7 @@ impl Config {
             && args.force_copy.is_none()
             && args.drop_after_copy.is_none()
         {
-            panic!("You must provide a flag and value to set");
+            exit!("You must provide a flag and value to set");
         }
 
         let mut config = Self::load();
@@ -304,12 +306,13 @@ impl Config {
         let path = Self::path();
 
         let mut file = fs::File::create(&path)
-            .unwrap_or_else(|_| panic!("Failed to open the config file: {}", path.display()));
+            .unwrap_or_else(|_| exit!("Failed to open the config file: {}", path.display()));
 
         let toml = toml::to_string_pretty(self).expect("Failed to save config to TOML");
 
-        file.write_all(toml.as_bytes())
-            .expect("Failed to save config to file");
+        if let Err(e) = file.write_all(toml.as_bytes()) {
+            exit!("Failed to save config to file: {e}");
+        }
     }
 
     /// If the value of path is:

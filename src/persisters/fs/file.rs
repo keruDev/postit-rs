@@ -10,7 +10,7 @@ use std::{fmt, fs};
 use super::{Csv, Json, Xml};
 use crate::models::{Task, Todo};
 use crate::traits::{FilePersister, Persister};
-use crate::{Action, Config};
+use crate::{exit, Action, Config};
 
 /// Defines errors related to file management.
 pub mod error {
@@ -132,7 +132,7 @@ impl File {
 
         println!("Creating {}", path.display());
 
-        fs::write(path, self.file.default()).expect("Should have been able to create the file");
+        fs::write(path, self.file.default()).expect("Can't create the file");
     }
 
     /// Checks the format of a file and return the same instance with the correct format.
@@ -204,28 +204,43 @@ impl Persister for File {
     }
 
     #[inline]
-    fn read(&self) -> Vec<String> {
-        self.file.lines()
-    }
+    fn edit(&self, todo: &Todo, _ids: &[u32], action: Action) {
+        if let Err(e) = self.file.write(todo) {
+            let path = self.file.path();
+            let name = path.file_name().unwrap();
 
-    #[inline]
-    fn edit(&self, todo: &Todo, _ids: &[u32], _action: Action) {
-        self.file.write(todo);
+            exit!("Can't perform the {action} operation on the '{name:?}' file: {e}");
+        }
     }
 
     #[inline]
     fn save(&self, todo: &Todo) {
-        self.file.write(todo);
+        if let Err(e) = self.file.write(todo) {
+            let path = self.file.path();
+            let name = path.file_name().unwrap();
+
+            exit!("Can't save the '{name:?}' file: {e}");
+        }
     }
 
     #[inline]
     fn replace(&self, todo: &Todo) {
-        self.file.write(todo);
+        if let Err(e) = self.file.write(todo) {
+            let path = self.file.path();
+            let name = path.file_name().unwrap();
+
+            exit!("Can't replace the '{name:?}' file: {e}");
+        }
     }
 
     #[inline]
     fn clean(&self) {
-        self.file.clean();
+        if let Err(e) = self.file.clean() {
+            let path = self.file.path();
+            let name = path.file_name().unwrap();
+
+            exit!("Can't clean the '{name:?}' file: {e}");
+        }
     }
 
     #[inline]
@@ -233,7 +248,12 @@ impl Persister for File {
         let path = self.file.path();
 
         if path.exists() {
-            return self.file.remove();
+            if let Err(e) = self.file.remove() {
+                let ext = path.file_name().unwrap().to_str().unwrap().to_uppercase();
+                exit!("Can't delete the '{ext}' file: {e}");
+            }
+
+            return;
         }
 
         if let (Some(file), Some(parent)) = (path.file_name(), path.parent()) {

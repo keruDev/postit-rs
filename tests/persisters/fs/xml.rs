@@ -7,24 +7,6 @@ use postit::traits::FilePersister as _;
 use crate::mocks::MockPath;
 
 #[test]
-fn exists_returns_true() {
-    let mock = MockPath::create(Format::Xml);
-    let xml = Xml::new(mock.path());
-
-    assert!(xml.exists());
-}
-
-#[test]
-fn exists_returns_false() {
-    let mock = MockPath::create(Format::Xml);
-    let xml = Xml::new(mock.path());
-
-    drop(mock);
-
-    assert!(xml.exists().not());
-}
-
-#[test]
 fn default() {
     let mock = MockPath::create(Format::Xml);
 
@@ -47,7 +29,7 @@ fn tasks() {
 #[test]
 fn clean() {
     let mock = MockPath::create(Format::Xml);
-    Xml::new(mock.path()).clean();
+    Xml::new(mock.path()).clean().unwrap();
 
     let result = Xml::new(mock.path()).tasks();
     let expect = Vec::new();
@@ -58,7 +40,7 @@ fn clean() {
 #[test]
 fn remove() {
     let mock = MockPath::create(Format::Xml);
-    Xml::new(mock.path()).remove();
+    Xml::new(mock.path()).remove().unwrap();
 
     assert!(mock.path().exists().not());
 }
