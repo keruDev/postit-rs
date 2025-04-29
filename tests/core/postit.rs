@@ -277,7 +277,7 @@ fn copy() {
 
     Postit::run(cli);
 
-    let mock_right = MockPath::new(right_path);
+    let mock_right = MockPath::from(right_path);
 
     let (left_file, left_todo) = expected(&mock_left);
     let (right_file, right_todo) = expected(&mock_right);
@@ -287,7 +287,6 @@ fn copy() {
 }
 
 #[test]
-#[should_panic]
 fn copy_same_paths() {
     let left = MockPath::create(Format::Csv);
     let right = MockPath::create(Format::Csv);
@@ -303,7 +302,6 @@ fn copy_same_paths() {
 }
 
 #[test]
-#[should_panic]
 fn copy_no_left_path() {
     let left = MockPath::create(Format::Csv);
     let right = MockPath::create(Format::Json);
@@ -321,7 +319,6 @@ fn copy_no_left_path() {
 }
 
 #[test]
-#[should_panic]
 fn copy_path_exists() {
     let mut mock = MockConfig::new();
     mock.config.force_copy = false;

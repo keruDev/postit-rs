@@ -11,7 +11,7 @@ use super::{Mongo, Sqlite};
 use crate::db::error;
 use crate::models::{Task, Todo};
 use crate::traits::{DbPersister, Persister};
-use crate::{exit, Action};
+use crate::Action;
 
 /// A database protocol.
 pub enum Protocol {
@@ -171,7 +171,7 @@ impl Persister for Orm {
     #[inline]
     fn edit(&self, todo: &Todo, ids: &[u32], action: Action) {
         if let Err(e) = self.db.update(todo, ids, action.clone()) {
-            exit!("Can't perform the '{action}' action {e}");
+            eprintln!("Can't perform the '{action}' action {e}");
         }
     }
 
@@ -185,32 +185,33 @@ impl Persister for Orm {
         let task = Todo::new(last);
 
         if let Err(e) = self.db.insert(&task) {
-            exit!("Can't insert into the database {e}");
+            eprintln!("Can't insert into the database {e}");
         }
     }
 
     #[inline]
     fn replace(&self, todo: &Todo) {
         if let Err(e) = self.db.clean() {
-            exit!("Can't clean the database {e}");
+            eprintln!("Can't clean the database {e}");
+            return;
         }
 
         if let Err(e) = self.db.insert(todo) {
-            exit!("Can't insert into the database {e}");
+            eprintln!("Can't insert into the database {e}");
         }
     }
 
     #[inline]
     fn clean(&self) {
         if let Err(e) = self.db.clean() {
-            exit!("Can't clean the database {e}");
+            eprintln!("Can't clean the database {e}");
         }
     }
 
     #[inline]
     fn remove(&self) {
         if let Err(e) = self.db.drop_database() {
-            exit!("Can't drop the database {e}");
+            eprintln!("Can't drop the database {e}");
         }
     }
 }

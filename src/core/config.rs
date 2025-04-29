@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 
 use super::cli::{arguments as args, subcommands as sub};
 use crate::db::Orm;
-use crate::exit;
 use crate::fs::File;
 use crate::traits::Persister;
 
@@ -74,8 +73,7 @@ impl Config {
         let path = &Self::path();
 
         if path.exists() {
-            println!("Config file already exists at '{}'", path.to_str().unwrap());
-            return;
+            return println!("Config file already exists at '{}'", path.to_str().unwrap());
         }
 
         if let Some(parent) = path.parent() {
@@ -87,7 +85,8 @@ impl Config {
             toml::to_string_pretty(&Self::default()).expect("Failed to serialize config to TOML");
 
         if let Err(e) = file.write_all(toml.as_bytes()) {
-            exit!("Failed to write default config to file: {e}");
+            eprintln!("Failed to write default config to file: {e}");
+            return;
         }
 
         println!("Config file created at '{}'", path.to_str().unwrap());
@@ -158,7 +157,8 @@ impl Config {
             && args.force_copy.is_none()
             && args.drop_after_copy.is_none()
         {
-            exit!("You must provide a flag and value to set");
+            eprintln!("You must provide a flag and value to set");
+            return;
         }
 
         let mut config = Self::load();
@@ -305,13 +305,19 @@ impl Config {
     pub fn save(&self) {
         let path = Self::path();
 
-        let mut file = fs::File::create(&path)
-            .unwrap_or_else(|_| exit!("Failed to open the config file: {}", path.display()));
+        let file = fs::File::create(&path);
+
+        if let Err(e) = &file {
+            eprintln!("Failed to open the config file {}: {e}", path.display());
+            return;
+        }
+
+        let mut file = file.unwrap();
 
         let toml = toml::to_string_pretty(self).expect("Failed to save config to TOML");
 
         if let Err(e) = file.write_all(toml.as_bytes()) {
-            exit!("Failed to save config to file: {e}");
+            eprintln!("Failed to save config to file: {e}");
         }
     }
 

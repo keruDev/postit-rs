@@ -11,7 +11,7 @@ fn default() {
     let mock = MockPath::create(Format::Xml);
 
     let result = Xml::new(mock.path()).default();
-    let expect = Xml::prolog();
+    let expect = Xml::prolog() + &Xml::dtd();
 
     assert_eq!(result, expect);
 }

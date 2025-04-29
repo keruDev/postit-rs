@@ -7,8 +7,8 @@
 
 use super::cli::{arguments as args, subcommands as sub};
 use super::{Action, Cli, Command, Config};
+use crate::docs;
 use crate::models::{Task, Todo};
-use crate::{docs, exit};
 
 /// Entry point where all operations are executed.
 ///
@@ -113,13 +113,15 @@ impl Postit {
     /// - If the right persister has tasks.    
     fn copy(args: args::Copy) {
         if args.left == args.right {
-            exit!("Both persisters are the same");
+            eprintln!("Both persisters are the same");
+            return;
         }
 
         let left = Config::resolve_persister(Some(args.left));
 
         if left.tasks() == Vec::new() {
-            exit!("'{}' has no tasks to copy", left.to_string());
+            eprintln!("'{}' has no tasks to copy", left.to_string());
+            return;
         }
 
         let right = Config::resolve_persister(Some(args.right));
@@ -127,10 +129,12 @@ impl Postit {
         let config = Config::load();
 
         if !config.force_copy && right.tasks() != Vec::new() {
-            exit!(
+            eprintln!(
                 "'{}' already has tasks. Set 'force_copy' to 'true' to overwrite them.",
                 right.to_string()
             );
+
+            return;
         }
 
         right.replace(&Todo::from(&*left));

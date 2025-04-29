@@ -3,6 +3,7 @@
 //! - enum [`Format`]: used to distinguish different file formats.
 //! - struct [`File`]: manages files and their operations.
 
+use std::ffi::OsStr;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::{fmt, fs};
@@ -10,7 +11,7 @@ use std::{fmt, fs};
 use super::{Csv, Json, Xml};
 use crate::models::{Task, Todo};
 use crate::traits::{FilePersister, Persister};
-use crate::{exit, Action, Config};
+use crate::{Action, Config};
 
 /// Defines errors related to file management.
 pub mod error {
@@ -117,6 +118,21 @@ impl File {
         Self::new(Self::get_persister(file_name))
     }
 
+    /// Returns the path of the file.
+    #[inline]
+    pub fn path(&self) -> PathBuf {
+        self.file.path()
+    }
+
+    /// Returns the file name in the current path.
+    ///
+    /// # Panics
+    /// If the file name can't be extracted from the path.
+    #[inline]
+    pub fn file_name(&self) -> PathBuf {
+        self.file.path().file_name().unwrap().into()
+    }
+
     /// Checks the persister's contents. If the persister is empty or its path
     /// doesn't exists, the persister will get populated by the default contents.
     ///
@@ -170,7 +186,17 @@ impl File {
     pub fn get_persister<T: AsRef<Path>>(path: T) -> Box<dyn FilePersister> {
         let mut file = path.as_ref().to_path_buf();
 
-        let format = Format::from(file.extension().unwrap().to_str().unwrap());
+        if file.is_dir() {
+            eprintln!("The persister can't be a directory");
+        }
+
+        let ext = file
+            .extension()
+            .unwrap_or_else(|| OsStr::new(".csv"))
+            .to_str()
+            .unwrap();
+
+        let format = Format::from(ext);
         file.set_extension(format.to_str());
 
         match format {
@@ -206,10 +232,10 @@ impl Persister for File {
     #[inline]
     fn edit(&self, todo: &Todo, _ids: &[u32], action: Action) {
         if let Err(e) = self.file.write(todo) {
-            let path = self.file.path();
-            let name = path.file_name().unwrap();
-
-            exit!("Can't perform the {action} operation on the '{name:?}' file: {e}");
+            eprintln!(
+                "Can't perform the {action} operation on the '{:?}' file: {e}",
+                self.file_name()
+            );
         }
     }
 
@@ -219,7 +245,7 @@ impl Persister for File {
             let path = self.file.path();
             let name = path.file_name().unwrap();
 
-            exit!("Can't save the '{name:?}' file: {e}");
+            eprintln!("Can't save the '{name:?}' file: {e}");
         }
     }
 
@@ -229,17 +255,14 @@ impl Persister for File {
             let path = self.file.path();
             let name = path.file_name().unwrap();
 
-            exit!("Can't replace the '{name:?}' file: {e}");
+            eprintln!("Can't replace the '{name:?}' file: {e}");
         }
     }
 
     #[inline]
     fn clean(&self) {
         if let Err(e) = self.file.clean() {
-            let path = self.file.path();
-            let name = path.file_name().unwrap();
-
-            exit!("Can't clean the '{name:?}' file: {e}");
+            eprintln!("Can't clean the '{:?}' file: {e}", self.file_name());
         }
     }
 
@@ -249,8 +272,7 @@ impl Persister for File {
 
         if path.exists() {
             if let Err(e) = self.file.remove() {
-                let ext = path.file_name().unwrap().to_str().unwrap().to_uppercase();
-                exit!("Can't delete the '{ext}' file: {e}");
+                eprintln!("Can't delete the '{:?}' file: {e}", self.file_name());
             }
 
             return;

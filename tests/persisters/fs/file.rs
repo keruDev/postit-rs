@@ -73,40 +73,14 @@ fn check_content_is_empty_or_exists() {
 }
 
 #[test]
-fn check_name_no_name() {
-    let path = ".csv";
-    let mock = MockPath::new(path);
-
-    let checked_path = File::check_name(mock.path());
-    let expected_path = format!("tasks{path}");
-
-    let result = checked_path.file_name().unwrap();
-    let expect = expected_path.as_str();
-
-    assert_eq!(result, expect);
-}
-
-#[test]
 fn check_name_no_ext() {
     let path = "test";
-    let mock = MockPath::new(path);
 
-    let checked_path = File::check_name(mock.path());
+    let checked_path = File::check_name(path);
     let expected_path = format!("{path}.csv");
 
     let result = checked_path.file_name().unwrap();
     let expect = expected_path.as_str();
-
-    assert_eq!(result, expect);
-}
-
-#[test]
-fn check_name_empty() {
-    let mock = MockPath::new(".");
-
-    let checked_path = File::check_name(mock.path());
-    let result = checked_path.file_name().unwrap();
-    let expect = "tasks.csv";
 
     assert_eq!(result, expect);
 }
@@ -149,9 +123,7 @@ fn get_persister_xml() {
 
 #[test]
 fn get_persister_txt() {
-    let mock = MockPath::new("test.txt");
-
-    let path = File::get_persister(mock.path()).path();
+    let path = File::get_persister("test.txt").path();
 
     let result = path.extension().unwrap();
     let expect = "csv";
@@ -161,14 +133,26 @@ fn get_persister_txt() {
 
 #[test]
 fn get_persister_any() {
-    let mock = MockPath::new("test.toml");
-
-    let path = File::get_persister(mock.path()).path();
+    let path = File::get_persister("test.toml").path();
 
     let result = path.extension().unwrap();
     let expect = "csv";
 
     assert_eq!(result, expect);
+}
+
+#[test]
+fn check_name_no_name() {
+    let path = ".csv";
+    let file = File::from(path);
+
+    assert_eq!(file.file_name().to_str().unwrap(), "tasks.csv");
+}
+
+#[test]
+// #[should_panic]
+fn get_persister_dot() {
+    File::get_persister(".");
 }
 
 #[test]

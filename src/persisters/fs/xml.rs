@@ -163,7 +163,7 @@ impl FilePersister for Xml {
 
     #[inline]
     fn default(&self) -> String {
-        Self::prolog()
+        Self::prolog() + &Self::dtd()
     }
 
     #[inline]
@@ -188,7 +188,7 @@ impl FilePersister for Xml {
         let buffer = Self::todo_to_xml(todo);
         let xml = String::from_utf8(buffer).unwrap();
 
-        let bytes = [Self::prolog(), Self::dtd(), xml].join("").into_bytes();
+        let bytes = [self.default(), xml].join("").into_bytes();
 
         self.open()?.write_all(&bytes)
     }
