@@ -3,7 +3,6 @@
 mod action;
 pub mod cli;
 mod config;
-mod macros;
 mod postit;
 
 pub use action::Action;

@@ -173,7 +173,6 @@ drop_after_copy: false";
 }
 
 #[test]
-#[should_panic]
 fn manage_set_all_none() {
     let args = args::ConfigSet {
         persister: None,

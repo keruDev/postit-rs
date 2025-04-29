@@ -1,5 +1,8 @@
 [global]
-exclude-files = ["src/main.rs"]
+exclude-files = [
+    "src/main.rs",
+    "src/docs/*"
+]
 target-dir = ".tarpaulin"
 run-types = ["Tests"]
 timeout = "1m"

@@ -3,35 +3,22 @@ use std::path::{Path, PathBuf};
 use std::{fmt, fs};
 
 use postit::db::{Orm, Protocol};
-use postit::fs::{Csv, Format, Json, Xml};
+use postit::fs::{Csv, File, Format, Json, Xml};
 use postit::models::Todo;
 use postit::traits::{DbPersister, FilePersister};
-use postit::{exit, Config};
+use postit::Config;
 
 /// A temporary path used for testing purposes.
 ///
 /// Implements the `Deref` and `Drop` traits
 /// to delete the temporary path when the test ends.
 pub struct MockPath {
+    pub instance: Box<dyn FilePersister>,
     pub path: PathBuf,
 }
 
 impl MockPath {
-    /// Constructor of the `MockPath` struct.
-    pub fn new<T: AsRef<Path>>(path: T) -> Self {
-        let path = path.as_ref();
-
-        if !path.exists() {
-            fs::File::create(path).expect("Failed to create temp file");
-        }
-
-        Self { path: path.to_path_buf() }
-    }
-
-    pub fn path(&self) -> PathBuf {
-        self.path.clone()
-    }
-
+    /// Main constructor of the `MockPath` struct.
     pub fn create(format: Format) -> Self {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
@@ -46,9 +33,12 @@ impl MockPath {
 
         file.write(&Todo::sample()).unwrap();
 
-        Self { path: file.path() }
+        let path = &file.path();
+
+        Self { instance: file, path: path.to_owned() }
     }
 
+    /// Auxiliary constructor of the `MockPath` struct.
     pub fn blank(format: Format) -> Self {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
@@ -61,7 +51,29 @@ impl MockPath {
             Format::Xml => Self::xml(name),
         };
 
-        Self { path: file.path() }
+        let path = file.path();
+
+        Self { instance: file, path }
+    }
+
+    pub fn from<T: AsRef<Path>>(path: T) -> Self {
+        std::env::set_var("POSTIT_ROOT", "tmp");
+
+        let mut path = path.as_ref().to_path_buf();
+        let var = std::env::var("POSTIT_ROOT").unwrap();
+        let tmp = Path::new(&var);
+
+        if !path.exists() {
+            fs::File::create(&path).expect("Failed to create temp file");
+        }
+
+        if !path.starts_with(tmp) {
+            path = tmp.join(path);
+        }
+
+        let file = File::get_persister(&path);
+
+        Self { instance: file, path }
     }
 
     pub fn csv(name: &str) -> Box<dyn FilePersister> {
@@ -74,6 +86,10 @@ impl MockPath {
 
     pub fn xml(name: &str) -> Box<dyn FilePersister> {
         Xml::new(format!("{name}.xml")).boxed()
+    }
+
+    pub fn path(&self) -> PathBuf {
+        self.path.clone()
     }
 }
 
@@ -161,7 +177,7 @@ impl MockConfig {
             toml::to_string_pretty(&Config::default()).expect("Failed to serialize config to TOML");
 
         if let Err(e) = file.write_all(toml.as_bytes()) {
-            exit!("Failed to save config to file: {e}");
+            eprintln!("Failed to save config to file: {e}");
         }
 
         Self { path, config: Config::default() }
@@ -174,7 +190,7 @@ impl MockConfig {
             toml::to_string_pretty(&self.config).expect("Failed to serialize config to TOML");
 
         if let Err(e) = file.write_all(toml.as_bytes()) {
-            exit!("Failed to save config to file: {e}");
+            eprintln!("Failed to save config to file: {e}");
         }
     }
 

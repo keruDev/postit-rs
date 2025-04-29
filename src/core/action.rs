@@ -5,6 +5,7 @@ use core::fmt;
 
 /// Possible actions taken when editing a persister's tasks.
 #[non_exhaustive]
+#[derive(Clone)]
 pub enum Action {
     /// Used to check tasks.
     Check,
@@ -28,12 +29,5 @@ impl fmt::Display for Action {
             Self::SetContent => write!(f, "set content"),
             Self::SetPriority => write!(f, "set priority"),
         }
-    }
-}
-
-impl Clone for Action {
-    #[inline]
-    fn clone(&self) -> Self {
-        self.to_owned()
     }
 }
