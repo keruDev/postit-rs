@@ -160,17 +160,19 @@ impl Task {
     /// Splits a line with the format `id,content,priority,checked` and handles each value.
     ///
     /// # Panics
-    /// If the `id` field can't be obtained from the first index or there is an error parsing.
-    /// If the `content` field can't be obtained from the second index.
+    /// - If the `id` field can't be obtained or there is an error parsing.
+    /// - If the `content` field can't be obtained from the second index.
     #[inline]
     pub fn split<T: AsRef<str>>(line: T) -> (u32, String, Priority, bool) {
         let list: Vec<&str> = line.as_ref().split(',').map(str::trim).collect();
 
-        let id = list[0]
+        let id = list
+            .first()
+            .unwrap()
             .parse()
             .expect("id field parsed incorrectly; must be a natural number");
 
-        let content = list[1].trim().to_owned();
+        let content = list.get(1).unwrap().trim().to_owned();
 
         let priority = list.get(2).map_or(Priority::Med, Priority::from);
 

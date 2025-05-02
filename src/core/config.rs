@@ -73,7 +73,7 @@ impl Config {
         let path = &Self::path();
 
         if path.exists() {
-            return println!("Config file already exists at '{}'", path.to_str().unwrap());
+            return println!("Config file already exists at '{}'", path.display());
         }
 
         if let Some(parent) = path.parent() {
@@ -89,13 +89,12 @@ impl Config {
             return;
         }
 
-        println!("Config file created at '{}'", path.to_str().unwrap());
+        println!("Config file created at '{}'", path.display());
     }
 
     /// Prints the value of the `POSTIT_ROOT` env var.
     ///
-    /// # Panics
-    /// If `POSTIT_ROOT` is empty.
+    /// Displays an error message if `POSTIT_ROOT` is empty.
     #[inline]
     pub fn print_env() {
         let env = Self::env_var();
@@ -109,8 +108,7 @@ impl Config {
 
     /// Prints the path of the config file.
     ///
-    /// # Panics
-    /// If the config file is not located at the expected path.
+    /// Displays an error message if the config file is not located at the expected path.
     #[inline]
     pub fn print_path() {
         let path = Self::path();
@@ -148,8 +146,7 @@ impl Config {
 
     /// Sets a value for the passed key.
     ///
-    /// # Panics
-    /// If there are no values provided.
+    /// Displays an error message if there are no values provided.
     #[inline]
     pub fn set(args: args::ConfigSet) {
         if args.persister.is_none()
@@ -321,9 +318,11 @@ impl Config {
         }
     }
 
-    /// If the value of path is:
+    /// Builds a persister based on the passed value.
+    ///
+    /// If the value of `persister` is:
     /// - `Some`: returns itself.
-    /// - `None`: returns the path stored in the config file.
+    /// - `None`: returns the persister stored in the config file.
     #[inline]
     pub fn resolve_persister(persister: Option<String>) -> Box<dyn Persister> {
         let path_or_conn = persister.unwrap_or_else(|| Self::load().persister);

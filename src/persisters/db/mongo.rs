@@ -74,7 +74,7 @@ impl DbPersister for Mongo {
 
     /// Checks if a table exists.
     ///
-    /// # Panics
+    /// # Errors
     /// In case the statement can't be prepared.
     #[inline]
     fn exists(&self) -> bool {
@@ -83,20 +83,6 @@ impl DbPersister for Mongo {
             .run()
             .unwrap()
             .contains(&"test".to_owned())
-    }
-
-    #[inline]
-    fn count(&self) -> u32 {
-        if !self.exists() {
-            return 0;
-        }
-
-        self.collection::<u32>()
-            .count_documents(doc! {})
-            .run()
-            .unwrap()
-            .try_into()
-            .unwrap()
     }
 
     #[inline]
@@ -110,11 +96,26 @@ impl DbPersister for Mongo {
     }
 
     #[inline]
+    fn count(&self) -> super::Result<u32> {
+        if !self.exists() {
+            return Ok(0);
+        }
+
+        let n = self
+            .collection::<u32>()
+            .count_documents(doc! {})
+            .run()?
+            .try_into()
+            .unwrap_or(0);
+
+        Ok(n)
+    }
+
+    #[inline]
     fn create(&self) -> super::Result<()> {
-        self.db()
-            .create_collection("tasks")
-            .run()
-            .map_err(super::Error::Mongo)
+        self.db().create_collection("tasks").run()?;
+
+        Ok(())
     }
 
     #[inline]
@@ -135,8 +136,9 @@ impl DbPersister for Mongo {
         self.collection::<Document>()
             .insert_many(&docs)
             .run()
-            .map(|_| ())
-            .map_err(super::Error::Mongo)
+            .map(|_| ())?;
+
+        Ok(())
     }
 
     #[inline]
@@ -161,8 +163,9 @@ impl DbPersister for Mongo {
         self.collection::<Document>()
             .update_many(query, update)
             .run()
-            .map(|_| ())
-            .map_err(super::Error::Mongo)
+            .map(|_| ())?;
+
+        Ok(())
     }
 
     #[inline]
@@ -172,13 +175,16 @@ impl DbPersister for Mongo {
         self.collection::<String>()
             .delete_many(query)
             .run()
-            .map(|_| ())
-            .map_err(super::Error::Mongo)
+            .map(|_| ())?;
+
+        Ok(())
     }
 
     #[inline]
     fn drop_database(&self) -> super::Result<()> {
-        self.db().drop().run().map_err(super::Error::Mongo)
+        self.db().drop().run()?;
+
+        Ok(())
     }
 
     #[inline]
@@ -186,7 +192,8 @@ impl DbPersister for Mongo {
         self.collection::<String>()
             .delete_many(doc! {})
             .run()
-            .map(|_| ())
-            .map_err(super::Error::Mongo)
+            .map(|_| ())?;
+
+        Ok(())
     }
 }

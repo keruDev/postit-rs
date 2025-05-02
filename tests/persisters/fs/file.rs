@@ -1,5 +1,6 @@
 use std::fs;
 use std::ops::Not;
+use std::path::PathBuf;
 
 use postit::fs::{Csv, File, Format};
 use postit::traits::{FilePersister, Persister};
@@ -12,6 +13,14 @@ fn exists_return_true() {
     let file = File::from(mock.to_string());
 
     assert!(file.exists());
+}
+
+#[test]
+fn format_from() {
+    assert_eq!(Format::from("txt"), Format::Csv);
+    assert_eq!(Format::from("csv"), Format::Csv);
+    assert_eq!(Format::from("json"), Format::Json);
+    assert_eq!(Format::from("xml"), Format::Xml);
 }
 
 #[test]
@@ -29,9 +38,21 @@ fn file_fmt_debug() {
     let file = File::new(persister);
 
     let debug_output = format!("{:?}", file);
-    let expected_output = r#"File { file: "Box<dyn FilePersister>" }"#;
+    let expected_output = r#"File { file: "tmp/test_sample.csv" }"#;
 
     assert_eq!(debug_output, expected_output);
+}
+
+#[test]
+fn path() {
+    let mock = MockPath::create(Format::Csv);
+
+    let file = File::from(mock.to_string());
+
+    let result = file.path();
+    let expect = PathBuf::from("tmp/test_sample.csv");
+
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -58,7 +79,22 @@ fn check_name_ok() {
 }
 
 #[test]
-fn check_content_is_empty_or_exists() {
+fn check_content_is_empty() {
+    let mock = MockPath::blank(Format::Csv);
+
+    let persister = File::get_persister(mock.path());
+    let expect = persister.default();
+
+    let file = File::new(persister);
+    file.check_content();
+
+    let result = fs::read_to_string(mock.path()).unwrap();
+
+    assert_eq!(result, expect);
+}
+
+#[test]
+fn check_content_exists() {
     let mock = MockPath::blank(Format::Csv);
 
     let persister = File::get_persister(mock.path());

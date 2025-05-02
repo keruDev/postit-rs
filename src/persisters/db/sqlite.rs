@@ -33,15 +33,14 @@ impl Sqlite {
     /// Creates a `Sqlite` instance from a connection string.
     ///
     /// # Panics
-    /// If the path can't be converted to str.
-    /// If a connection to the `SQLite` file can't be opened.
+    /// - If the path can't be converted to str.
+    /// - If a connection to the `SQLite` file can't be opened.
     #[inline]
     pub fn from<T: AsRef<Path>>(conn: T) -> Self {
         let path = Config::build_path(conn.as_ref());
-        let path_str = path.to_str().unwrap();
 
         let instance = Self {
-            conn_str: String::from(path_str),
+            conn_str: path.to_string_lossy().into_owned(),
             connection: sqlite::open(path).unwrap(),
         };
 
@@ -106,7 +105,7 @@ impl DbPersister for Sqlite {
 
     /// Checks if a table exists.
     ///
-    /// # Panics
+    /// # Errors
     /// In case the statement can't be prepared.
     #[inline]
     fn exists(&self) -> bool {
@@ -128,29 +127,6 @@ impl DbPersister for Sqlite {
     }
 
     #[inline]
-    fn count(&self) -> u32 {
-        if !self.exists() {
-            return 0;
-        }
-
-        #[rustfmt::skip]
-        let mut stmt = self.connection.prepare("
-            SELECT COUNT(*)
-              AS count
-            FROM tasks
-        ").unwrap();
-
-        if matches!(stmt.next(), Ok(State::Row)) {
-            stmt.read::<i64, _>("count")
-                .unwrap_or(0)
-                .try_into()
-                .unwrap_or(0)
-        } else {
-            0
-        }
-    }
-
-    #[inline]
     fn tasks(&self) -> Vec<Task> {
         let mut stmt = self.connection.prepare("SELECT * FROM tasks").unwrap();
 
@@ -164,6 +140,26 @@ impl DbPersister for Sqlite {
     }
 
     #[inline]
+    fn count(&self) -> super::Result<u32> {
+        if !self.exists() {
+            return Ok(0);
+        }
+
+        #[rustfmt::skip]
+        let mut stmt = self.connection.prepare("
+            SELECT COUNT(*)
+              AS count
+            FROM tasks
+        ")?;
+
+        stmt.next()?;
+
+        let n = stmt.read::<i64, _>("count")?.try_into().unwrap_or(0);
+
+        Ok(n)
+    }
+
+    #[inline]
     #[rustfmt::skip]
     fn create(&self) -> super::Result<()> {
         self.connection.execute("
@@ -173,8 +169,9 @@ impl DbPersister for Sqlite {
                 priority    TEXT NOT NULL,
                 checked     BOOLEAN NOT NULL CHECK (checked IN (0, 1))
             )
-        ")
-        .map_err(super::Error::Sqlite)
+        ")?;
+
+        Ok(())
     }
 
     #[inline]
@@ -193,7 +190,9 @@ impl DbPersister for Sqlite {
                 &*i32::from(task.checked).to_string()
             ][..]).unwrap();
 
-            stmt.next().map(|_| ()).map_err(super::Error::Sqlite)
+            stmt.next().map(|_| ())?;
+
+            Ok(())
         })
     }
 
@@ -221,7 +220,9 @@ impl DbPersister for Sqlite {
 
         let mut stmt = self.connection.prepare(query).unwrap();
 
-        stmt.next().map(|_| ()).map_err(super::Error::Sqlite)
+        stmt.next().map(|_| ())?;
+
+        Ok(())
     }
 
     #[inline]
@@ -235,7 +236,9 @@ impl DbPersister for Sqlite {
 
         let mut stmt = self.connection.prepare(query).unwrap();
 
-        stmt.next().map(|_| ()).map_err(super::Error::Sqlite)
+        stmt.next().map(|_| ())?;
+
+        Ok(())
     }
 
     #[inline]
@@ -256,14 +259,14 @@ impl DbPersister for Sqlite {
         let table = String::from("tasks");
         let query = format!("DELETE FROM {table}");
 
-        let mut stmt = self.connection.prepare(query).unwrap();
+        let mut stmt = self.connection.prepare(query)?;
 
         if let Err(e) = stmt.next() {
             eprintln!("Error while cleaning table: {e}");
         }
 
-        self.reset_autoincrement(&table)
-            .map(|_| ())
-            .map_err(super::Error::Sqlite)
+        self.reset_autoincrement(&table).map(|_| ())?;
+
+        Ok(())
     }
 }

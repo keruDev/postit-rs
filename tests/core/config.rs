@@ -313,7 +313,7 @@ fn resolve_persister_file() {
     let mock = MockPath::create(Format::Csv);
     let persister = Config::resolve_persister(Some(mock.to_string()));
 
-    assert_eq!(PathBuf::from(persister.to_string()), mock.path())
+    assert_eq!(PathBuf::from(persister.to_string()), mock.path());
 }
 
 #[test]
@@ -321,7 +321,7 @@ fn resolve_persister_db() {
     let mock = MockConn::create(Protocol::Sqlite);
     let persister = Config::resolve_persister(Some(mock.conn()));
 
-    assert_eq!(persister.to_string(), mock.conn())
+    assert_eq!(persister.to_string(), mock.conn());
 }
 
 #[test]

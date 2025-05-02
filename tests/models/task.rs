@@ -74,7 +74,7 @@ fn uncheck_ok() {
     let mut task = fake_task_checked();
     let result = task.uncheck();
 
-    assert!(result.is_ok())
+    assert!(result.is_ok());
 }
 
 #[test]
@@ -82,7 +82,7 @@ fn uncheck_err() {
     let mut task = fake_task_unchecked();
     let result = task.uncheck();
 
-    assert!(result.is_err())
+    assert!(result.is_err());
 }
 
 #[test]

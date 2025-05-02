@@ -2,8 +2,8 @@
 //!
 //! The `Json` struct implements the [`FilePersister`] trait.
 
+use std::fs;
 use std::path::{Path, PathBuf};
-use std::{fs, io};
 
 use crate::models::{Task, Todo};
 use crate::traits::FilePersister;
@@ -53,27 +53,34 @@ impl FilePersister for Json {
     }
 
     #[inline]
-    fn open(&self) -> io::Result<fs::File> {
-        fs::OpenOptions::new()
+    fn open(&self) -> super::Result<fs::File> {
+        let file = fs::OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open(&self.path)
+            .open(&self.path)?;
+
+        Ok(file)
     }
 
     #[inline]
-    fn write(&self, todo: &Todo) -> io::Result<()> {
-        serde_json::to_writer_pretty(self.open()?, &todo.tasks)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+    fn write(&self, todo: &Todo) -> super::Result<()> {
+        serde_json::to_writer_pretty(self.open()?, &todo.tasks)?;
+
+        Ok(())
     }
 
     #[inline]
-    fn clean(&self) -> io::Result<()> {
-        fs::write(&self.path, self.default())
+    fn clean(&self) -> super::Result<()> {
+        fs::write(&self.path, self.default())?;
+
+        Ok(())
     }
 
     #[inline]
-    fn remove(&self) -> io::Result<()> {
-        fs::remove_file(&self.path)
+    fn remove(&self) -> super::Result<()> {
+        fs::remove_file(&self.path)?;
+
+        Ok(())
     }
 }

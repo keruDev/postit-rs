@@ -12,6 +12,7 @@ skip-clean = true
 verbose = true
 line = true
 
+jobs = 4
 fail-under = 93
 
 [report]

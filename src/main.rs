@@ -1,6 +1,6 @@
 use clap::Parser as _;
-use postit::{Cli, Postit};
+use postit::{Cli, Postit, Result};
 
-fn main() {
-    Postit::run(Cli::parse());
+fn main() -> Result<()> {
+    Postit::run(Cli::parse())
 }

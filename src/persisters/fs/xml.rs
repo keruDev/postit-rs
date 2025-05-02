@@ -52,48 +52,40 @@ impl Xml {
 
     /// Writes a [Todo] instance into XML writer and returns a buffer with the content.
     ///
-    /// # Panics
+    /// # Errors
     /// In case the XML Event can't be written.
     #[inline]
-    pub fn todo_to_xml(todo: &Todo) -> Vec<u8> {
+    pub fn todo_to_xml(todo: &Todo) -> super::Result<Vec<u8>> {
         let mut buffer = Vec::new();
         let mut writer = Writer::new_with_indent(&mut buffer, b' ', 4);
 
-        writer
-            .write_event(Event::Start(BytesStart::new("Tasks")))
-            .unwrap();
+        writer.write_event(Event::Start(BytesStart::new("Tasks")))?;
 
         for task in &todo.tasks {
-            Self::task_to_xml(&mut writer, task);
+            Self::task_to_xml(&mut writer, task)?;
         }
 
-        writer
-            .write_event(Event::End(BytesEnd::new("Tasks")))
-            .unwrap();
+        writer.write_event(Event::End(BytesEnd::new("Tasks")))?;
 
-        buffer
+        Ok(buffer)
     }
 
     /// Writes a [Task] instance into XML writer.
     ///
-    /// # Panics
+    /// # Errors
     /// In case the XML Event can't be written.
     #[inline]
-    pub fn task_to_xml(writer: &mut Writer<&mut Vec<u8>>, task: &Task) {
+    pub fn task_to_xml(writer: &mut Writer<&mut Vec<u8>>, task: &Task) -> io::Result<()> {
         let mut task_bytes = BytesStart::new("Task");
         task_bytes.push_attribute(("id", &*task.id.to_string()));
         task_bytes.push_attribute(("priority", &*task.priority));
         task_bytes.push_attribute(("checked", &*task.checked.to_string()));
 
-        writer.write_event(Event::Start(task_bytes)).unwrap();
+        writer.write_event(Event::Start(task_bytes))?;
 
-        writer
-            .write_event(Event::Text(BytesText::new(&task.content)))
-            .unwrap();
+        writer.write_event(Event::Text(BytesText::new(&task.content)))?;
 
-        writer
-            .write_event(Event::End(BytesEnd::new("Task")))
-            .unwrap();
+        writer.write_event(Event::End(BytesEnd::new("Task")))
     }
 
     /// Reads the tasks from an XML reader and returns a vector of tasks.
@@ -175,31 +167,39 @@ impl FilePersister for Xml {
     }
 
     #[inline]
-    fn open(&self) -> io::Result<fs::File> {
-        fs::OpenOptions::new()
+    fn open(&self) -> super::Result<fs::File> {
+        let file = fs::OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open(&self.path)
+            .open(&self.path)?;
+
+        Ok(file)
     }
 
     #[inline]
-    fn write(&self, todo: &Todo) -> io::Result<()> {
-        let buffer = Self::todo_to_xml(todo);
+    fn write(&self, todo: &Todo) -> super::Result<()> {
+        let buffer = Self::todo_to_xml(todo)?;
         let xml = String::from_utf8(buffer).unwrap();
 
         let bytes = [self.default(), xml].join("").into_bytes();
 
-        self.open()?.write_all(&bytes)
+        self.open()?.write_all(&bytes)?;
+
+        Ok(())
     }
 
     #[inline]
-    fn clean(&self) -> io::Result<()> {
-        fs::write(&self.path, self.default())
+    fn clean(&self) -> super::Result<()> {
+        fs::write(&self.path, self.default())?;
+
+        Ok(())
     }
 
     #[inline]
-    fn remove(&self) -> io::Result<()> {
-        fs::remove_file(&self.path)
+    fn remove(&self) -> super::Result<()> {
+        fs::remove_file(&self.path)?;
+
+        Ok(())
     }
 }

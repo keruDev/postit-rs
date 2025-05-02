@@ -13,7 +13,7 @@ fn new() {
 
     let result = Todo::new(tasks.as_slice());
 
-    assert_eq!(result.tasks, tasks)
+    assert_eq!(result.tasks, tasks);
 }
 
 #[test]
