@@ -8,32 +8,13 @@ use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::{fmt, fs};
 
-use super::{Csv, Json, Xml};
+use super::{error, Csv, Json, Xml};
 use crate::models::{Task, Todo};
 use crate::traits::{FilePersister, Persister};
-use crate::{Action, Config};
-
-/// Defines errors related to file management.
-pub mod error {
-    use std::fmt;
-
-    /// Errors related to file and path management.
-    #[derive(Debug)]
-    pub enum Error {
-        /// Used for file format related issues.
-        UnsupportedFormat,
-    }
-
-    impl fmt::Display for Error {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match *self {
-                Self::UnsupportedFormat => write!(f, "Unsupported file format; defaulting to CSV"),
-            }
-        }
-    }
-}
+use crate::{persisters, Action, Config};
 
 /// Possible file formats.
+#[derive(Debug, PartialEq, Eq)]
 pub enum Format {
     /// A CSV file (associated persister: [`Csv`]).
     Csv,
@@ -90,7 +71,7 @@ impl fmt::Debug for File {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("File")
-            .field("file", &"Box<dyn FilePersister>")
+            .field("file", &self.file.path())
             .finish()
     }
 }
@@ -112,8 +93,8 @@ impl File {
 
     /// Creates a `File` instance from a path.
     #[inline]
-    pub fn from<T: AsRef<str>>(file_path: T) -> Self {
-        let file_name = Self::check_name(file_path.as_ref());
+    pub fn from<T: AsRef<str>>(path: T) -> Self {
+        let file_name = Self::check_name(path.as_ref());
 
         Self::new(Self::get_persister(file_name))
     }
@@ -136,19 +117,21 @@ impl File {
     /// Checks the persister's contents. If the persister is empty or its path
     /// doesn't exists, the persister will get populated by the default contents.
     ///
-    /// # Panics
+    /// # Errors
     /// In case the persister can't be populated with the default contents.
     #[inline]
-    pub fn check_content(&self) {
+    pub fn check_content(&self) -> crate::fs::Result<()> {
         let path = &self.file.path();
 
         if path.exists() {
-            return;
+            return Ok(());
         }
 
         println!("Creating {}", path.display());
 
-        fs::write(path, self.file.default()).expect("Can't create the file");
+        fs::write(path, self.file.default())?;
+
+        Ok(())
     }
 
     /// Checks the format of a file and return the same instance with the correct format.
@@ -225,62 +208,70 @@ impl Persister for File {
 
     #[inline]
     fn tasks(&self) -> Vec<Task> {
-        self.check_content();
+        self.check_content().unwrap();
         self.file.tasks()
     }
 
     #[inline]
-    fn edit(&self, todo: &Todo, _ids: &[u32], action: Action) {
-        if let Err(e) = self.file.write(todo) {
-            eprintln!(
-                "Can't perform the {action} operation on the '{:?}' file: {e}",
-                self.file_name()
-            );
-        }
+    fn edit(&self, todo: &Todo, _ids: &[u32], action: Action) -> persisters::Result<()> {
+        self.file.write(todo).map_err(|e| {
+            eprintln!("Can't perform the {action} operation on the '{:?}' file", self.file_name());
+
+            persisters::Error::FsError(e)
+        })
     }
 
     #[inline]
-    fn save(&self, todo: &Todo) {
-        if let Err(e) = self.file.write(todo) {
+    fn save(&self, todo: &Todo) -> persisters::Result<()> {
+        self.file.write(todo).map_err(|e| {
             let path = self.file.path();
             let name = path.file_name().unwrap();
 
-            eprintln!("Can't save the '{name:?}' file: {e}");
-        }
+            eprintln!("Can't save the '{name:?}' file");
+
+            persisters::Error::FsError(e)
+        })
     }
 
     #[inline]
-    fn replace(&self, todo: &Todo) {
-        if let Err(e) = self.file.write(todo) {
+    fn replace(&self, todo: &Todo) -> persisters::Result<()> {
+        self.file.write(todo).map_err(|e| {
             let path = self.file.path();
             let name = path.file_name().unwrap();
 
-            eprintln!("Can't replace the '{name:?}' file: {e}");
-        }
+            eprintln!("Can't replace the '{name:?}' file");
+
+            persisters::Error::FsError(e)
+        })
     }
 
     #[inline]
-    fn clean(&self) {
-        if let Err(e) = self.file.clean() {
-            eprintln!("Can't clean the '{:?}' file: {e}", self.file_name());
-        }
+    fn clean(&self) -> persisters::Result<()> {
+        self.file.clean().map_err(|e| {
+            eprintln!("Can't clean the '{:?}' file", self.file_name());
+
+            persisters::Error::FsError(e)
+        })
     }
 
     #[inline]
-    fn remove(&self) {
+    fn remove(&self) -> persisters::Result<()> {
         let path = self.file.path();
 
-        if path.exists() {
-            if let Err(e) = self.file.remove() {
-                eprintln!("Can't delete the '{:?}' file: {e}", self.file_name());
+        if !path.exists() {
+            if let (Some(file), Some(parent)) = (path.file_name(), path.parent()) {
+                let msg = format!("The file {:?} doesn't exist at {}", file, parent.display());
+                let err = super::Error::Other(msg.into());
+
+                return Err(persisters::Error::FsError(err));
             }
-
-            return;
         }
 
-        if let (Some(file), Some(parent)) = (path.file_name(), path.parent()) {
-            eprintln!("The file {:?} doesn't exist at {}", file, parent.display());
-        }
+        self.file.remove().map_err(|e| {
+            eprintln!("Can't delete the '{:?}' file", self.file_name());
+
+            persisters::Error::FsError(e)
+        })
     }
 }
 

@@ -13,7 +13,7 @@ fn persister_eq() {
     let left = file.clone();
     let right = file.clone();
 
-    assert!(left.eq(&right))
+    assert!(left.eq(&right));
 }
 
 #[test]
@@ -24,7 +24,7 @@ fn file_persister_eq() {
     let left = csv.clone().boxed();
     let right = csv.boxed();
 
-    assert!(left.eq(&right))
+    assert!(left.eq(&right));
 }
 
 #[test]
@@ -39,5 +39,5 @@ fn db_persister_eq() {
     let left = sqlite.clone().boxed();
     let right = sqlite.boxed();
 
-    assert!(left.eq(&right))
+    assert!(left.eq(&right));
 }

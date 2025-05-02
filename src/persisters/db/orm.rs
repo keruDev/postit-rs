@@ -8,10 +8,10 @@ use std::ops::Deref;
 use std::path::Path;
 
 use super::{Mongo, Sqlite};
-use crate::db::error;
 use crate::models::{Task, Todo};
 use crate::traits::{DbPersister, Persister};
 use crate::Action;
+use crate::{db, persisters};
 
 /// A database protocol.
 pub enum Protocol {
@@ -32,7 +32,7 @@ impl<T: AsRef<str>> From<T> for Protocol {
             "mongodb" => Self::Mongo,
             "mongodb+srv" => Self::MongoSrv,
             _ => {
-                eprintln!("{}", error::Error::UnsupportedDatabase);
+                eprintln!("{}", db::error::Error::UnsupportedDatabase);
                 Self::Sqlite
             }
         }
@@ -117,7 +117,7 @@ impl Orm {
     /// Returns a struct that implements the [`DbPersister`] trait based on
     /// a connection string.
     ///
-    /// # Panics
+    /// # Errors
     /// If the path can't be converted to str.
     #[inline]
     pub fn get_persister<T: AsRef<str>>(conn: T) -> Box<dyn DbPersister> {
@@ -130,7 +130,7 @@ impl Orm {
         let mut parts: Vec<&str> = conn.split("://").collect();
 
         if parts[0].is_empty() {
-            eprintln!("{}", error::Error::IncorrectConnectionString);
+            eprintln!("{}", db::error::Error::IncorrectConnectionString);
             parts[0] = "tasks.db";
         }
 
@@ -169,49 +169,57 @@ impl Persister for Orm {
     }
 
     #[inline]
-    fn edit(&self, todo: &Todo, ids: &[u32], action: Action) {
-        if let Err(e) = self.db.update(todo, ids, action.clone()) {
-            eprintln!("Can't perform the '{action}' action {e}");
-        }
+    fn edit(&self, todo: &Todo, ids: &[u32], action: Action) -> persisters::Result<()> {
+        self.db.update(todo, ids, action.clone()).map_err(|e| {
+            eprintln!("Can't perform the '{action}' action");
+            persisters::Error::DbError(e)
+        })
     }
 
     #[inline]
-    fn save(&self, todo: &Todo) {
-        if self.db.count() == 0 {
-            return self.db.insert(todo).unwrap();
+    fn save(&self, todo: &Todo) -> persisters::Result<()> {
+        if self.db.count()? == 0 {
+            return self.db.insert(todo).map_err(|e| {
+                eprintln!("Can't insert into the database");
+                persisters::Error::DbError(e)
+            });
         }
 
         let last = todo.tasks.last().unwrap().to_owned();
         let task = Todo::new(last);
 
-        if let Err(e) = self.db.insert(&task) {
-            eprintln!("Can't insert into the database {e}");
-        }
+        self.db.insert(&task).map_err(|e| {
+            eprintln!("Can't insert into the database");
+            persisters::Error::DbError(e)
+        })
     }
 
     #[inline]
-    fn replace(&self, todo: &Todo) {
+    fn replace(&self, todo: &Todo) -> persisters::Result<()> {
         if let Err(e) = self.db.clean() {
-            eprintln!("Can't clean the database {e}");
-            return;
+            eprintln!("Can't clean the database");
+            return Err(persisters::Error::DbError(e));
         }
 
-        if let Err(e) = self.db.insert(todo) {
-            eprintln!("Can't insert into the database {e}");
-        }
+        self.db.insert(todo).map_err(|e| {
+            eprintln!("Can't insert into the database");
+            persisters::Error::DbError(e)
+        })
     }
 
     #[inline]
-    fn clean(&self) {
-        if let Err(e) = self.db.clean() {
-            eprintln!("Can't clean the database {e}");
-        }
+    fn clean(&self) -> persisters::Result<()> {
+        self.db.clean().map_err(|e| {
+            eprintln!("Can't clean the database");
+            persisters::Error::DbError(e)
+        })
     }
 
     #[inline]
-    fn remove(&self) {
-        if let Err(e) = self.db.drop_database() {
-            eprintln!("Can't drop the database {e}");
-        }
+    fn remove(&self) -> persisters::Result<()> {
+        self.db.drop_database().map_err(|e| {
+            eprintln!("Can't drop the database");
+            persisters::Error::DbError(e)
+        })
     }
 }

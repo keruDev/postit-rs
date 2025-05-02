@@ -3,7 +3,7 @@ use std::ops::Not;
 use postit::db::{Orm, Protocol, Sqlite};
 use postit::models::{Task, Todo};
 use postit::traits::{DbPersister, Persister};
-use postit::Config;
+use postit::{Config, Result};
 
 use crate::mocks::MockConn;
 
@@ -64,7 +64,7 @@ fn get_persister() {
     let mock = MockConn::create(Protocol::Sqlite);
     let persister = Orm::get_persister(mock.conn());
 
-    assert_eq!(persister.conn(), mock.conn())
+    assert_eq!(persister.conn(), mock.conn());
 }
 
 #[test]
@@ -77,7 +77,7 @@ fn get_persister_empty() {
     let path = Config::build_path(conn);
     let conn_str = path.to_str().unwrap();
 
-    assert_eq!(persister.conn(), conn_str)
+    assert_eq!(persister.conn(), conn_str);
 }
 
 #[test]
@@ -90,7 +90,7 @@ fn get_persister_sqlite_protocol() {
     let path = Config::build_path(conn.replace("sqlite:///", ""));
     let conn_str = path.to_str().unwrap();
 
-    assert_eq!(persister.conn(), conn_str)
+    assert_eq!(persister.conn(), conn_str);
 }
 
 #[test]
@@ -98,7 +98,7 @@ fn to_string() {
     let mock = MockConn::create(Protocol::Sqlite);
     let orm = Orm::from(mock.conn());
 
-    assert_eq!(orm.to_string(), mock.conn())
+    assert_eq!(orm.to_string(), mock.conn());
 }
 
 #[test]
@@ -106,7 +106,7 @@ fn exists() {
     let mock = MockConn::create(Protocol::Sqlite);
     let orm = Orm::from(mock.conn());
 
-    assert!(orm.exists())
+    assert!(orm.exists());
 }
 
 #[test]
@@ -123,7 +123,7 @@ fn save_twice() {
 
     let result = orm.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -137,7 +137,7 @@ fn save_and_tasks() {
 
     let result = orm.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -155,7 +155,7 @@ fn edit_check() {
 
     let result = orm.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -173,7 +173,7 @@ fn edit_uncheck() {
 
     let result = orm.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -192,7 +192,7 @@ fn edit_drop() {
 
     let result = orm.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -206,7 +206,7 @@ fn tasks() {
 
     let result = orm.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -222,7 +222,7 @@ fn replace() {
     let result = orm.tasks();
     let expect = todo.tasks;
 
-    assert_eq!(result, expect)
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -235,7 +235,7 @@ fn clean() {
     let result = orm.tasks();
     let expect = Vec::new();
 
-    assert_eq!(result, expect)
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -245,5 +245,5 @@ fn remove() {
 
     orm.remove();
 
-    assert!(std::path::PathBuf::from(sqlite.conn()).exists().not())
+    assert!(std::path::PathBuf::from(sqlite.conn()).exists().not());
 }

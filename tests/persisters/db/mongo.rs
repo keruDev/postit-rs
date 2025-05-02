@@ -14,7 +14,7 @@ fn clone() {
     let expect = Mongo::from(mock.conn());
     let result = expect.clone();
 
-    assert_eq!(result.conn(), expect.conn())
+    assert_eq!(result.conn(), expect.conn());
 }
 
 #[test]
@@ -22,7 +22,7 @@ fn count_ok() {
     let mock = MockConn::create(Protocol::Mongo);
     mock.instance.insert(&Todo::sample()).unwrap();
 
-    assert_eq!(Mongo::from(mock.conn()).count(), 4);
+    assert_eq!(Mongo::from(mock.conn()).count().unwrap(), 4);
 }
 
 #[test]
@@ -30,7 +30,7 @@ fn count_table_doesnt_exist() {
     let mock = MockConn::create(Protocol::Mongo);
     mock.instance.drop_database().unwrap();
 
-    assert_eq!(Mongo::from(mock.conn()).count(), 0);
+    assert_eq!(Mongo::from(mock.conn()).count().unwrap(), 0);
 }
 
 #[test]
@@ -94,7 +94,7 @@ fn insert_and_tasks() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -111,7 +111,7 @@ fn update_check() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -128,7 +128,7 @@ fn update_uncheck() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -145,7 +145,7 @@ fn update_set_content() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -162,7 +162,7 @@ fn update_set_priority() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -180,7 +180,7 @@ fn update_delete() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]

@@ -15,7 +15,7 @@ fn clone() {
     let expect = Sqlite::from(mock.conn());
     let result = expect.clone();
 
-    assert_eq!(result.conn(), expect.conn())
+    assert_eq!(result.conn(), expect.conn());
 }
 
 #[test]
@@ -23,7 +23,7 @@ fn count_ok() {
     let mock = MockConn::create(Protocol::Sqlite);
     mock.instance.insert(&Todo::sample()).unwrap();
 
-    assert_eq!(Sqlite::from(mock.conn()).count(), 4);
+    assert_eq!(Sqlite::from(mock.conn()).count().unwrap(), 4);
 }
 
 #[test]
@@ -34,7 +34,7 @@ fn count_table_doesnt_exist() {
     let path = PathBuf::from(mock.conn());
     let file = path.file_name().unwrap();
 
-    assert_eq!(Sqlite::from(file).count(), 0);
+    assert_eq!(Sqlite::from(file).count().unwrap(), 0);
 }
 
 #[test]
@@ -53,7 +53,7 @@ fn format_ids() {
     let result = Sqlite::from(mock.conn()).format_ids(&ids);
     let expect = "1, 2, 3";
 
-    assert_eq!(result, expect)
+    assert_eq!(result, expect);
 }
 
 #[test]
@@ -113,7 +113,7 @@ fn insert_and_tasks() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -130,7 +130,7 @@ fn update_check() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -147,7 +147,7 @@ fn update_uncheck() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -164,7 +164,7 @@ fn update_set_content() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -181,7 +181,7 @@ fn update_set_priority() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]
@@ -199,7 +199,7 @@ fn update_delete() {
 
     let result = mock.instance.tasks();
 
-    assert_eq!(result, todo.tasks)
+    assert_eq!(result, todo.tasks);
 }
 
 #[test]

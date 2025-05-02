@@ -2,8 +2,8 @@
 //!
 //! The `Csv` struct implements the [`FilePersister`] trait.
 
+use std::fs;
 use std::path::{Path, PathBuf};
-use std::{fs, io};
 
 use crate::models::{Task, Todo};
 use crate::traits::FilePersister;
@@ -58,12 +58,12 @@ impl FilePersister for Csv {
     }
 
     #[inline]
-    fn open(&self) -> io::Result<fs::File> {
-        fs::File::open(&self.path)
+    fn open(&self) -> super::Result<fs::File> {
+        Ok(fs::File::open(&self.path)?)
     }
 
     #[inline]
-    fn write(&self, todo: &Todo) -> io::Result<()> {
+    fn write(&self, todo: &Todo) -> super::Result<()> {
         let sep = if cfg!(windows) { "\r\n" } else { "\n" };
 
         let mut bytes = Self::header().into_bytes();
@@ -77,16 +77,22 @@ impl FilePersister for Csv {
 
         bytes.append(&mut tasks);
 
-        fs::write(&self.path, bytes)
+        fs::write(&self.path, bytes)?;
+
+        Ok(())
     }
 
     #[inline]
-    fn clean(&self) -> io::Result<()> {
-        fs::write(&self.path, self.default())
+    fn clean(&self) -> super::Result<()> {
+        fs::write(&self.path, self.default())?;
+
+        Ok(())
     }
 
     #[inline]
-    fn remove(&self) -> io::Result<()> {
-        fs::remove_file(&self.path)
+    fn remove(&self) -> super::Result<()> {
+        fs::remove_file(&self.path)?;
+
+        Ok(())
     }
 }

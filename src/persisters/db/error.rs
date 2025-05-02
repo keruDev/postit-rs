@@ -1,39 +1,27 @@
 //! Defines errors related to database management.
 
-use std::{fmt, result};
-
-use mongodb::error::Error as MongoError;
-use sqlite::Error as SQLiteError;
+use thiserror::Error;
 
 /// Convenience type for database related operations.
-/// This is a direct mapping to a [`Result`] where E is [`db::Error`][`Error`].
-pub type Result<T> = result::Result<T, self::Error>;
+/// This is a direct mapping to a [`Result`] where E is [`Error`].
+pub type Result<T> = std::result::Result<T, self::Error>;
 
 /// Errors related to databases and connection strings.
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
     /// Used when the provided connection string is not supported.
+    #[error("Unsupported database; defaulting to Sqlite")]
     UnsupportedDatabase,
-    /// Used when the provided connection string is incorrect.
-    IncorrectConnectionString,
-    /// Represent a `SQLite` error.
-    Sqlite(SQLiteError),
-    /// Represent a `MongoDB` error.
-    Mongo(MongoError),
-}
 
-impl fmt::Display for Error {
-    #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::UnsupportedDatabase => {
-                write!(f, "Unsupported database; defaulting to Sqlite")
-            }
-            Self::IncorrectConnectionString => {
-                write!(f, "The provided connection string is incorrect")
-            }
-            Self::Sqlite(e) => write!(f, "(error on SQLite): {e}"),
-            Self::Mongo(e) => write!(f, "(error on MongoDB): {e}"),
-        }
-    }
+    /// Used when the provided connection string is incorrect.
+    #[error("The provided connection string is incorrect")]
+    IncorrectConnectionString,
+
+    /// Represent a `SQLite` error.
+    #[error("(error on SQLite): {0}")]
+    Sqlite(#[from] sqlite::Error),
+
+    /// Represent a `MongoDB` error.
+    #[error("(error on MongoDB): {0}")]
+    Mongo(#[from] mongodb::error::Error),
 }
