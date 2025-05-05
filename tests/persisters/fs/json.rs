@@ -1,3 +1,5 @@
+use std::fs;
+use std::io::Read;
 use std::ops::Not;
 
 use postit::fs::{Format, Json};
@@ -7,46 +9,54 @@ use postit::traits::FilePersister;
 use crate::mocks::MockPath;
 
 #[test]
-fn tasks() {
+fn tasks() -> postit::Result<()> {
     let mock = MockPath::create(Format::Json);
 
-    let result = Json::new(mock.path()).tasks();
+    let result = Json::new(mock.path()).tasks()?;
     let expect = Todo::sample().tasks;
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
-// #[test]
-// fn open() {
-//     let mock = MockPath::create(Format::Json);
+#[test]
+fn open() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Json);
 
-//     let mut json = Json::new(mock.path()).open().unwrap();
-//     let mut file = fs::File::open(mock.path()).unwrap();
+    let mut json = Json::new(mock.path()).open()?;
+    let mut file = fs::File::open(mock.path())?;
 
-//     let mut result = Vec::new();
-//     let mut expect = Vec::new();
+    let mut result = Vec::new();
+    let mut expect = Vec::new();
 
-//     json.read_to_end(&mut result).unwrap();
-//     file.read_to_end(&mut expect).unwrap();
+    json.read_to_end(&mut result)?;
+    file.read_to_end(&mut expect)?;
 
-//     assert_eq!(result, expect);
-// }
+    assert_eq!(result, expect);
+
+    Ok(())
+}
 
 #[test]
-fn clean() {
+fn clean() -> postit::Result<()> {
     let mock = MockPath::create(Format::Json);
-    Json::new(mock.path()).clean().unwrap();
+    Json::new(mock.path()).clean()?;
 
-    let result = Json::new(mock.path()).tasks();
+    let result = Json::new(mock.path()).tasks()?;
     let expect = Vec::new();
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn remove() {
+fn remove() -> postit::Result<()> {
     let mock = MockPath::create(Format::Json);
-    Json::new(mock.path()).remove().unwrap();
+    Json::new(mock.path()).remove()?;
 
     assert!(mock.path().exists().not());
+
+    Ok(())
 }

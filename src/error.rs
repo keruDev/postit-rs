@@ -8,21 +8,21 @@ pub type Result<T> = std::result::Result<T, self::Error>;
 /// Errors related to file and path management.
 #[derive(Error, Debug)]
 pub enum Error {
-    /// Used for file format related issues.
-    #[error("Unsupported file format; defaulting to CSV")]
-    UnsupportedFormat,
+    /// Used for config related [errors][`crate::config::Error`].
+    #[error("{0}")]
+    Config(#[from] crate::config::Error),
+
+    /// Used for file system related [errors][`super::fs::Error`].
+    #[error("{0}")]
+    Fs(#[from] super::fs::Error),
+
+    /// Used for database related [errors][`super::fs::Error`].
+    #[error("{0}")]
+    Db(#[from] super::db::Error),
 
     /// Used for I/O errors ([`std::io::Error`]).
     #[error("{0}")]
     Io(#[from] std::io::Error),
-
-    /// Used for JSON serde errors ([`serde_json::Error`]).
-    #[error("{0}")]
-    Json(#[from] serde_json::Error),
-
-    /// Used for JSON serde errors ([`quick_xml::Error`]).
-    #[error("{0}")]
-    Xml(#[from] quick_xml::Error),
 
     /// Any error that doesn't belong into the previous variants.
     #[error("{0}")]

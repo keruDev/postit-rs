@@ -93,7 +93,7 @@ impl Xml {
     /// # Panics
     /// If a value can't be unescaped.
     #[inline]
-    pub fn xml_to_tasks(mut reader: Reader<&[u8]>) -> Vec<Task> {
+    pub fn xml_to_tasks(mut reader: Reader<&[u8]>) -> super::Result<Vec<Task>> {
         let mut tasks = Vec::<Task>::new();
         let mut task = None::<Task>;
 
@@ -103,7 +103,7 @@ impl Xml {
                     let mut new_task = Task::default();
 
                     for attr in e.attributes().flatten() {
-                        let value = attr.unescape_value().unwrap();
+                        let value = attr.unescape_value()?;
                         match attr.key {
                             QName(b"id") => new_task.id = value.parse().unwrap_or(0),
                             QName(b"priority") => new_task.priority = Priority::from(value),
@@ -117,7 +117,7 @@ impl Xml {
 
                 Ok(Event::Text(e)) => {
                     if let Some(t) = &mut task {
-                        t.content = e.unescape().unwrap().into_owned();
+                        t.content = e.unescape()?.into_owned();
                     }
                 }
 
@@ -138,7 +138,7 @@ impl Xml {
             }
         }
 
-        tasks
+        Ok(tasks)
     }
 }
 
@@ -159,8 +159,8 @@ impl FilePersister for Xml {
     }
 
     #[inline]
-    fn tasks(&self) -> Vec<Task> {
-        let xml = fs::read_to_string(&self.path).unwrap();
+    fn tasks(&self) -> super::Result<Vec<Task>> {
+        let xml = fs::read_to_string(&self.path)?;
         let reader = Reader::from_str(xml.trim());
 
         Self::xml_to_tasks(reader)
@@ -180,7 +180,7 @@ impl FilePersister for Xml {
     #[inline]
     fn write(&self, todo: &Todo) -> super::Result<()> {
         let buffer = Self::todo_to_xml(todo)?;
-        let xml = String::from_utf8(buffer).unwrap();
+        let xml = String::from_utf8(buffer).map_err(super::Error::wrap)?;
 
         let bytes = [self.default(), xml].join("").into_bytes();
 

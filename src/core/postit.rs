@@ -6,9 +6,10 @@
 #![allow(clippy::single_call_fn)]
 
 use super::cli::{arguments as args, subcommands as sub};
-use super::{Action, Cli, Command, Config};
+use super::{Action, Cli, Command};
+use crate::config::Config;
+use crate::docs;
 use crate::models::{Task, Todo};
-use crate::{docs, persisters};
 
 /// Entry point where all operations are executed.
 ///
@@ -25,12 +26,8 @@ impl Postit {
     /// # Errors
     /// If there is any error while operating a persister.
     #[inline]
-    pub fn run(cli: Cli) -> persisters::Result<()> {
+    pub fn run(cli: Cli) -> crate::Result<()> {
         match cli.command {
-            Command::Config(args) => {
-                Self::config(args);
-                Ok(())
-            }
             Command::Example(args) => {
                 Self::example(&args);
                 Ok(())
@@ -39,10 +36,8 @@ impl Postit {
                 Self::flag(&args);
                 Ok(())
             }
-            Command::View(args) => {
-                Self::view(args);
-                Ok(())
-            }
+            Command::Config(args) => Self::config(args),
+            Command::View(args) => Self::view(args),
             Command::Add(args) => Self::add(args),
             Command::Set(args) => Self::set(args),
             Command::Check(args) => Self::edit(args, Action::Check),
@@ -66,15 +61,19 @@ impl Postit {
     }
 
     /// Shows the list of current tasks.
-    fn view(args: args::Persister) {
-        let persister = Config::resolve_persister(args.persister);
-        Todo::from(&*persister).view();
+    fn view(args: args::Persister) -> crate::Result<()> {
+        let persister = Config::resolve_persister(args.persister)?;
+        let tasks = persister.tasks()?;
+
+        Todo::new(tasks).view();
+
+        Ok(())
     }
 
     /// Adds a new task to the list.
-    fn add(args: args::Add) -> persisters::Result<()> {
-        let persister = Config::resolve_persister(args.persister);
-        let mut todo = Todo::from(&*persister);
+    fn add(args: args::Add) -> crate::Result<()> {
+        let persister = Config::resolve_persister(args.persister)?;
+        let mut todo = Todo::from(&*persister)?;
 
         let id = todo.tasks.last().map_or(1, |last| last.id + 1);
 
@@ -89,9 +88,9 @@ impl Postit {
     }
 
     /// Changes the values of a task depending on the `Set` variant.
-    fn set(args: args::Set) -> persisters::Result<()> {
-        let persister = Config::resolve_persister(args.persister);
-        let mut todo = Todo::from(&*persister);
+    fn set(args: args::Set) -> crate::Result<()> {
+        let persister = Config::resolve_persister(args.persister)?;
+        let mut todo = Todo::from(&*persister)?;
 
         todo.set(&args.subcommand);
 
@@ -108,9 +107,9 @@ impl Postit {
     }
 
     /// Edits tasks based on the action passed.
-    fn edit(args: args::Edit, action: Action) -> persisters::Result<()> {
-        let persister = Config::resolve_persister(args.persister);
-        let mut todo = Todo::from(&*persister);
+    fn edit(args: args::Edit, action: Action) -> crate::Result<()> {
+        let persister = Config::resolve_persister(args.persister)?;
+        let mut todo = Todo::from(&*persister)?;
 
         let changed_ids = match action {
             Action::Check => todo.check(&args.ids),
@@ -121,7 +120,7 @@ impl Postit {
 
         persister.edit(&todo, &changed_ids, action)?;
 
-        Todo::from(&*persister).view();
+        Todo::from(&*persister)?.view();
 
         Ok(())
     }
@@ -132,46 +131,46 @@ impl Postit {
     /// - If both persisters are the same.
     /// - If the left persister has no tasks.
     /// - If the right persister has tasks.    
-    fn copy(args: args::Copy) -> persisters::Result<()> {
+    fn copy(args: args::Copy) -> crate::Result<()> {
         if args.left == args.right {
             let msg = "Both persisters are the same";
-            return Err(persisters::Error::Other(msg.into()));
+            return Err(crate::Error::Other(msg.into()));
         }
 
-        let left = Config::resolve_persister(Some(args.left));
+        let left = Config::resolve_persister(Some(args.left))?;
 
-        if left.tasks() == Vec::new() {
+        if left.tasks()? == Vec::new() {
             let msg = format!("'{}' has no tasks to copy", left.to_string());
-            return Err(persisters::Error::Other(msg.into()));
+            return Err(crate::Error::Other(msg.into()));
         }
 
-        let right = Config::resolve_persister(Some(args.right));
+        let right = Config::resolve_persister(Some(args.right))?;
 
-        let config = Config::load();
+        let config = Config::load()?;
 
-        if !config.force_copy && right.tasks() != Vec::new() {
+        if !config.force_copy && right.tasks()? != Vec::new() {
             let msg = format!(
                 "'{}' already has tasks. Set 'force_copy' to 'true' to overwrite them.",
                 right.to_string()
             );
 
-            return Err(persisters::Error::Other(msg.into()));
+            return Err(crate::Error::Other(msg.into()));
         }
 
-        right.replace(&Todo::from(&*left))?;
+        right.replace(&Todo::from(&*left)?)?;
 
         if config.drop_after_copy {
             left.remove()?;
         }
 
-        Todo::new(right.tasks()).view();
+        Todo::new(right.tasks()?).view();
 
         Ok(())
     }
 
     /// Populates the persister with fake data for testing purposes.
-    fn sample(args: args::Persister) -> persisters::Result<()> {
-        let persister = Config::resolve_persister(args.persister);
+    fn sample(args: args::Persister) -> crate::Result<()> {
+        let persister = Config::resolve_persister(args.persister)?;
         let todo = Todo::sample();
 
         persister.clean()?;
@@ -183,21 +182,23 @@ impl Postit {
     }
 
     /// Cleans the tasks from a file.
-    fn clean(args: args::Persister) -> persisters::Result<()> {
-        let persister = Config::resolve_persister(args.persister);
+    fn clean(args: args::Persister) -> crate::Result<()> {
+        let persister = Config::resolve_persister(args.persister)?;
 
         persister.clean()
     }
 
     /// Removes a persister completely (file or table).
-    fn remove(args: args::Persister) -> persisters::Result<()> {
-        let persister = Config::resolve_persister(args.persister);
+    fn remove(args: args::Persister) -> crate::Result<()> {
+        let persister = Config::resolve_persister(args.persister)?;
 
         persister.remove()
     }
 
     /// Manages the configuration file.   
-    fn config(args: args::Config) {
-        Config::manage(args.subcommand);
+    fn config(args: args::Config) -> crate::Result<()> {
+        Config::manage(args.subcommand)?;
+
+        Ok(())
     }
 }

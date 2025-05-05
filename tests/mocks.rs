@@ -118,7 +118,9 @@ pub struct MockConn {
 impl MockConn {
     /// Constructor of the `MockPath` struct.
     pub fn new(conn: &str) -> Self {
-        Self { instance: Orm::get_persister(conn) }
+        Self {
+            instance: Orm::get_persister(conn).unwrap(),
+        }
     }
 
     pub fn conn(&self) -> String {

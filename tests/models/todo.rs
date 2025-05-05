@@ -3,24 +3,25 @@ use postit::models::{Task, Todo};
 
 use crate::mocks::MockPath;
 
-fn fakes(mock: &MockPath) -> Todo {
-    Todo::from(&File::from(mock.to_string()))
+fn fakes(mock: &MockPath) -> postit::Result<Todo> {
+    let file = File::from(mock.to_string())?;
+
+    Todo::from(&file)
 }
 
 #[test]
 fn new() {
     let tasks = Todo::sample().tasks;
-
     let result = Todo::new(tasks.as_slice());
 
     assert_eq!(result.tasks, tasks);
 }
 
 #[test]
-fn get() {
+fn get() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv);
 
-    let todo = fakes(&mock);
+    let todo = fakes(&mock)?;
     let clone = todo.clone();
 
     let ids = vec![2, 3];
@@ -28,13 +29,15 @@ fn get() {
     let expect = vec![&clone.tasks[1], &clone.tasks[2]];
 
     assert_eq!(tasks, expect);
+
+    Ok(())
 }
 
 #[test]
-fn get_mut() {
+fn get_mut() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv);
 
-    let mut todo = fakes(&mock);
+    let mut todo = fakes(&mock)?;
     let clone = todo.clone();
 
     let ids = vec![2, 3];
@@ -42,13 +45,15 @@ fn get_mut() {
     let expect = vec![&clone.tasks[1], &clone.tasks[2]];
 
     assert_eq!(tasks, expect);
+
+    Ok(())
 }
 
 #[test]
-fn add_ok() {
+fn add_ok() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv);
 
-    let mut todo = fakes(&mock);
+    let mut todo = fakes(&mock)?;
     let mut expect = todo.clone();
 
     let task = Task::from("5,Test,med,false");
@@ -57,13 +62,15 @@ fn add_ok() {
     expect.tasks.push(task);
 
     assert_eq!(todo, expect);
+
+    Ok(())
 }
 
 #[test]
-fn check_ok() {
+fn check_ok() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv);
 
-    let mut todo = fakes(&mock);
+    let mut todo = fakes(&mock)?;
     let mut expect = todo.clone();
 
     let task = Task::from("5,Test,med,false");
@@ -72,13 +79,15 @@ fn check_ok() {
     expect.tasks.push(task);
 
     assert_eq!(todo, expect);
+
+    Ok(())
 }
 
 #[test]
-fn uncheck_ok() {
+fn uncheck_ok() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv);
 
-    let mut todo = fakes(&mock);
+    let mut todo = fakes(&mock)?;
     let mut expect = todo.clone();
 
     let task = Task::from("5,Test,med,true");
@@ -87,13 +96,15 @@ fn uncheck_ok() {
     expect.tasks.push(task);
 
     assert_eq!(todo, expect);
+
+    Ok(())
 }
 
 #[test]
-fn drop() {
+fn drop() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv);
 
-    let mut todo = fakes(&mock);
+    let mut todo = fakes(&mock)?;
     let mut expect = todo.clone();
 
     let ids = vec![2, 3];
@@ -105,4 +116,6 @@ fn drop() {
     expect.tasks.remove(1);
 
     assert_eq!(todo, expect);
+
+    Ok(())
 }

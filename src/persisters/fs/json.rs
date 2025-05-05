@@ -46,10 +46,11 @@ impl FilePersister for Json {
     }
 
     #[inline]
-    fn tasks(&self) -> Vec<Task> {
-        let content = fs::read_to_string(&self.path).unwrap();
+    fn tasks(&self) -> super::Result<Vec<Task>> {
+        let content = fs::read_to_string(&self.path)?;
+        let tasks = serde_json::from_str(content.trim())?;
 
-        serde_json::from_str(content.trim()).expect("JSON was not well-formatted")
+        Ok(tasks)
     }
 
     #[inline]

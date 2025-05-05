@@ -6,7 +6,7 @@ use std::{env, fmt, fs};
 
 use serde::{Deserialize, Serialize};
 
-use super::cli::{arguments as args, subcommands as sub};
+use crate::cli::{arguments as args, subcommands as sub};
 use crate::db::Orm;
 use crate::fs::File;
 use crate::traits::Persister;
@@ -53,7 +53,7 @@ impl fmt::Display for Config {
 impl Config {
     /// Manages the `.postit.toml` file using a `ConfigSubcommand` instance.
     #[inline]
-    pub fn manage(subcommand: sub::Config) {
+    pub fn manage(subcommand: sub::Config) -> super::Result<()> {
         match subcommand {
             sub::Config::Env => Self::print_env(),
             sub::Config::Path => Self::print_path(),
@@ -69,57 +69,62 @@ impl Config {
     /// # Panics
     /// If there is any error while creating, reading or writing the config file.
     #[inline]
-    pub fn init() {
+    pub fn init() -> super::Result<()> {
         let path = &Self::path();
 
         if path.exists() {
-            return println!("Config file already exists at '{}'", path.display());
+            let path = path.to_string_lossy().into_owned();
+            return Err(super::Error::FileAlreadyExists(path));
         }
 
         if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent).unwrap();
+            fs::create_dir_all(parent)?;
         }
 
-        let mut file = fs::File::create(path).unwrap();
-        let toml =
-            toml::to_string_pretty(&Self::default()).expect("Failed to serialize config to TOML");
+        let mut file = fs::File::create(path)?;
+        let toml = toml::to_string_pretty(&Self::default())?;
 
-        if let Err(e) = file.write_all(toml.as_bytes()) {
-            eprintln!("Failed to write default config to file: {e}");
-            return;
-        }
+        file.write_all(toml.as_bytes()).map_err(|e| {
+            eprintln!("Failed to write default config to file");
+            super::Error::Io(e)
+        })?;
 
         println!("Config file created at '{}'", path.display());
+
+        Ok(())
     }
 
     /// Prints the value of the `POSTIT_ROOT` env var.
     ///
     /// Displays an error message if `POSTIT_ROOT` is empty.
     #[inline]
-    pub fn print_env() {
+    pub fn print_env() -> super::Result<()> {
         let env = Self::env_var();
 
-        if !env.is_empty() {
-            return println!("{env}");
+        if env.is_empty() {
+            return Err(super::Error::EmptyEnvVar);
         }
 
-        eprintln!("The 'POSTIT_ROOT' environment variable is empty");
+        println!("{env}");
+
+        Ok(())
     }
 
     /// Prints the path of the config file.
     ///
     /// Displays an error message if the config file is not located at the expected path.
     #[inline]
-    pub fn print_path() {
+    pub fn print_path() -> super::Result<()> {
         let path = Self::path();
 
-        if path.exists() {
-            return println!("{}", path.display());
+        if !path.exists() {
+            let parent = path.parent().unwrap().to_string_lossy().into_owned();
+            return Err(super::Error::FileDoesntExist(parent));
         }
 
-        if let Some(parent) = path.parent() {
-            eprintln!("The configuration file doesn't exist at '{}'", parent.display());
-        }
+        println!("{}", path.display());
+
+        Ok(())
     }
 
     /// Deletes the config file.
@@ -127,38 +132,42 @@ impl Config {
     /// # Panics
     /// If the config file can't be deleted.
     #[inline]
-    pub fn drop() {
+    pub fn drop() -> super::Result<()> {
         let path = &Self::path();
 
         if !path.exists() {
-            eprintln!("Config file doesn't exist at {}", path.display());
-            return;
+            let parent = path.parent().unwrap().to_string_lossy().into_owned();
+            return Err(super::Error::FileDoesntExist(parent));
         }
 
-        fs::remove_file(path).expect("Config file couldn't be deleted.");
+        fs::remove_file(path).map_err(|e| {
+            eprintln!("Config file couldn't be deleted.");
+            super::Error::Io(e)
+        })
     }
 
     /// Displays a list of the current config values.
     #[inline]
-    pub fn list() {
-        println!("{}", Self::load());
+    pub fn list() -> super::Result<()> {
+        println!("{}", Self::load()?);
+
+        Ok(())
     }
 
     /// Sets a value for the passed key.
     ///
     /// Displays an error message if there are no values provided.
     #[inline]
-    pub fn set(args: args::ConfigSet) {
+    pub fn set(args: args::ConfigSet) -> super::Result<()> {
         if args.persister.is_none()
             && args.force_drop.is_none()
             && args.force_copy.is_none()
             && args.drop_after_copy.is_none()
         {
-            eprintln!("You must provide a flag and value to set");
-            return;
+            return Err(super::Error::EmptySetArgs);
         }
 
-        let mut config = Self::load();
+        let mut config = Self::load()?;
 
         if let Some(persister) = args.persister {
             config.persister = persister;
@@ -176,7 +185,7 @@ impl Config {
             config.drop_after_copy = drop_after_copy;
         }
 
-        config.save();
+        config.save()
     }
 }
 
@@ -282,16 +291,21 @@ impl Config {
     /// # Panics
     /// If the config file can't be loaded.
     #[inline]
-    pub fn load() -> Self {
+    pub fn load() -> super::Result<Self> {
         let path = &Self::path();
 
         if !path.exists() {
-            Self::init();
+            Self::init()?;
         }
 
-        let content = fs::read_to_string(path).expect("Failed to read config file");
+        let content = fs::read_to_string(path).map_err(|e| {
+            eprintln!("Failed to read config file");
+            super::Error::Io(e)
+        });
 
-        toml::from_str(&content).expect("TOML was not well-formatted")
+        let config = toml::from_str(&content?)?;
+
+        Ok(config)
     }
 
     /// Saves the config instance to a file.
@@ -299,23 +313,20 @@ impl Config {
     /// # Panics
     /// If the config file can't be saved.
     #[inline]
-    pub fn save(&self) {
+    pub fn save(&self) -> super::Result<()> {
         let path = Self::path();
 
-        let file = fs::File::create(&path);
-
-        if let Err(e) = &file {
+        let mut file = fs::File::create(&path).map_err(|e| {
             eprintln!("Failed to open the config file {}: {e}", path.display());
-            return;
-        }
+            super::Error::Io(e)
+        })?;
 
-        let mut file = file.unwrap();
+        let toml = toml::to_string_pretty(self)?;
 
-        let toml = toml::to_string_pretty(self).expect("Failed to save config to TOML");
-
-        if let Err(e) = file.write_all(toml.as_bytes()) {
+        file.write_all(toml.as_bytes()).map_err(|e| {
             eprintln!("Failed to save config to file: {e}");
-        }
+            super::Error::Io(e)
+        })
     }
 
     /// Builds a persister based on the passed value.
@@ -324,13 +335,15 @@ impl Config {
     /// - `Some`: returns itself.
     /// - `None`: returns the persister stored in the config file.
     #[inline]
-    pub fn resolve_persister(persister: Option<String>) -> Box<dyn Persister> {
-        let path_or_conn = persister.unwrap_or_else(|| Self::load().persister);
+    pub fn resolve_persister(persister: Option<String>) -> crate::Result<Box<dyn Persister>> {
+        let path_or_conn = persister.unwrap_or(Self::load()?.persister);
 
-        if path_or_conn.contains("://") || Orm::is_sqlite(&path_or_conn) {
-            Orm::from(path_or_conn).boxed()
+        let persister = if path_or_conn.contains("://") || Orm::is_sqlite(&path_or_conn) {
+            Orm::from(path_or_conn)?.boxed()
         } else {
-            File::from(path_or_conn).boxed()
-        }
+            File::from(path_or_conn)?.boxed()
+        };
+
+        Ok(persister)
     }
 }

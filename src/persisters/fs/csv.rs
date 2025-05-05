@@ -46,15 +46,16 @@ impl FilePersister for Csv {
     }
 
     #[inline]
-    fn tasks(&self) -> Vec<Task> {
-        let lines: Vec<String> = fs::read_to_string(&self.path)
-            .expect("Can't read the CSV file")
+    fn tasks(&self) -> super::Result<Vec<Task>> {
+        let lines: Vec<String> = fs::read_to_string(&self.path)?
             .lines()
             .map(|line| line.trim().to_owned())
             .filter(|line| !line.is_empty())
             .collect();
 
-        lines.iter().skip(1).map(Task::from).collect()
+        let tasks = lines.iter().skip(1).map(Task::from).collect();
+
+        Ok(tasks)
     }
 
     #[inline]
