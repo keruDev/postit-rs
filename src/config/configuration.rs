@@ -70,7 +70,7 @@ impl Config {
     /// If there is any error while creating, reading or writing the config file.
     #[inline]
     pub fn init() -> super::Result<()> {
-        let path = &Self::path();
+        let path = &Self::path()?;
 
         if path.exists() {
             let path = path.to_string_lossy().into_owned();
@@ -115,7 +115,7 @@ impl Config {
     /// Displays an error message if the config file is not located at the expected path.
     #[inline]
     pub fn print_path() -> super::Result<()> {
-        let path = Self::path();
+        let path = Self::path()?;
 
         if !path.exists() {
             let parent = path.parent().unwrap().to_string_lossy().into_owned();
@@ -133,7 +133,7 @@ impl Config {
     /// If the config file can't be deleted.
     #[inline]
     pub fn drop() -> super::Result<()> {
-        let path = &Self::path();
+        let path = &Self::path()?;
 
         if !path.exists() {
             let parent = path.parent().unwrap().to_string_lossy().into_owned();
@@ -219,16 +219,16 @@ impl Config {
     /// # Panics
     /// If the path can't be created
     #[inline]
-    pub fn default_config_path() -> PathBuf {
+    pub fn default_config_path() -> super::Result<PathBuf> {
         let mut path = Self::default_path();
 
         if !path.exists() {
-            fs::create_dir_all(&path).unwrap();
+            fs::create_dir_all(&path)?;
         }
 
         path.push(Self::config_file_name());
 
-        path
+        Ok(path)
     }
 
     /// Returns the path of the config file in the `POSTIT_ROOT` env var.
@@ -236,7 +236,7 @@ impl Config {
     /// # Panics
     /// If the path can't be created
     #[inline]
-    pub fn path() -> PathBuf {
+    pub fn path() -> super::Result<PathBuf> {
         let env = Self::env_var();
 
         if env.is_empty() {
@@ -246,12 +246,12 @@ impl Config {
         let mut path = PathBuf::from(env);
 
         if !path.exists() {
-            fs::create_dir_all(&path).unwrap();
+            fs::create_dir_all(&path)?;
         }
 
         path.push(Self::config_file_name());
 
-        path
+        Ok(path)
     }
 
     /// Obtains the path for the File instance, which is the parent path that
@@ -260,8 +260,8 @@ impl Config {
     /// # Panics
     /// If the parent path can't be extracted from the configuration path.
     #[inline]
-    pub fn get_parent_path() -> PathBuf {
-        Self::path().parent().unwrap().to_owned()
+    pub fn get_parent_path() -> super::Result<PathBuf> {
+        Ok(Self::path()?.parent().unwrap().to_owned())
     }
 
     /// Returns the path constructed from pushing the file persister path to
@@ -271,19 +271,19 @@ impl Config {
     /// - If the path can't be converted to str.
     /// - If the parent path can't be converted to str.
     #[inline]
-    pub fn build_path<T: AsRef<Path>>(path: T) -> PathBuf {
+    pub fn build_path<T: AsRef<Path>>(path: T) -> super::Result<PathBuf> {
         let path_str = path.as_ref().to_str().unwrap();
 
-        let mut parent = Self::get_parent_path();
+        let mut parent = Self::get_parent_path()?;
         let parent_str = parent.to_str().unwrap();
 
         if path_str.starts_with(parent_str) || path_str.contains(parent_str) {
-            return path.as_ref().to_path_buf();
+            return Ok(path.as_ref().to_path_buf());
         }
 
         parent.push(path);
 
-        parent
+        Ok(parent)
     }
 
     /// Loads the config from a file or creates it if it doesn't exist.
@@ -292,7 +292,7 @@ impl Config {
     /// If the config file can't be loaded.
     #[inline]
     pub fn load() -> super::Result<Self> {
-        let path = &Self::path();
+        let path = &Self::path()?;
 
         if !path.exists() {
             Self::init()?;
@@ -314,7 +314,7 @@ impl Config {
     /// If the config file can't be saved.
     #[inline]
     pub fn save(&self) -> super::Result<()> {
-        let path = Self::path();
+        let path = Self::path()?;
 
         let mut file = fs::File::create(&path).map_err(|e| {
             eprintln!("Failed to open the config file {}: {e}", path.display());

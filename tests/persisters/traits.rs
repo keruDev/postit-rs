@@ -7,7 +7,7 @@ use crate::mocks::{MockConn, MockPath};
 
 #[test]
 fn persister_eq() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let file = Config::resolve_persister(Some(mock.to_string()))?;
 
     let left = file.clone();
@@ -19,19 +19,21 @@ fn persister_eq() -> postit::Result<()> {
 }
 
 #[test]
-fn file_persister_eq() {
-    let mock = MockPath::create(Format::Csv);
+fn file_persister_eq() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Csv)?;
     let csv = Csv::new(mock.path());
 
     let left = csv.clone().boxed();
     let right = csv.boxed();
 
     assert!(left.eq(&right));
+
+    Ok(())
 }
 
 #[test]
 fn db_persister_eq() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
 
     let path = std::path::PathBuf::from(mock.conn());
     let file = path.file_name().unwrap();

@@ -96,7 +96,7 @@ impl Orm {
 
     /// Creates a `Orm` instance from a connection string.
     #[inline]
-    pub fn from<T: AsRef<str>>(conn: T) -> super::Result<Self> {
+    pub fn from<T: AsRef<str>>(conn: T) -> crate::Result<Self> {
         Ok(Self { db: Self::get_persister(conn)? })
     }
 
@@ -120,7 +120,7 @@ impl Orm {
     /// # Errors
     /// If the path can't be converted to str.
     #[inline]
-    pub fn get_persister<T: AsRef<str>>(conn: T) -> super::Result<Box<dyn DbPersister>> {
+    pub fn get_persister<T: AsRef<str>>(conn: T) -> crate::Result<Box<dyn DbPersister>> {
         let conn = conn.as_ref();
 
         if conn.starts_with("sqlite:///") {

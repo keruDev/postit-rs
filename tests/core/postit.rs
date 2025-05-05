@@ -48,7 +48,7 @@ fn flag_no_panic() -> postit::Result<()> {
 
 #[test]
 fn view() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let (file, todo) = fakes(&mock)?;
     let cli = Cli {
@@ -67,7 +67,7 @@ fn view() -> postit::Result<()> {
 
 #[test]
 fn add() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let task = "Test";
     let line = format!("5,{task},med,false");
 
@@ -95,7 +95,7 @@ fn add() -> postit::Result<()> {
 
 #[test]
 fn set_priority() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let priority = Priority::Low;
     let ids = vec![2, 3];
 
@@ -131,7 +131,7 @@ fn set_priority() -> postit::Result<()> {
 
 #[test]
 fn set_content() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let content = String::from("New task");
     let ids = vec![2, 3];
 
@@ -167,7 +167,7 @@ fn set_content() -> postit::Result<()> {
 
 #[test]
 fn check() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock)?;
@@ -193,7 +193,7 @@ fn check() -> postit::Result<()> {
 
 #[test]
 fn uncheck() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock)?;
@@ -219,11 +219,11 @@ fn uncheck() -> postit::Result<()> {
 
 #[test]
 fn drop_no_force_drop() -> postit::Result<()> {
-    let mut mock_config = MockConfig::new();
+    let mut mock_config = MockConfig::new()?;
     mock_config.config.force_drop = false;
-    mock_config.save();
+    mock_config.save()?;
 
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock)?;
@@ -249,11 +249,11 @@ fn drop_no_force_drop() -> postit::Result<()> {
 
 #[test]
 fn drop_force() -> postit::Result<()> {
-    let mut mock_config = MockConfig::new();
+    let mut mock_config = MockConfig::new()?;
     mock_config.config.force_drop = true;
-    mock_config.save();
+    mock_config.save()?;
 
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let ids = vec![2, 3];
 
     let (file, mut todo) = fakes(&mock)?;
@@ -280,12 +280,12 @@ fn drop_force() -> postit::Result<()> {
 
 #[test]
 fn copy() -> postit::Result<()> {
-    let mut mock_config = MockConfig::new();
+    let mut mock_config = MockConfig::new()?;
     mock_config.config.force_copy = false;
-    mock_config.save();
+    mock_config.save()?;
 
-    let mock_left = MockPath::create(Format::Csv);
-    let right_path = Config::build_path("postit_copy.json");
+    let mock_left = MockPath::create(Format::Csv)?;
+    let right_path = Config::build_path("postit_copy.json")?;
     let right_str = right_path.to_str().unwrap();
 
     let cli = Cli {
@@ -297,7 +297,7 @@ fn copy() -> postit::Result<()> {
 
     Postit::run(cli)?;
 
-    let mock_right = MockPath::from(right_path);
+    let mock_right = MockPath::from(right_path)?;
 
     let (left_file, left_todo) = expected(&mock_left)?;
     let (right_file, right_todo) = expected(&mock_right)?;
@@ -310,8 +310,8 @@ fn copy() -> postit::Result<()> {
 
 #[test]
 fn copy_same_paths() -> postit::Result<()> {
-    let left = MockPath::create(Format::Csv);
-    let right = MockPath::create(Format::Csv);
+    let left = MockPath::create(Format::Csv)?;
+    let right = MockPath::create(Format::Csv)?;
 
     let cli = Cli {
         command: Command::Copy(args::Copy {
@@ -327,8 +327,8 @@ fn copy_same_paths() -> postit::Result<()> {
 
 #[test]
 fn copy_no_left_path() -> postit::Result<()> {
-    let left = MockPath::create(Format::Csv);
-    let right = MockPath::create(Format::Json);
+    let left = MockPath::create(Format::Csv)?;
+    let right = MockPath::create(Format::Json)?;
 
     let cli = Cli {
         command: Command::Copy(args::Copy {
@@ -346,12 +346,12 @@ fn copy_no_left_path() -> postit::Result<()> {
 
 #[test]
 fn copy_path_exists() -> postit::Result<()> {
-    let mut mock = MockConfig::new();
+    let mut mock = MockConfig::new()?;
     mock.config.force_copy = false;
-    mock.save();
+    mock.save()?;
 
-    let left = MockPath::create(Format::Csv);
-    let right = MockPath::create(Format::Json);
+    let left = MockPath::create(Format::Csv)?;
+    let right = MockPath::create(Format::Json)?;
 
     let cli = Cli {
         command: Command::Copy(args::Copy {
@@ -367,13 +367,13 @@ fn copy_path_exists() -> postit::Result<()> {
 
 #[test]
 fn copy_drop_after_copy() -> postit::Result<()> {
-    let mut mock = MockConfig::new();
+    let mut mock = MockConfig::new()?;
     mock.config.force_copy = true;
     mock.config.drop_after_copy = true;
-    mock.save();
+    mock.save()?;
 
-    let left = MockPath::create(Format::Csv);
-    let right = MockPath::blank(Format::Json);
+    let left = MockPath::create(Format::Csv)?;
+    let right = MockPath::blank(Format::Json)?;
 
     let cli = Cli {
         command: Command::Copy(args::Copy {
@@ -391,7 +391,7 @@ fn copy_drop_after_copy() -> postit::Result<()> {
 
 #[test]
 fn sample() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let cli = Cli {
         command: Command::Sample(args::Persister { persister: Some(mock.to_string()) }),
@@ -411,7 +411,7 @@ fn sample() -> postit::Result<()> {
 
 #[test]
 fn clean() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let cli = Cli {
         command: Command::Clean(args::Persister { persister: Some(mock.to_string()) }),
@@ -431,7 +431,7 @@ fn clean() -> postit::Result<()> {
 
 #[test]
 fn remove() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let cli = Cli {
         command: Command::Remove(args::Persister { persister: Some(mock.to_string()) }),
@@ -446,7 +446,7 @@ fn remove() -> postit::Result<()> {
 
 #[test]
 fn config() -> postit::Result<()> {
-    let mock = MockConfig::new();
+    let mock = MockConfig::new()?;
 
     let cli = Cli {
         command: Command::Config(args::Config { subcommand: sub::Config::Init }),

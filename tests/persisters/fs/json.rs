@@ -10,7 +10,7 @@ use crate::mocks::MockPath;
 
 #[test]
 fn tasks() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Json);
+    let mock = MockPath::create(Format::Json)?;
 
     let result = Json::new(mock.path()).tasks()?;
     let expect = Todo::sample().tasks;
@@ -22,7 +22,7 @@ fn tasks() -> postit::Result<()> {
 
 #[test]
 fn open() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Json);
+    let mock = MockPath::create(Format::Json)?;
 
     let mut json = Json::new(mock.path()).open()?;
     let mut file = fs::File::open(mock.path())?;
@@ -40,7 +40,7 @@ fn open() -> postit::Result<()> {
 
 #[test]
 fn clean() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Json);
+    let mock = MockPath::create(Format::Json)?;
     Json::new(mock.path()).clean()?;
 
     let result = Json::new(mock.path()).tasks()?;
@@ -53,7 +53,7 @@ fn clean() -> postit::Result<()> {
 
 #[test]
 fn remove() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Json);
+    let mock = MockPath::create(Format::Json)?;
     Json::new(mock.path()).remove()?;
 
     assert!(mock.path().exists().not());

@@ -83,21 +83,21 @@ impl File {
     /// # Panics
     /// If the file name can't be extracted from the persister path.
     #[inline]
-    pub fn new(persister: &dyn FilePersister) -> Self {
+    pub fn new(persister: &dyn FilePersister) -> crate::Result<Self> {
         let path = persister.path();
         let file_name = path.file_name().unwrap();
-        let file_path = Config::build_path(file_name);
+        let file_path = Config::build_path(file_name)?;
 
-        Self { file: Self::get_persister(file_path) }
+        Ok(Self { file: Self::get_persister(file_path) })
     }
 
     /// Creates a `File` instance from a path.
     #[inline]
-    pub fn from<T: AsRef<str>>(path: T) -> super::Result<Self> {
+    pub fn from<T: AsRef<str>>(path: T) -> crate::Result<Self> {
         let file_name = Self::check_name(path.as_ref());
         let persister = Self::get_persister(file_name);
 
-        Ok(Self::new(persister.as_ref()))
+        Self::new(persister.as_ref())
     }
 
     /// Returns the path of the file.

@@ -38,7 +38,7 @@ fn deref() {
 
 #[test]
 fn orm_fmt_debug() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
 
     let persister = Orm::get_persister(mock.conn())?;
     let orm = Orm::new(persister);
@@ -63,7 +63,7 @@ fn is_sqlite() {
 
 #[test]
 fn get_persister() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let persister = Orm::get_persister(mock.conn())?;
 
     assert_eq!(persister.conn(), mock.conn());
@@ -78,7 +78,7 @@ fn get_persister_empty() -> postit::Result<()> {
     let _mock = MockConn::new(conn);
     let persister = Orm::get_persister("")?;
 
-    let path = Config::build_path(conn);
+    let path = Config::build_path(conn)?;
     let conn_str = path.to_str().unwrap();
 
     assert_eq!(persister.conn(), conn_str);
@@ -93,7 +93,7 @@ fn get_persister_sqlite_protocol() -> postit::Result<()> {
     let _mock = MockConn::new(conn);
     let persister = Orm::get_persister(conn)?;
 
-    let path = Config::build_path(conn.replace("sqlite:///", ""));
+    let path = Config::build_path(conn.replace("sqlite:///", ""))?;
     let conn_str = path.to_str().unwrap();
 
     assert_eq!(persister.conn(), conn_str);
@@ -103,7 +103,7 @@ fn get_persister_sqlite_protocol() -> postit::Result<()> {
 
 #[test]
 fn to_string() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let orm = Orm::from(mock.conn())?;
 
     assert_eq!(orm.to_string(), mock.conn());
@@ -113,7 +113,7 @@ fn to_string() -> postit::Result<()> {
 
 #[test]
 fn exists() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let orm = Orm::from(mock.conn())?;
 
     assert!(orm.exists()?);
@@ -123,7 +123,7 @@ fn exists() -> postit::Result<()> {
 
 #[test]
 fn save_twice() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let mut todo = Todo::sample();
     let task = Task::from("5,task,med,false");
 
@@ -142,7 +142,7 @@ fn save_twice() -> postit::Result<()> {
 
 #[test]
 fn save_and_tasks() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let todo = Todo::sample();
 
     let orm = Orm::from(mock.conn())?;
@@ -158,7 +158,7 @@ fn save_and_tasks() -> postit::Result<()> {
 
 #[test]
 fn edit_check() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let mut todo = Todo::sample();
 
     let orm = Orm::from(mock.conn())?;
@@ -178,7 +178,7 @@ fn edit_check() -> postit::Result<()> {
 
 #[test]
 fn edit_uncheck() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let mut todo = Todo::sample();
 
     let orm = Orm::from(mock.conn())?;
@@ -198,7 +198,7 @@ fn edit_uncheck() -> postit::Result<()> {
 
 #[test]
 fn edit_drop() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let mut todo = Todo::sample();
 
     let orm = Orm::from(mock.conn())?;
@@ -219,7 +219,7 @@ fn edit_drop() -> postit::Result<()> {
 
 #[test]
 fn tasks() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let todo = Todo::sample();
 
     let orm = Orm::from(mock.conn())?;
@@ -235,7 +235,7 @@ fn tasks() -> postit::Result<()> {
 
 #[test]
 fn replace() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let mut todo = Todo::sample();
     todo.add(Task::from("5,test,med,false"));
 
@@ -253,7 +253,7 @@ fn replace() -> postit::Result<()> {
 
 #[test]
 fn clean() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let orm = Orm::from(mock.conn())?;
 
     orm.clean()?;

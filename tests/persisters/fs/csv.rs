@@ -8,16 +8,18 @@ use postit::traits::FilePersister;
 use crate::mocks::MockPath;
 
 #[test]
-fn default() {
-    let mock = MockPath::create(Format::Csv);
+fn default() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Csv)?;
     let csv = Csv::new(mock.path());
 
     assert_eq!(csv.default(), Csv::header());
+
+    Ok(())
 }
 
 #[test]
 fn open() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let mut csv = Csv::new(mock.path()).open()?;
     let mut file = fs::File::open(mock.path())?;
@@ -35,7 +37,7 @@ fn open() -> postit::Result<()> {
 
 #[test]
 fn clean() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     Csv::new(mock.path()).clean()?;
 
     let result = Csv::new(mock.path()).tasks()?;
@@ -48,7 +50,7 @@ fn clean() -> postit::Result<()> {
 
 #[test]
 fn remove() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     Csv::new(mock.path()).remove()?;
 
     assert!(mock.path().exists().not());

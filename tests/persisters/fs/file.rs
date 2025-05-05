@@ -9,7 +9,7 @@ use crate::mocks::MockPath;
 
 #[test]
 fn exists_return_true() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let file = File::from(mock.to_string())?;
 
     assert!(file.exists()?);
@@ -33,8 +33,8 @@ fn format_deref() {
 }
 
 #[test]
-fn file_fmt_debug() {
-    let mock = MockPath::create(Format::Csv);
+fn file_fmt_debug() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Csv)?;
 
     let persister = File::get_persister(mock.path());
     let file = File::new(persister.as_ref());
@@ -43,11 +43,13 @@ fn file_fmt_debug() {
     let expected_output = r#"File { file: "tmp/test_sample.csv" }"#;
 
     assert_eq!(debug_output, expected_output);
+
+    Ok(())
 }
 
 #[test]
 fn path() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let file = File::from(mock.to_string())?;
 
@@ -61,10 +63,10 @@ fn path() -> postit::Result<()> {
 
 #[test]
 fn from() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let result = File::from(mock.to_string())?;
-    let expect = File::new(Csv::new(mock.path()).boxed().as_ref());
+    let expect = File::new(Csv::new(mock.path()).boxed().as_ref())?;
 
     assert_eq!(result, expect);
 
@@ -72,8 +74,8 @@ fn from() -> postit::Result<()> {
 }
 
 #[test]
-fn check_name_ok() {
-    let mock = MockPath::create(Format::Csv);
+fn check_name_ok() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Csv)?;
     let mock_path = mock.path();
 
     let checked_path = File::check_name(mock_path.clone());
@@ -82,16 +84,18 @@ fn check_name_ok() {
     let expect = mock_path.file_name().unwrap();
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
 fn check_content_is_empty() -> postit::Result<()> {
-    let mock = MockPath::blank(Format::Csv);
+    let mock = MockPath::blank(Format::Csv)?;
 
     let persister = File::get_persister(mock.path());
     let expect = persister.default();
 
-    let file = File::new(persister.as_ref());
+    let file = File::new(persister.as_ref())?;
     file.check_content()?;
 
     let result = fs::read_to_string(mock.path())?;
@@ -103,12 +107,12 @@ fn check_content_is_empty() -> postit::Result<()> {
 
 #[test]
 fn check_content_exists() -> postit::Result<()> {
-    let mock = MockPath::blank(Format::Csv);
+    let mock = MockPath::blank(Format::Csv)?;
 
     let persister = File::get_persister(mock.path());
     let expect = persister.default();
 
-    let file = File::new(persister.as_ref());
+    let file = File::new(persister.as_ref())?;
     file.check_content()?;
 
     let result = fs::read_to_string(mock.path())?;
@@ -132,8 +136,8 @@ fn check_name_no_ext() {
 }
 
 #[test]
-fn get_persister_csv() {
-    let mock = MockPath::create(Format::Csv);
+fn get_persister_csv() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Csv)?;
 
     let path = File::get_persister(mock.path()).path();
 
@@ -141,11 +145,13 @@ fn get_persister_csv() {
     let expect = "csv";
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn get_persister_json() {
-    let mock = MockPath::create(Format::Json);
+fn get_persister_json() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Json)?;
 
     let path = File::get_persister(mock.path()).path();
 
@@ -153,11 +159,13 @@ fn get_persister_json() {
     let expect = "json";
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn get_persister_xml() {
-    let mock = MockPath::create(Format::Xml);
+fn get_persister_xml() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Xml)?;
 
     let path = File::get_persister(mock.path()).path();
 
@@ -165,6 +173,8 @@ fn get_persister_xml() {
     let expect = "xml";
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
@@ -203,18 +213,20 @@ fn get_persister_dot() {
 }
 
 #[test]
-fn file_persister_eq() {
-    let mock = MockPath::create(Format::Csv);
+fn file_persister_eq() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Csv)?;
 
     let left = File::get_persister(mock.path());
     let right = File::get_persister(mock.path());
 
     assert!(left == right);
+
+    Ok(())
 }
 
 #[test]
 fn remove() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Json);
+    let mock = MockPath::create(Format::Json)?;
     let file = File::from(mock.to_string())?;
 
     file.remove()?;

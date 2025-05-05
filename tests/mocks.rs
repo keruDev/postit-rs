@@ -19,10 +19,10 @@ pub struct MockPath {
 
 impl MockPath {
     /// Main constructor of the `MockPath` struct.
-    pub fn create(format: Format) -> Self {
+    pub fn create(format: Format) -> postit::Result<Self> {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
-        let path = Config::build_path("test_sample");
+        let path = Config::build_path("test_sample")?;
         let name = path.to_str().unwrap();
 
         let file = match format {
@@ -31,18 +31,18 @@ impl MockPath {
             Format::Xml => Self::xml(name),
         };
 
-        file.write(&Todo::sample()).unwrap();
+        file.write(&Todo::sample())?;
 
-        let path = &file.path();
+        let path = file.path();
 
-        Self { instance: file, path: path.to_owned() }
+        Ok(Self { instance: file, path })
     }
 
     /// Auxiliary constructor of the `MockPath` struct.
-    pub fn blank(format: Format) -> Self {
+    pub fn blank(format: Format) -> postit::Result<Self> {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
-        let path = Config::build_path("test_blank");
+        let path = Config::build_path("test_blank")?;
         let name = path.to_str().unwrap();
 
         let file = match format {
@@ -53,18 +53,18 @@ impl MockPath {
 
         let path = file.path();
 
-        Self { instance: file, path }
+        Ok(Self { instance: file, path })
     }
 
-    pub fn from<T: AsRef<Path>>(path: T) -> Self {
+    pub fn from<T: AsRef<Path>>(path: T) -> postit::Result<Self> {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
         let mut path = path.as_ref().to_path_buf();
-        let var = std::env::var("POSTIT_ROOT").unwrap();
+        let var = std::env::var("POSTIT_ROOT").map_err(postit::Error::wrap)?;
         let tmp = Path::new(&var);
 
         if !path.exists() {
-            fs::File::create(&path).expect("Failed to create temp file");
+            fs::File::create(&path)?;
         }
 
         if !path.starts_with(tmp) {
@@ -73,7 +73,7 @@ impl MockPath {
 
         let file = File::get_persister(&path);
 
-        Self { instance: file, path }
+        Ok(Self { instance: file, path })
     }
 
     pub fn csv(name: &str) -> Box<dyn FilePersister> {
@@ -117,17 +117,15 @@ pub struct MockConn {
 
 impl MockConn {
     /// Constructor of the `MockPath` struct.
-    pub fn new(conn: &str) -> Self {
-        Self {
-            instance: Orm::get_persister(conn).unwrap(),
-        }
+    pub fn new(conn: &str) -> postit::Result<Self> {
+        Ok(Self { instance: Orm::get_persister(conn)? })
     }
 
     pub fn conn(&self) -> String {
         self.instance.conn()
     }
 
-    pub fn create(protocol: Protocol) -> Self {
+    pub fn create(protocol: Protocol) -> postit::Result<Self> {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
         match protocol {
@@ -136,11 +134,11 @@ impl MockConn {
         }
     }
 
-    pub fn sqlite() -> Self {
+    pub fn sqlite() -> postit::Result<Self> {
         Self::new("test_tasks.db")
     }
 
-    pub fn mongo() -> Self {
+    pub fn mongo() -> postit::Result<Self> {
         Self::new("mongodb://localhost:27017")
     }
 }
@@ -153,7 +151,7 @@ impl Drop for MockConn {
 
 impl Clone for MockConn {
     fn clone(&self) -> Self {
-        Self::new(&self.instance.conn())
+        Self::new(&self.instance.conn()).unwrap()
     }
 }
 
@@ -168,32 +166,27 @@ pub struct MockConfig {
 
 impl MockConfig {
     /// Constructor of the `MockConfig` struct.
-    pub fn new() -> Self {
+    pub fn new() -> postit::Result<Self> {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
-        let path = Config::path();
+        let path = Config::path()?;
 
-        let mut file = fs::File::create(&path).expect("Failed to create temp config file");
+        let mut file = fs::File::create(&path)?;
 
-        let toml =
-            toml::to_string_pretty(&Config::default()).expect("Failed to serialize config to TOML");
+        let toml = toml::to_string_pretty(&Config::default()).map_err(postit::Error::wrap)?;
 
-        if let Err(e) = file.write_all(toml.as_bytes()) {
-            eprintln!("Failed to save config to file: {e}");
-        }
+        file.write_all(toml.as_bytes())?;
 
-        Self { path, config: Config::default() }
+        Ok(Self { path, config: Config::default() })
     }
 
-    pub fn save(&mut self) {
-        let mut file = fs::File::create(self.path()).unwrap();
+    pub fn save(&mut self) -> postit::Result<()> {
+        let mut file = fs::File::create(self.path())?;
+        let toml = toml::to_string_pretty(&self.config).map_err(postit::Error::wrap)?;
 
-        let toml =
-            toml::to_string_pretty(&self.config).expect("Failed to serialize config to TOML");
+        file.write_all(toml.as_bytes())?;
 
-        if let Err(e) = file.write_all(toml.as_bytes()) {
-            eprintln!("Failed to save config to file: {e}");
-        }
+        Ok(())
     }
 
     pub fn path(&self) -> PathBuf {
@@ -203,7 +196,7 @@ impl MockConfig {
 
 impl Default for MockConfig {
     fn default() -> Self {
-        Self::new()
+        Self::new().unwrap()
     }
 }
 
