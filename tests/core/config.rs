@@ -32,7 +32,7 @@ drop_after_copy: true";
 
 #[test]
 fn manage_path() -> postit::Result<()> {
-    let mock = MockConfig::new();
+    let mock = MockConfig::new()?;
 
     Config::manage(sub::Config::Path)?;
 
@@ -43,7 +43,7 @@ fn manage_path() -> postit::Result<()> {
 
 #[test]
 fn path_exists_output() -> postit::Result<()> {
-    let mock = MockConfig::new();
+    let mock = MockConfig::new()?;
 
     let output = assert_cmd::Command::cargo_bin("postit")
         .map_err(postit::Error::wrap)?
@@ -61,7 +61,7 @@ fn path_exists_output() -> postit::Result<()> {
 
 #[test]
 fn print_path_not_exists_error() -> postit::Result<()> {
-    let _mock = MockConfig::new();
+    let _mock = MockConfig::new()?;
 
     Config::drop()?;
     Config::print_path()?;
@@ -71,7 +71,7 @@ fn print_path_not_exists_error() -> postit::Result<()> {
 
 #[test]
 fn path_not_exists_output() -> postit::Result<()> {
-    let mock = MockConfig::new();
+    let mock = MockConfig::new()?;
 
     Config::drop()?;
 
@@ -91,7 +91,7 @@ fn path_not_exists_output() -> postit::Result<()> {
 
 #[test]
 fn manage_env() -> postit::Result<()> {
-    let mock = MockConfig::new();
+    let mock = MockConfig::new()?;
 
     Config::manage(sub::Config::Env)?;
 
@@ -102,7 +102,7 @@ fn manage_env() -> postit::Result<()> {
 
 #[test]
 fn env_output() -> postit::Result<()> {
-    let _mock = MockConfig::new();
+    let _mock = MockConfig::new()?;
 
     let output = assert_cmd::Command::cargo_bin("postit")
         .map_err(postit::Error::wrap)?
@@ -129,7 +129,7 @@ fn env_is_empty() -> postit::Result<()> {
 
 #[test]
 fn manage_init() -> postit::Result<()> {
-    let mock = MockConfig::new();
+    let mock = MockConfig::new()?;
 
     Config::manage(sub::Config::Init)?;
 
@@ -144,7 +144,7 @@ fn manage_init() -> postit::Result<()> {
 
 #[test]
 fn manage_drop() -> postit::Result<()> {
-    let mock = MockConfig::new();
+    let mock = MockConfig::new()?;
 
     Config::manage(sub::Config::Init)?;
     Config::manage(sub::Config::Drop)?;
@@ -156,7 +156,7 @@ fn manage_drop() -> postit::Result<()> {
 
 #[test]
 fn manage_drop_config_doesnt_exist() -> postit::Result<()> {
-    let mock = MockConfig::new();
+    let mock = MockConfig::new()?;
 
     Config::manage(sub::Config::Drop)?;
     Config::manage(sub::Config::Drop)?;
@@ -175,7 +175,7 @@ fn manage_list() -> postit::Result<()> {
 
 #[test]
 fn manage_list_output() -> postit::Result<()> {
-    let _mock = MockConfig::new();
+    let _mock = MockConfig::new()?;
 
     let output = assert_cmd::Command::cargo_bin("postit")
         .map_err(postit::Error::wrap)?
@@ -213,7 +213,7 @@ fn manage_set_all_none() -> postit::Result<()> {
 
 #[test]
 fn manage_set_any() -> postit::Result<()> {
-    let _mock = MockConfig::new();
+    let _mock = MockConfig::new()?;
 
     let args = args::ConfigSet {
         persister: Some(String::from("tasks.json")),
@@ -239,7 +239,7 @@ fn manage_set_any() -> postit::Result<()> {
 
 #[test]
 fn manage_set_all() -> postit::Result<()> {
-    let _mock = MockConfig::new();
+    let _mock = MockConfig::new()?;
 
     let args = args::ConfigSet {
         persister: Some(String::from("tasks.json")),
@@ -279,7 +279,7 @@ fn default() -> postit::Result<()> {
 fn path_default() -> postit::Result<()> {
     std::env::set_var("HOME", "tmp");
 
-    let expect = Config::default_config_path();
+    let expect = Config::default_config_path()?;
 
     let mut result = Config::default_path();
     result.push(Config::config_file_name());
@@ -294,8 +294,8 @@ fn path_empty_env() -> postit::Result<()> {
     std::env::set_var("HOME", "tmp");
     std::env::set_var("POSTIT_ROOT", "");
 
-    let result = Config::path();
-    let expect = Config::default_config_path();
+    let result = Config::path()?;
+    let expect = Config::default_config_path()?;
 
     assert_eq!(result, expect);
 
@@ -306,7 +306,7 @@ fn path_empty_env() -> postit::Result<()> {
 fn path_custom() -> postit::Result<()> {
     std::env::set_var("POSTIT_ROOT", "tmp");
 
-    let result = Config::path();
+    let result = Config::path()?;
     let expect = PathBuf::from("tmp/.postit.toml");
 
     assert_eq!(result, expect);
@@ -328,7 +328,7 @@ fn load_default() -> postit::Result<()> {
 
 #[test]
 fn save() -> postit::Result<()> {
-    let _mock = MockConfig::new();
+    let _mock = MockConfig::new()?;
 
     let config = Config::default();
     config.save()?;
@@ -340,7 +340,7 @@ fn save() -> postit::Result<()> {
 
 #[test]
 fn save_file_doesnt_exist() -> postit::Result<()> {
-    let _mock = MockConfig::new();
+    let _mock = MockConfig::new()?;
 
     std::env::set_var("POSTIT_ROOT", "//");
 
@@ -354,7 +354,7 @@ fn save_file_doesnt_exist() -> postit::Result<()> {
 
 #[test]
 fn resolve_persister_file() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
     let persister = Config::resolve_persister(Some(mock.to_string()))?;
 
     assert_eq!(PathBuf::from(persister.to_string()), mock.path());
@@ -364,7 +364,7 @@ fn resolve_persister_file() -> postit::Result<()> {
 
 #[test]
 fn resolve_persister_db() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite);
+    let mock = MockConn::create(Protocol::Sqlite)?;
     let persister = Config::resolve_persister(Some(mock.conn()))?;
 
     assert_eq!(persister.to_string(), mock.conn());
@@ -376,12 +376,12 @@ fn resolve_persister_db() -> postit::Result<()> {
 fn resolve_persister_none() -> postit::Result<()> {
     let persister = Config::resolve_persister(None)?.to_string();
 
-    let mut path = Config::get_parent_path();
+    let mut path = Config::get_parent_path()?;
     path.push(Config::load()?.persister);
 
     assert_eq!(persister.to_string(), path.to_str().unwrap());
 
-    MockPath::create(Format::Csv);
+    MockPath::create(Format::Csv)?;
 
     Ok(())
 }

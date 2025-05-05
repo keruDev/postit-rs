@@ -9,7 +9,7 @@ use crate::mocks::MockConn;
 
 #[test]
 fn clone() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
 
     let expect = Mongo::from(mock.conn())?;
     let result = expect.clone();
@@ -21,7 +21,7 @@ fn clone() -> postit::Result<()> {
 
 #[test]
 fn count_ok() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.insert(&Todo::sample())?;
 
     assert_eq!(Mongo::from(mock.conn())?.count()?, 4);
@@ -31,7 +31,7 @@ fn count_ok() -> postit::Result<()> {
 
 #[test]
 fn count_table_doesnt_exist() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.drop_database()?;
 
     assert_eq!(Mongo::from(mock.conn())?.count()?, 0);
@@ -41,7 +41,7 @@ fn count_table_doesnt_exist() -> postit::Result<()> {
 
 #[test]
 fn exists() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
 
     assert!(Mongo::from(mock.conn())?.exists()?);
 
@@ -51,7 +51,7 @@ fn exists() -> postit::Result<()> {
 #[test]
 fn conn() -> postit::Result<()> {
     let uri = "mongodb://localhost:27017";
-    let mock = MockConn::new(uri);
+    let mock = MockConn::new(uri)?;
 
     assert_eq!(uri, mock.conn());
 
@@ -62,7 +62,7 @@ fn conn() -> postit::Result<()> {
 fn boxed() -> postit::Result<()> {
     let uri = "mongodb://localhost:27017";
 
-    let mock = MockConn::new(uri);
+    let mock = MockConn::new(uri)?;
     let mongo = Mongo::from(mock.conn())?;
     let result = mongo.clone().boxed();
 
@@ -76,7 +76,7 @@ fn reset_autoincrement() -> postit::Result<()> {
     let todo = Todo::sample();
     let task = Todo::new(&todo.tasks[0]);
 
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     let mongo = Mongo::from(mock.conn())?;
 
     mongo.insert(&todo)?;
@@ -93,7 +93,7 @@ fn reset_autoincrement() -> postit::Result<()> {
 
 #[test]
 fn create() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.create()?;
 
     assert!(Mongo::from(mock.conn())?.exists()?);
@@ -105,7 +105,7 @@ fn create() -> postit::Result<()> {
 fn insert_and_tasks() -> postit::Result<()> {
     let todo = Todo::sample();
 
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.insert(&todo)?;
 
     let result = mock.instance.tasks()?;
@@ -121,7 +121,7 @@ fn update_check() -> postit::Result<()> {
     let ids = vec![2, 3];
     let action = Action::Check;
 
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, action)?;
 
@@ -140,7 +140,7 @@ fn update_uncheck() -> postit::Result<()> {
     let ids = vec![2, 3];
     let action = Action::Uncheck;
 
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, action)?;
 
@@ -161,7 +161,7 @@ fn update_set_content() -> postit::Result<()> {
     let mut todo = Todo::sample();
     todo.set_content(&ids, "test");
 
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, action)?;
 
@@ -180,7 +180,7 @@ fn update_set_priority() -> postit::Result<()> {
     let mut todo = Todo::sample();
     todo.set_priority(&ids, &postit::models::Priority::High);
 
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, action)?;
 
@@ -197,7 +197,7 @@ fn update_delete() -> postit::Result<()> {
     let ids = vec![2, 3];
     let action = Action::Drop;
 
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, action)?;
 
@@ -224,7 +224,7 @@ fn drop_database() -> postit::Result<()> {
 
 #[test]
 fn tasks() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     let todo = Todo::sample();
 
     let mongo = Mongo::from(mock.conn())?;
@@ -237,7 +237,7 @@ fn tasks() -> postit::Result<()> {
 
 #[test]
 fn clean() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Mongo);
+    let mock = MockConn::create(Protocol::Mongo)?;
     let todo = Todo::sample();
 
     let mongo = Mongo::from(mock.conn())?;

@@ -19,7 +19,7 @@ fn new() {
 
 #[test]
 fn get() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let todo = fakes(&mock)?;
     let clone = todo.clone();
@@ -35,7 +35,7 @@ fn get() -> postit::Result<()> {
 
 #[test]
 fn get_mut() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let mut todo = fakes(&mock)?;
     let clone = todo.clone();
@@ -51,7 +51,7 @@ fn get_mut() -> postit::Result<()> {
 
 #[test]
 fn add_ok() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let mut todo = fakes(&mock)?;
     let mut expect = todo.clone();
@@ -68,7 +68,7 @@ fn add_ok() -> postit::Result<()> {
 
 #[test]
 fn check_ok() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let mut todo = fakes(&mock)?;
     let mut expect = todo.clone();
@@ -85,7 +85,7 @@ fn check_ok() -> postit::Result<()> {
 
 #[test]
 fn uncheck_ok() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let mut todo = fakes(&mock)?;
     let mut expect = todo.clone();
@@ -102,7 +102,7 @@ fn uncheck_ok() -> postit::Result<()> {
 
 #[test]
 fn drop() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv);
+    let mock = MockPath::create(Format::Csv)?;
 
     let mut todo = fakes(&mock)?;
     let mut expect = todo.clone();

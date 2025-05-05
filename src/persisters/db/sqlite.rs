@@ -36,12 +36,12 @@ impl Sqlite {
     /// - If the path can't be converted to str.
     /// - If a connection to the `SQLite` file can't be opened.
     #[inline]
-    pub fn from<T: AsRef<Path>>(conn: T) -> super::Result<Self> {
-        let path = Config::build_path(conn.as_ref());
+    pub fn from<T: AsRef<Path>>(conn: T) -> crate::Result<Self> {
+        let path = Config::build_path(conn.as_ref())?;
 
         let instance = Self {
             conn_str: path.to_string_lossy().into_owned(),
-            connection: sqlite::open(path)?,
+            connection: sqlite::open(path).map_err(super::Error::Sqlite)?,
         };
 
         if !instance.exists()? {
