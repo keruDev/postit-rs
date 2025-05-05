@@ -17,30 +17,36 @@ fn default() {
 }
 
 #[test]
-fn tasks() {
+fn tasks() -> postit::Result<()> {
     let mock = MockPath::create(Format::Xml);
 
-    let result = Xml::new(mock.path()).tasks();
+    let result = Xml::new(mock.path()).tasks()?;
     let expect = Todo::sample().tasks;
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn clean() {
+fn clean() -> postit::Result<()> {
     let mock = MockPath::create(Format::Xml);
-    Xml::new(mock.path()).clean().unwrap();
+    Xml::new(mock.path()).clean()?;
 
-    let result = Xml::new(mock.path()).tasks();
+    let result = Xml::new(mock.path()).tasks()?;
     let expect = Vec::new();
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn remove() {
+fn remove() -> postit::Result<()> {
     let mock = MockPath::create(Format::Xml);
-    Xml::new(mock.path()).remove().unwrap();
+    Xml::new(mock.path()).remove()?;
 
     assert!(mock.path().exists().not());
+
+    Ok(())
 }

@@ -20,53 +20,56 @@ pub trait Persister: fmt::Debug {
     fn to_string(&self) -> String;
 
     /// Checks wether a persister exists or not.
-    fn exists(&self) -> bool;
+    fn exists(&self) -> crate::Result<bool>;
 
     /// Returns the tasks collected from the persister's contents.
-    fn tasks(&self) -> Vec<Task>;
+    ///
+    /// # Errors
+    /// If the tasks can't be extracted from the persister.
+    fn tasks(&self) -> crate::Result<Vec<Task>>;
 
     /// Edits a persister by managing an [`Action`] variant.
     ///
     /// # Errors
     /// Returns an error if the persister can't be edited.
-    fn edit(&self, todo: &Todo, ids: &[u32], action: Action) -> super::Result<()>;
+    fn edit(&self, todo: &Todo, ids: &[u32], action: Action) -> crate::Result<()>;
 
     /// Saves a Todo instance as the persister's content.
     ///
     /// # Errors
     /// Returns an error if the persister's contents can't be saved.
-    fn save(&self, todo: &Todo) -> super::Result<()>;
+    fn save(&self, todo: &Todo) -> crate::Result<()>;
 
     /// Replaces the current data with a new [`Todo`] instance.
     ///
     /// # Errors
     /// Returns an error if the persister's contents can't be replaced.
-    fn replace(&self, todo: &Todo) -> super::Result<()>;
+    fn replace(&self, todo: &Todo) -> crate::Result<()>;
 
     /// Deletes all tasks from the persister.
     ///
     /// # Errors
     /// Returns an error if the persister can't be cleaned.
-    fn clean(&self) -> super::Result<()>;
+    fn clean(&self) -> crate::Result<()>;
 
     /// Removes a persister completely (file or table).
     ///
     /// # Errors
     /// Returns an error if the persister can't be removed.
-    fn remove(&self) -> super::Result<()>;
+    fn remove(&self) -> crate::Result<()>;
 }
 
 impl PartialEq for Box<dyn Persister> {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        (self.to_string() == other.to_string()) && (self.tasks() == other.tasks())
+        (self.to_string() == other.to_string()) && (self.tasks().unwrap() == other.tasks().unwrap())
     }
 }
 
 impl Clone for Box<dyn Persister> {
     #[inline]
     fn clone(&self) -> Self {
-        crate::Config::resolve_persister(Some(self.to_string()))
+        crate::Config::resolve_persister(Some(self.to_string())).unwrap()
     }
 }
 
@@ -82,7 +85,10 @@ pub trait FilePersister {
     fn default(&self) -> String;
 
     /// Returns the tasks collected from the file's contents.
-    fn tasks(&self) -> Vec<Task>;
+    ///
+    /// # Errors
+    /// If the tasks can't be extracted from the file.
+    fn tasks(&self) -> fs::Result<Vec<Task>>;
 
     /// Grants access to an open file.
     ///
@@ -111,7 +117,7 @@ pub trait FilePersister {
 impl PartialEq for Box<dyn FilePersister> {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        (self.path() == other.path()) && (self.tasks() == other.tasks())
+        (self.path() == other.path()) && (self.tasks().unwrap() == other.tasks().unwrap())
     }
 }
 
@@ -124,10 +130,13 @@ pub trait DbPersister {
     fn conn(&self) -> String;
 
     /// Checks if a table exists.
-    fn exists(&self) -> bool;
+    fn exists(&self) -> db::Result<bool>;
 
     /// Returns the tasks collected from the database's contents.
-    fn tasks(&self) -> Vec<Task>;
+    ///
+    /// # Errors
+    /// If the tasks can't be extracted from the database.
+    fn tasks(&self) -> db::Result<Vec<Task>>;
 
     /// Returns the number of results in a table.
     ///
@@ -175,6 +184,6 @@ pub trait DbPersister {
 impl PartialEq for Box<dyn DbPersister> {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        (self.conn() == other.conn()) && (self.tasks() == other.tasks())
+        (self.conn() == other.conn()) && (self.tasks().unwrap() == other.tasks().unwrap())
     }
 }

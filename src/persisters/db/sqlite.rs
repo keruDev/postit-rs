@@ -36,19 +36,19 @@ impl Sqlite {
     /// - If the path can't be converted to str.
     /// - If a connection to the `SQLite` file can't be opened.
     #[inline]
-    pub fn from<T: AsRef<Path>>(conn: T) -> Self {
+    pub fn from<T: AsRef<Path>>(conn: T) -> super::Result<Self> {
         let path = Config::build_path(conn.as_ref());
 
         let instance = Self {
             conn_str: path.to_string_lossy().into_owned(),
-            connection: sqlite::open(path).unwrap(),
+            connection: sqlite::open(path)?,
         };
 
-        if !instance.exists() {
-            instance.create().unwrap();
+        if !instance.exists()? {
+            instance.create()?;
         }
 
-        instance
+        Ok(instance)
     }
 
     /// Returns the desired ids format to be used in a query.
@@ -65,14 +65,16 @@ impl Sqlite {
     /// # Panics
     /// If a value can't be unwrapped.
     #[inline]
-    pub fn read_row(&self, stmt: &Statement) -> String {
-        format!(
+    pub fn read_row(&self, stmt: &Statement) -> super::Result<String> {
+        let row = format!(
             "{},{},{},{}",
-            stmt.read::<i64, _>("id").unwrap(),
-            stmt.read::<String, _>("content").unwrap(),
-            stmt.read::<String, _>("priority").unwrap(),
-            stmt.read::<String, _>("checked").unwrap()
-        )
+            stmt.read::<i64, _>("id")?,
+            stmt.read::<String, _>("content")?,
+            stmt.read::<String, _>("priority")?,
+            stmt.read::<String, _>("checked")?,
+        );
+
+        Ok(row)
     }
 
     /// Resets the autoincrement value.
@@ -108,40 +110,40 @@ impl DbPersister for Sqlite {
     /// # Errors
     /// In case the statement can't be prepared.
     #[inline]
-    fn exists(&self) -> bool {
+    fn exists(&self) -> super::Result<bool> {
         #[rustfmt::skip]
         let mut stmt = self.connection.prepare("
             SELECT *
             FROM sqlite_master
             WHERE type='table'
               AND name='tasks'
-        ").unwrap();
+        ")?;
 
         let mut result = vec![];
 
         while matches!(stmt.next(), Ok(State::Row)) {
-            result.push(stmt.read::<String, _>("name").unwrap());
+            result.push(stmt.read::<String, _>("name"));
         }
 
-        !result.is_empty()
+        Ok(!result.is_empty())
     }
 
     #[inline]
-    fn tasks(&self) -> Vec<Task> {
-        let mut stmt = self.connection.prepare("SELECT * FROM tasks").unwrap();
+    fn tasks(&self) -> super::Result<Vec<Task>> {
+        let mut stmt = self.connection.prepare("SELECT * FROM tasks")?;
 
         let mut result = vec![];
 
         while matches!(stmt.next(), Ok(State::Row)) {
-            result.push(Task::from(self.read_row(&stmt)));
+            result.push(Task::from(self.read_row(&stmt)?));
         }
 
-        result
+        Ok(result)
     }
 
     #[inline]
     fn count(&self) -> super::Result<u32> {
-        if !self.exists() {
+        if !self.exists()? {
             return Ok(0);
         }
 
@@ -181,14 +183,14 @@ impl DbPersister for Sqlite {
             let mut stmt = self.connection.prepare("
                 INSERT INTO tasks (content, priority, checked)
                 VALUES (?, ?, ?)
-            ").unwrap();
+            ")?;
 
             #[rustfmt::skip]
             stmt.bind(&[
                 &task.content,
                 &*task.priority,
                 &*i32::from(task.checked).to_string()
-            ][..]).unwrap();
+            ][..])?;
 
             stmt.next().map(|_| ())?;
 
@@ -218,7 +220,7 @@ impl DbPersister for Sqlite {
             IN ({})
         ", self.format_ids(ids));
 
-        let mut stmt = self.connection.prepare(query).unwrap();
+        let mut stmt = self.connection.prepare(query)?;
 
         stmt.next().map(|_| ())?;
 
@@ -234,7 +236,7 @@ impl DbPersister for Sqlite {
             IN ({})
         ", self.format_ids(ids));
 
-        let mut stmt = self.connection.prepare(query).unwrap();
+        let mut stmt = self.connection.prepare(query)?;
 
         stmt.next().map(|_| ())?;
 
@@ -243,8 +245,6 @@ impl DbPersister for Sqlite {
 
     #[inline]
     fn drop_database(&self) -> super::Result<()> {
-        // fs::remove_file(self.conn()).expect("Couldn't drop the database");
-
         fs::remove_file(self.conn()).map_err(|e| {
             let err = sqlite::Error {
                 code: Some(1),

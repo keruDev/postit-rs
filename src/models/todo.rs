@@ -37,8 +37,8 @@ impl Todo {
 
     /// Creates a `Todo` instance from a persister's contents.
     #[inline]
-    pub fn from(persister: &dyn Persister) -> Self {
-        Self { tasks: persister.tasks() }
+    pub fn from(persister: &dyn Persister) -> crate::Result<Self> {
+        Ok(Self { tasks: persister.tasks()? })
     }
 
     /// Initializes a `Todo` instance with fake data.
@@ -143,7 +143,7 @@ impl Todo {
     /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     #[inline]
     pub fn drop(&mut self, ids: &[u32]) -> Vec<u32> {
-        let force_drop = Config::load().force_drop;
+        let force_drop = Config::load().unwrap().force_drop;
         let mut changed_ids = Vec::<u32>::new();
 
         self.tasks.retain(|task| {

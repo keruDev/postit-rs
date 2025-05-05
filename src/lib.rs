@@ -33,8 +33,6 @@
     clippy::single_call_fn,
     clippy::as_conversions,
     clippy::panic,
-    // clippy::expect_used,
-    // clippy::unwrap_used,
     missing_docs
 )]
 #![allow(
@@ -44,15 +42,21 @@
     clippy::multiple_crate_versions,
     clippy::must_use_candidate,
     clippy::struct_excessive_bools,
-    // TEMP
-    clippy::needless_pass_by_value
+    // TMP
+    clippy::expect_used,
+    clippy::missing_errors_doc,
+    clippy::missing_panics_doc,
 )]
 
+mod config;
 mod core;
 pub mod docs;
+mod error;
 pub mod models;
 mod persisters;
 
+pub use config::*;
 pub use core::*;
+pub use error::{Error, Result};
 
 pub use persisters::*;

@@ -16,36 +16,42 @@ fn default() {
 }
 
 #[test]
-fn open() {
+fn open() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv);
 
-    let mut csv = Csv::new(mock.path()).open().unwrap();
-    let mut file = fs::File::open(mock.path()).unwrap();
+    let mut csv = Csv::new(mock.path()).open()?;
+    let mut file = fs::File::open(mock.path())?;
 
     let mut result = Vec::new();
     let mut expect = Vec::new();
 
-    csv.read_to_end(&mut result).unwrap();
-    file.read_to_end(&mut expect).unwrap();
+    csv.read_to_end(&mut result)?;
+    file.read_to_end(&mut expect)?;
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn clean() {
+fn clean() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv);
-    Csv::new(mock.path()).clean().unwrap();
+    Csv::new(mock.path()).clean()?;
 
-    let result = Csv::new(mock.path()).tasks();
+    let result = Csv::new(mock.path()).tasks()?;
     let expect = Vec::new();
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn remove() {
+fn remove() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv);
-    Csv::new(mock.path()).remove().unwrap();
+    Csv::new(mock.path()).remove()?;
 
     assert!(mock.path().exists().not());
+
+    Ok(())
 }

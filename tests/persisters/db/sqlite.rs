@@ -9,55 +9,65 @@ use postit::{Action, Config};
 use crate::mocks::MockConn;
 
 #[test]
-fn clone() {
+fn clone() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite);
 
-    let expect = Sqlite::from(mock.conn());
+    let expect = Sqlite::from(mock.conn())?;
     let result = expect.clone();
 
     assert_eq!(result.conn(), expect.conn());
+
+    Ok(())
 }
 
 #[test]
-fn count_ok() {
+fn count_ok() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite);
-    mock.instance.insert(&Todo::sample()).unwrap();
+    mock.instance.insert(&Todo::sample())?;
 
-    assert_eq!(Sqlite::from(mock.conn()).count().unwrap(), 4);
+    assert_eq!(Sqlite::from(mock.conn())?.count()?, 4);
+
+    Ok(())
 }
 
 #[test]
-fn count_table_doesnt_exist() {
+fn count_table_doesnt_exist() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite);
-    mock.instance.drop_database().unwrap();
+    mock.instance.drop_database()?;
 
     let path = PathBuf::from(mock.conn());
     let file = path.file_name().unwrap();
 
-    assert_eq!(Sqlite::from(file).count().unwrap(), 0);
+    assert_eq!(Sqlite::from(file)?.count()?, 0);
+
+    Ok(())
 }
 
 #[test]
-fn exists() {
+fn exists() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite);
 
-    assert!(Sqlite::from(mock.conn()).exists());
+    assert!(Sqlite::from(mock.conn())?.exists()?);
+
+    Ok(())
 }
 
 #[test]
-fn format_ids() {
+fn format_ids() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite);
 
     let ids = vec![1, 2, 3];
 
-    let result = Sqlite::from(mock.conn()).format_ids(&ids);
+    let result = Sqlite::from(mock.conn())?.format_ids(&ids);
     let expect = "1, 2, 3";
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn conn() {
+fn conn() -> postit::Result<()> {
     let conn = "test.db";
     let mock = MockConn::new(conn);
 
@@ -65,93 +75,107 @@ fn conn() {
     let conn_str = path.to_str().unwrap();
 
     assert_eq!(conn_str, mock.conn());
+
+    Ok(())
 }
 
 #[test]
-fn boxed() {
+fn boxed() -> postit::Result<()> {
     let conn = "test.db";
     let mock = MockConn::new(conn);
 
-    let sqlite = Sqlite::from(mock.conn());
+    let sqlite = Sqlite::from(mock.conn())?;
     let result = sqlite.clone().boxed();
 
     assert_eq!(result.conn(), sqlite.conn());
+
+    Ok(())
 }
 
 #[test]
-fn reset_autoincrement() {
+fn reset_autoincrement() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite);
     let todo = Todo::sample();
     let task = Todo::new(&todo.tasks[0]);
 
-    let sqlite = Sqlite::from(mock.conn());
+    let sqlite = Sqlite::from(mock.conn())?;
 
-    sqlite.insert(&todo).unwrap();
-    sqlite.clean().unwrap();
-    sqlite.insert(&task).unwrap();
+    sqlite.insert(&todo)?;
+    sqlite.clean()?;
+    sqlite.insert(&task)?;
 
-    let result = sqlite.tasks()[0].id;
+    let result = sqlite.tasks()?[0].id;
     let expect = 1;
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn create() {
+fn create() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite);
-    mock.instance.create().unwrap();
+    mock.instance.create()?;
 
-    assert!(Sqlite::from(mock.conn()).exists());
+    assert!(Sqlite::from(mock.conn())?.exists()?);
+
+    Ok(())
 }
 
 #[test]
-fn insert_and_tasks() {
+fn insert_and_tasks() -> postit::Result<()> {
     let todo = Todo::sample();
 
     let mock = MockConn::create(Protocol::Sqlite);
-    mock.instance.insert(&todo).unwrap();
+    mock.instance.insert(&todo)?;
 
-    let result = mock.instance.tasks();
+    let result = mock.instance.tasks()?;
 
     assert_eq!(result, todo.tasks);
+
+    Ok(())
 }
 
 #[test]
-fn update_check() {
+fn update_check() -> postit::Result<()> {
     let mut todo = Todo::sample();
     let ids = vec![2, 3];
     let action = Action::Check;
 
     let mock = MockConn::create(Protocol::Sqlite);
-    mock.instance.insert(&todo).unwrap();
-    mock.instance.update(&todo, &ids, action).unwrap();
+    mock.instance.insert(&todo)?;
+    mock.instance.update(&todo, &ids, action)?;
 
     todo.check(&ids);
 
-    let result = mock.instance.tasks();
+    let result = mock.instance.tasks()?;
 
     assert_eq!(result, todo.tasks);
+
+    Ok(())
 }
 
 #[test]
-fn update_uncheck() {
+fn update_uncheck() -> postit::Result<()> {
     let mut todo = Todo::sample();
     let ids = vec![2, 3];
     let action = Action::Uncheck;
 
     let mock = MockConn::create(Protocol::Sqlite);
-    mock.instance.insert(&todo).unwrap();
-    mock.instance.update(&todo, &ids, action).unwrap();
+    mock.instance.insert(&todo)?;
+    mock.instance.update(&todo, &ids, action)?;
 
     todo.uncheck(&ids);
 
-    let result = mock.instance.tasks();
+    let result = mock.instance.tasks()?;
 
     assert_eq!(result, todo.tasks);
+
+    Ok(())
 }
 
 #[test]
-fn update_set_content() {
+fn update_set_content() -> postit::Result<()> {
     let ids = vec![2, 3];
     let action = Action::SetContent;
 
@@ -159,16 +183,18 @@ fn update_set_content() {
     todo.set_content(&ids, "test");
 
     let mock = MockConn::create(Protocol::Sqlite);
-    mock.instance.insert(&todo).unwrap();
-    mock.instance.update(&todo, &ids, action).unwrap();
+    mock.instance.insert(&todo)?;
+    mock.instance.update(&todo, &ids, action)?;
 
-    let result = mock.instance.tasks();
+    let result = mock.instance.tasks()?;
 
     assert_eq!(result, todo.tasks);
+
+    Ok(())
 }
 
 #[test]
-fn update_set_priority() {
+fn update_set_priority() -> postit::Result<()> {
     let ids = vec![2, 3];
     let action = Action::SetPriority;
 
@@ -176,63 +202,73 @@ fn update_set_priority() {
     todo.set_priority(&ids, &postit::models::Priority::High);
 
     let mock = MockConn::create(Protocol::Sqlite);
-    mock.instance.insert(&todo).unwrap();
-    mock.instance.update(&todo, &ids, action).unwrap();
+    mock.instance.insert(&todo)?;
+    mock.instance.update(&todo, &ids, action)?;
 
-    let result = mock.instance.tasks();
+    let result = mock.instance.tasks()?;
 
     assert_eq!(result, todo.tasks);
+
+    Ok(())
 }
 
 #[test]
-fn update_delete() {
+fn update_delete() -> postit::Result<()> {
     let mut todo = Todo::sample();
     let ids = vec![2, 3];
     let action = Action::Drop;
 
     let mock = MockConn::create(Protocol::Sqlite);
-    mock.instance.insert(&todo).unwrap();
-    mock.instance.update(&todo, &ids, action).unwrap();
+    mock.instance.insert(&todo)?;
+    mock.instance.update(&todo, &ids, action)?;
 
     todo.check(&ids);
     todo.drop(&ids);
 
-    let result = mock.instance.tasks();
+    let result = mock.instance.tasks()?;
 
     assert_eq!(result, todo.tasks);
+
+    Ok(())
 }
 
 #[test]
-fn drop_database() {
+fn drop_database() -> postit::Result<()> {
     // Doesn't use mocks because of conflicts with the Drop trait.
-    let sqlite = Sqlite::from("test_tasks.db");
-    sqlite.drop_database().unwrap();
+    let sqlite = Sqlite::from("test_tasks.db")?;
+    sqlite.drop_database()?;
 
     assert!(std::path::PathBuf::from(sqlite.conn()).exists().not());
+
+    Ok(())
 }
 
 #[test]
-fn tasks() {
+fn tasks() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite);
     let todo = Todo::sample();
 
-    let sqlite = Sqlite::from(mock.conn());
-    sqlite.insert(&todo).unwrap();
+    let sqlite = Sqlite::from(mock.conn())?;
+    sqlite.insert(&todo)?;
 
-    assert_eq!(todo.tasks, sqlite.tasks());
+    assert_eq!(todo.tasks, sqlite.tasks()?);
+
+    Ok(())
 }
 
 #[test]
-fn clean() {
+fn clean() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite);
     let todo = Todo::sample();
 
-    let sqlite = Sqlite::from(mock.conn());
-    sqlite.insert(&todo).unwrap();
-    sqlite.clean().unwrap();
+    let sqlite = Sqlite::from(mock.conn())?;
+    sqlite.insert(&todo)?;
+    sqlite.clean()?;
 
-    let result = sqlite.tasks();
+    let result = sqlite.tasks()?;
     let expect = Vec::new();
 
     assert_eq!(result, expect);
+
+    Ok(())
 }

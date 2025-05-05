@@ -8,10 +8,10 @@ use std::ops::Deref;
 use std::path::Path;
 
 use super::{Mongo, Sqlite};
+use crate::db;
 use crate::models::{Task, Todo};
 use crate::traits::{DbPersister, Persister};
 use crate::Action;
-use crate::{db, persisters};
 
 /// A database protocol.
 pub enum Protocol {
@@ -96,8 +96,8 @@ impl Orm {
 
     /// Creates a `Orm` instance from a connection string.
     #[inline]
-    pub fn from<T: AsRef<str>>(conn: T) -> Self {
-        Self::new(Self::get_persister(conn))
+    pub fn from<T: AsRef<str>>(conn: T) -> super::Result<Self> {
+        Ok(Self { db: Self::get_persister(conn)? })
     }
 
     /// Checks if the passed connection string has an Sqlite format.
@@ -120,11 +120,11 @@ impl Orm {
     /// # Errors
     /// If the path can't be converted to str.
     #[inline]
-    pub fn get_persister<T: AsRef<str>>(conn: T) -> Box<dyn DbPersister> {
+    pub fn get_persister<T: AsRef<str>>(conn: T) -> super::Result<Box<dyn DbPersister>> {
         let conn = conn.as_ref();
 
         if conn.starts_with("sqlite:///") {
-            return Sqlite::from(conn.replace("sqlite:///", "")).boxed();
+            return Ok(Sqlite::from(conn.replace("sqlite:///", ""))?.boxed());
         }
 
         let mut parts: Vec<&str> = conn.split("://").collect();
@@ -137,12 +137,12 @@ impl Orm {
         let protocol = parts[0];
 
         if parts.len() == 1 && Self::is_sqlite(protocol) {
-            return Sqlite::from(protocol).boxed();
+            return Ok(Sqlite::from(protocol)?.boxed());
         }
 
         match Protocol::from(protocol) {
-            Protocol::Sqlite => Sqlite::from(conn).boxed(),
-            Protocol::Mongo | Protocol::MongoSrv => Mongo::from(conn).boxed(),
+            Protocol::Sqlite => Ok(Sqlite::from(conn)?.boxed()),
+            Protocol::Mongo | Protocol::MongoSrv => Ok(Mongo::from(conn)?.boxed()),
         }
     }
 }
@@ -159,29 +159,35 @@ impl Persister for Orm {
     }
 
     #[inline]
-    fn exists(&self) -> bool {
-        self.db.exists()
-    }
-
-    #[inline]
-    fn tasks(&self) -> Vec<Task> {
-        self.db.tasks()
-    }
-
-    #[inline]
-    fn edit(&self, todo: &Todo, ids: &[u32], action: Action) -> persisters::Result<()> {
-        self.db.update(todo, ids, action.clone()).map_err(|e| {
-            eprintln!("Can't perform the '{action}' action");
-            persisters::Error::DbError(e)
+    fn exists(&self) -> crate::Result<bool> {
+        self.db.exists().map_err(|e| {
+            eprintln!("Can't check wether the tasks table exists or not");
+            crate::Error::Db(e)
         })
     }
 
     #[inline]
-    fn save(&self, todo: &Todo) -> persisters::Result<()> {
+    fn tasks(&self) -> crate::Result<Vec<Task>> {
+        self.db.tasks().map_err(|e| {
+            eprintln!("Can't get tasks");
+            crate::Error::Db(e)
+        })
+    }
+
+    #[inline]
+    fn edit(&self, todo: &Todo, ids: &[u32], action: Action) -> crate::Result<()> {
+        self.db.update(todo, ids, action.clone()).map_err(|e| {
+            eprintln!("Can't perform the '{action}' action");
+            crate::Error::Db(e)
+        })
+    }
+
+    #[inline]
+    fn save(&self, todo: &Todo) -> crate::Result<()> {
         if self.db.count()? == 0 {
             return self.db.insert(todo).map_err(|e| {
                 eprintln!("Can't insert into the database");
-                persisters::Error::DbError(e)
+                crate::Error::Db(e)
             });
         }
 
@@ -190,36 +196,36 @@ impl Persister for Orm {
 
         self.db.insert(&task).map_err(|e| {
             eprintln!("Can't insert into the database");
-            persisters::Error::DbError(e)
+            crate::Error::Db(e)
         })
     }
 
     #[inline]
-    fn replace(&self, todo: &Todo) -> persisters::Result<()> {
+    fn replace(&self, todo: &Todo) -> crate::Result<()> {
         if let Err(e) = self.db.clean() {
             eprintln!("Can't clean the database");
-            return Err(persisters::Error::DbError(e));
+            return Err(crate::Error::Db(e));
         }
 
         self.db.insert(todo).map_err(|e| {
             eprintln!("Can't insert into the database");
-            persisters::Error::DbError(e)
+            crate::Error::Db(e)
         })
     }
 
     #[inline]
-    fn clean(&self) -> persisters::Result<()> {
+    fn clean(&self) -> crate::Result<()> {
         self.db.clean().map_err(|e| {
             eprintln!("Can't clean the database");
-            persisters::Error::DbError(e)
+            crate::Error::Db(e)
         })
     }
 
     #[inline]
-    fn remove(&self) -> persisters::Result<()> {
+    fn remove(&self) -> crate::Result<()> {
         self.db.drop_database().map_err(|e| {
             eprintln!("Can't drop the database");
-            persisters::Error::DbError(e)
+            crate::Error::Db(e)
         })
     }
 }

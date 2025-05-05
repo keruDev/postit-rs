@@ -33,19 +33,19 @@ impl Mongo {
     /// # Panics
     /// If the URI can't be converted to str.
     #[inline]
-    pub fn from<T: AsRef<str>>(uri: T) -> Self {
+    pub fn from<T: AsRef<str>>(uri: T) -> super::Result<Self> {
         let uri = uri.as_ref();
 
         let instance = Self {
             conn_str: uri.to_owned(),
-            connection: Client::with_uri_str(uri).unwrap(),
+            connection: Client::with_uri_str(uri)?,
         };
 
-        if !instance.exists() {
-            instance.create().unwrap();
+        if !instance.exists()? {
+            instance.create()?;
         }
 
-        instance
+        Ok(instance)
     }
 
     /// Gets a handle to a database specified by name in the cluster the Client is connected to.
@@ -77,27 +77,31 @@ impl DbPersister for Mongo {
     /// # Errors
     /// In case the statement can't be prepared.
     #[inline]
-    fn exists(&self) -> bool {
-        self.connection
+    fn exists(&self) -> super::Result<bool> {
+        let b = self
+            .connection
             .list_database_names()
-            .run()
-            .unwrap()
-            .contains(&"test".to_owned())
+            .run()?
+            .contains(&"test".to_owned());
+
+        Ok(b)
     }
 
     #[inline]
-    fn tasks(&self) -> Vec<Task> {
-        self.collection::<Task>()
+    fn tasks(&self) -> super::Result<Vec<Task>> {
+        let tasks = self
+            .collection::<Task>()
             .find(doc! {})
-            .run()
-            .unwrap()
+            .run()?
             .map(|doc| doc.unwrap())
-            .collect()
+            .collect();
+
+        Ok(tasks)
     }
 
     #[inline]
     fn count(&self) -> super::Result<u32> {
-        if !self.exists() {
+        if !self.exists()? {
             return Ok(0);
         }
 
