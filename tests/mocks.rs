@@ -20,29 +20,18 @@ pub struct MockPath {
 impl MockPath {
     /// Main constructor of the `MockPath` struct.
     pub fn create(format: Format) -> postit::Result<Self> {
-        std::env::set_var("POSTIT_ROOT", "tmp");
+        let mock = Self::blank(format)?;
 
-        let path = Config::build_path("test_sample")?;
-        let name = path.to_str().unwrap();
+        mock.instance.write(&Todo::sample())?;
 
-        let file = match format {
-            Format::Csv => Self::csv(name),
-            Format::Json => Self::json(name),
-            Format::Xml => Self::xml(name),
-        };
-
-        file.write(&Todo::sample())?;
-
-        let path = file.path();
-
-        Ok(Self { instance: file, path })
+        Ok(mock)
     }
 
     /// Auxiliary constructor of the `MockPath` struct.
     pub fn blank(format: Format) -> postit::Result<Self> {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
-        let path = Config::build_path("test_blank")?;
+        let path = Config::build_path("test_file")?;
         let name = path.to_str().unwrap();
 
         let file = match format {
@@ -52,6 +41,12 @@ impl MockPath {
         };
 
         let path = file.path();
+
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
+        fs::write(&path, file.default())?;
 
         Ok(Self { instance: file, path })
     }
@@ -101,8 +96,8 @@ impl fmt::Display for MockPath {
 
 impl Drop for MockPath {
     fn drop(&mut self) {
-        if let Err(err) = fs::remove_file(&self.path) {
-            eprintln!("Failed to delete MockPath file: {}", err);
+        if let Err(err) = fs::remove_dir_all(self.path.parent().unwrap()) {
+            eprintln!("Failed to delete MockPath file: {err}");
         }
     }
 }
@@ -118,6 +113,12 @@ pub struct MockConn {
 impl MockConn {
     /// Constructor of the `MockPath` struct.
     pub fn new(conn: &str) -> postit::Result<Self> {
+        let path = PathBuf::from("tmp");
+
+        if !path.exists() {
+            fs::create_dir_all(path.parent().unwrap())?;
+        }
+
         Ok(Self { instance: Orm::get_persister(conn)? })
     }
 
@@ -126,8 +127,6 @@ impl MockConn {
     }
 
     pub fn create(protocol: Protocol) -> postit::Result<Self> {
-        std::env::set_var("POSTIT_ROOT", "tmp");
-
         match protocol {
             Protocol::Sqlite => Self::sqlite(),
             Protocol::Mongo | Protocol::MongoSrv => Self::mongo(),
@@ -169,15 +168,11 @@ impl MockConfig {
     pub fn new() -> postit::Result<Self> {
         std::env::set_var("POSTIT_ROOT", "tmp");
 
+        Config::init()?;
+
         let path = Config::path()?;
 
-        let mut file = fs::File::create(&path)?;
-
-        let toml = toml::to_string_pretty(&Config::default()).map_err(postit::Error::wrap)?;
-
-        file.write_all(toml.as_bytes())?;
-
-        Ok(Self { path, config: Config::default() })
+        Ok(Self { path, config: Config::load()? })
     }
 
     pub fn save(&mut self) -> postit::Result<()> {

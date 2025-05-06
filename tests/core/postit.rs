@@ -320,7 +320,7 @@ fn copy_same_paths() -> postit::Result<()> {
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_err());
 
     Ok(())
 }
@@ -339,7 +339,7 @@ fn copy_no_left_path() -> postit::Result<()> {
 
     drop(left);
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_err());
 
     Ok(())
 }
@@ -360,7 +360,7 @@ fn copy_path_exists() -> postit::Result<()> {
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_err());
 
     Ok(())
 }
@@ -446,15 +446,16 @@ fn remove() -> postit::Result<()> {
 
 #[test]
 fn config() -> postit::Result<()> {
-    let mock = MockConfig::new()?;
+    std::env::set_var("POSTIT_ROOT", "tmp");
 
     let cli = Cli {
         command: Command::Config(args::Config { subcommand: sub::Config::Init }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
+    assert!(Config::path()?.exists());
 
-    assert!(std::path::PathBuf::from(&mock.path()).exists());
+    Config::drop()?;
 
     Ok(())
 }

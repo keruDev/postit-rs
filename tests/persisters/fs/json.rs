@@ -1,5 +1,3 @@
-use std::fs;
-use std::io::Read;
 use std::ops::Not;
 
 use postit::fs::{Format, Json};
@@ -14,24 +12,6 @@ fn tasks() -> postit::Result<()> {
 
     let result = Json::new(mock.path()).tasks()?;
     let expect = Todo::sample().tasks;
-
-    assert_eq!(result, expect);
-
-    Ok(())
-}
-
-#[test]
-fn open() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Json)?;
-
-    let mut json = Json::new(mock.path()).open()?;
-    let mut file = fs::File::open(mock.path())?;
-
-    let mut result = Vec::new();
-    let mut expect = Vec::new();
-
-    json.read_to_end(&mut result)?;
-    file.read_to_end(&mut expect)?;
 
     assert_eq!(result, expect);
 

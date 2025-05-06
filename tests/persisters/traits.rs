@@ -1,4 +1,4 @@
-use postit::db::{Protocol, Sqlite};
+use postit::db::{Mongo, Protocol};
 use postit::fs::{Csv, Format};
 use postit::traits::{DbPersister, FilePersister};
 use postit::Config;
@@ -33,15 +33,12 @@ fn file_persister_eq() -> postit::Result<()> {
 
 #[test]
 fn db_persister_eq() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Sqlite)?;
+    let mock = MockConn::create(Protocol::Mongo)?;
 
-    let path = std::path::PathBuf::from(mock.conn());
-    let file = path.file_name().unwrap();
+    let mongo = Mongo::from(mock.conn())?;
 
-    let sqlite = Sqlite::from(file)?;
-
-    let left = sqlite.clone().boxed();
-    let right = sqlite.boxed();
+    let left = mongo.clone().boxed();
+    let right = mongo.boxed();
 
     assert!(left.eq(&right));
 

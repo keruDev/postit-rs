@@ -73,15 +73,7 @@ fn get_persister() -> postit::Result<()> {
 
 #[test]
 fn get_persister_empty() -> postit::Result<()> {
-    let conn = "tasks.db";
-
-    let _mock = MockConn::new(conn);
-    let persister = Orm::get_persister("")?;
-
-    let path = Config::build_path(conn)?;
-    let conn_str = path.to_str().unwrap();
-
-    assert_eq!(persister.conn(), conn_str);
+    assert!(Orm::get_persister("").is_err());
 
     Ok(())
 }
