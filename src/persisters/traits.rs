@@ -78,7 +78,7 @@ pub trait FilePersister {
     /// Returns the file instance inside a [`Box`] pointer.
     fn boxed(self) -> Box<dyn FilePersister>;
 
-    /// Checks if the path exists.
+    /// Returns the file's path.
     fn path(&self) -> PathBuf;
 
     /// Returns a String used to initialize the file.

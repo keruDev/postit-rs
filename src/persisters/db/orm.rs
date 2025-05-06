@@ -32,7 +32,7 @@ impl<T: AsRef<str>> From<T> for Protocol {
             "mongodb" => Self::Mongo,
             "mongodb+srv" => Self::MongoSrv,
             _ => {
-                eprintln!("{}", db::error::Error::UnsupportedDatabase);
+                eprintln!("{}", db::Error::UnsupportedDatabase);
                 Self::Sqlite
             }
         }
@@ -106,10 +106,9 @@ impl Orm {
     /// In case the extension can't be converted to str.
     #[inline]
     pub fn is_sqlite(conn: &str) -> bool {
-        let path = Path::new(conn);
-
         conn.eq(":memory:")
-            || path
+            || conn.starts_with("sqlite:///")
+            || Path::new(conn)
                 .extension()
                 .is_some_and(|ext| matches!(ext.to_str().unwrap(), "db" | "sqlite3" | "sqlite"))
     }
@@ -123,22 +122,17 @@ impl Orm {
     pub fn get_persister<T: AsRef<str>>(conn: T) -> crate::Result<Box<dyn DbPersister>> {
         let conn = conn.as_ref();
 
-        if conn.starts_with("sqlite:///") {
+        if Self::is_sqlite(conn) {
             return Ok(Sqlite::from(conn.replace("sqlite:///", ""))?.boxed());
         }
 
-        let mut parts: Vec<&str> = conn.split("://").collect();
+        let parts: Vec<&str> = conn.split("://").collect();
 
         if parts[0].is_empty() {
-            eprintln!("{}", db::error::Error::IncorrectConnectionString);
-            parts[0] = "tasks.db";
+            return Err(crate::Error::Db(db::Error::IncorrectConnectionString));
         }
 
         let protocol = parts[0];
-
-        if parts.len() == 1 && Self::is_sqlite(protocol) {
-            return Ok(Sqlite::from(protocol)?.boxed());
-        }
 
         match Protocol::from(protocol) {
             Protocol::Sqlite => Ok(Sqlite::from(conn)?.boxed()),

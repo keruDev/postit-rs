@@ -220,15 +220,7 @@ impl Config {
     /// If the path can't be created
     #[inline]
     pub fn default_config_path() -> super::Result<PathBuf> {
-        let mut path = Self::default_path();
-
-        if !path.exists() {
-            fs::create_dir_all(&path)?;
-        }
-
-        path.push(Self::config_file_name());
-
-        Ok(path)
+        Ok(Self::default_path().join(Self::config_file_name()))
     }
 
     /// Returns the path of the config file in the `POSTIT_ROOT` env var.
@@ -243,15 +235,7 @@ impl Config {
             return Self::default_config_path();
         }
 
-        let mut path = PathBuf::from(env);
-
-        if !path.exists() {
-            fs::create_dir_all(&path)?;
-        }
-
-        path.push(Self::config_file_name());
-
-        Ok(path)
+        Ok(PathBuf::from(env).join(Self::config_file_name()))
     }
 
     /// Obtains the path for the File instance, which is the parent path that

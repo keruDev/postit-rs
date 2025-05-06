@@ -37,10 +37,10 @@ fn file_fmt_debug() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
 
     let persister = File::get_persister(mock.path());
-    let file = File::new(persister.as_ref());
+    let file = File::new(persister.as_ref())?;
 
     let debug_output = format!("{:?}", file);
-    let expected_output = r#"File { file: "tmp/test_sample.csv" }"#;
+    let expected_output = r#"File { file: "tmp/test_file.csv" }"#;
 
     assert_eq!(debug_output, expected_output);
 
@@ -54,7 +54,7 @@ fn path() -> postit::Result<()> {
     let file = File::from(mock.to_string())?;
 
     let result = file.path();
-    let expect = PathBuf::from("tmp/test_sample.csv");
+    let expect = PathBuf::from("tmp/test_file.csv");
 
     assert_eq!(result, expect);
 
