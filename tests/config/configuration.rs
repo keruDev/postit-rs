@@ -63,7 +63,7 @@ fn path_exists_output() -> postit::Result<()> {
 fn print_path_not_exists_error() -> postit::Result<()> {
     let _mock = MockConfig::new()?;
 
-    Config::drop()?;
+    Config::remove()?;
 
     assert!(Config::print_path().is_err());
 
@@ -72,9 +72,8 @@ fn print_path_not_exists_error() -> postit::Result<()> {
 
 #[test]
 fn path_not_exists_output() -> postit::Result<()> {
-    let mock = MockConfig::new()?;
-
-    Config::drop()?;
+    let home = MockConfig::home()?;
+    let path = PathBuf::from(home);
 
     let output = assert_cmd::Command::cargo_bin("postit")
         .map_err(postit::Error::wrap)?
@@ -84,8 +83,8 @@ fn path_not_exists_output() -> postit::Result<()> {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
 
-    assert!(output.status.success().not());
-    assert!(stderr.contains(mock.path().parent().unwrap().to_str().unwrap()));
+    assert!(output.status.success());
+    assert!(stderr.contains(path.parent().unwrap().to_str().unwrap()));
 
     Ok(())
 }
@@ -114,7 +113,7 @@ fn env_output() -> postit::Result<()> {
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
-    assert!(stdout.contains(&Config::env_var()));
+    assert!(stdout.contains(&Config::env().map_err(postit::Error::wrap)?));
 
     Ok(())
 }
@@ -144,22 +143,22 @@ fn manage_init_path_exists() -> postit::Result<()> {
 }
 
 #[test]
-fn manage_drop() -> postit::Result<()> {
+fn manage_remove() -> postit::Result<()> {
     let mock = MockConfig::new()?;
 
-    assert!(Config::manage(sub::Config::Drop).is_ok());
+    assert!(Config::manage(sub::Config::Remove).is_ok());
     assert!(mock.path().exists().not());
 
     Ok(())
 }
 
 #[test]
-fn manage_drop_config_doesnt_exist() -> postit::Result<()> {
+fn manage_remove_config_doesnt_exist() -> postit::Result<()> {
     let mock = MockConfig::new()?;
 
-    assert!(Config::manage(sub::Config::Drop).is_ok());
+    assert!(Config::manage(sub::Config::Remove).is_ok());
 
-    assert!(Config::manage(sub::Config::Drop).is_err());
+    assert!(Config::manage(sub::Config::Remove).is_err());
     assert!(mock.path().exists().not());
 
     Ok(())
@@ -278,12 +277,11 @@ fn default() -> postit::Result<()> {
 
 #[test]
 fn path_default() -> postit::Result<()> {
-    std::env::set_var("HOME", "tmp");
-
     let expect = Config::default_config_path()?;
 
-    let mut result = Config::default_path();
-    result.push(Config::config_file_name());
+    let result = Config::home()
+        .join(".postit")
+        .join(Config::config_file_name());
 
     assert_eq!(result, expect);
 
@@ -292,23 +290,22 @@ fn path_default() -> postit::Result<()> {
 
 #[test]
 fn path_empty_env() -> postit::Result<()> {
-    std::env::set_var("HOME", "tmp");
     std::env::set_var("POSTIT_ROOT", "");
 
-    let result = Config::path()?;
-    let expect = Config::default_config_path()?;
-
-    assert_eq!(result, expect);
+    assert!(Config::path().is_err());
 
     Ok(())
 }
 
 #[test]
 fn path_custom() -> postit::Result<()> {
-    std::env::set_var("POSTIT_ROOT", "tmp");
+    let home = Config::home();
+    let tmp = home.join("tmp").to_string_lossy().into_owned();
+
+    std::env::set_var("POSTIT_ROOT", &tmp);
 
     let result = Config::path()?;
-    let expect = PathBuf::from("tmp/.postit.toml");
+    let expect = PathBuf::from(tmp).join(".postit.toml");
 
     assert_eq!(result, expect);
 

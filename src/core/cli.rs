@@ -153,18 +153,21 @@ pub mod subcommands {
     /// Subcommands for managing the config file.
     #[derive(Subcommand, Debug)]
     pub enum Config {
-        /// Creates the config file.
-        Init,
-        /// Deletes the config file
-        Drop,
         /// Shows the value of the `POSTIT_ROOT` env var.
         Env,
         /// Shows the config file path.
         Path,
+        /// Creates the config file.
+        Init,
         /// Displays a list of the current config values.
+        #[command(alias = "ls")]
         List,
         /// Changes the values of config properties.
+        #[command(alias = "s")]
         Set(args::ConfigSet),
+        /// Deletes the config file
+        #[command(alias = "rm")]
+        Remove,
     }
 
     /// Subcommands for the 'Flag' command
@@ -177,8 +180,8 @@ pub mod subcommands {
     /// Subcommands for the 'Example' command
     #[derive(Subcommand, Debug)]
     pub enum Example {
-        /// Use example for the 'sample' command
-        Sample,
+        /// Use example for the 'config' command
+        Config,
         /// Use example for the 'view' command
         View,
         /// Use example for the 'add' command
@@ -197,17 +200,17 @@ pub mod subcommands {
         Clean,
         /// Use example for the 'remove' command
         Remove,
-        /// Use example for the 'config' command
-        Config,
+        /// Use example for the 'sample' command
+        Sample,
     }
 }
 
 /// Contains the different commands available.
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Creates a sample of tasks. Useful to test postit's features.
-    #[command(alias = "sa")]
-    Sample(args::Persister),
+    /// Manages the configuration file.
+    #[command(alias = "conf")]
+    Config(args::Config),
 
     /// Shows a list of the current tasks.
     #[command(alias = "v")]
@@ -245,9 +248,9 @@ pub enum Command {
     #[command(alias = "rm")]
     Remove(args::Persister),
 
-    /// Manages the configuration file.
-    #[command(alias = "conf")]
-    Config(args::Config),
+    /// Creates a sample of tasks. Useful to test postit's features.
+    #[command(alias = "sa")]
+    Sample(args::Persister),
 
     /// Provides use examples for commands
     #[command(alias = "ex")]

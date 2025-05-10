@@ -15,17 +15,17 @@ impl Command {
     #[inline]
     pub fn run(cmnd: &sub::Example) {
         match *cmnd {
-            sub::Example::Sample => Self::sample(),
+            sub::Example::Config => Self::config(),
             sub::Example::View => Self::view(),
             sub::Example::Add => Self::add(),
             sub::Example::Set => Self::set(),
             sub::Example::Check => Self::check(),
             sub::Example::Uncheck => Self::uncheck(),
             sub::Example::Drop => Self::drop(),
+            sub::Example::Sample => Self::sample(),
             sub::Example::Copy => Self::copy(),
             sub::Example::Clean => Self::clean(),
             sub::Example::Remove => Self::remove(),
-            sub::Example::Config => Self::config(),
         }
     }
 
@@ -371,31 +371,36 @@ Usage: postit config <COMMAND>
 Alias: postit conf ...
 
 Description:
-    Manages the config file. Uses the 'POSTIT_ROOT' environment variable
-    to locate the file.
+    Manages the config file. Uses the 'POSTIT_ROOT' environment variable to
+    locate the file.
 
-    Available subcommands:
-    - init: creates the .postit.toml file.
-    - drop: deletes the config file.
-    - env: displays the value of the 'POSTIT_ROOT' environment variable.
-    - path: displays the path of the config file.
-    - list: displays a list of the current config values.
-    - set: changes the values of config properties.
+Available subcommands:
+    env       Shows the value of the 'POSTIT_ROOT' env var
+    path      Shows the path of the config file
+    init      Creates the .postit.toml file
+    list      Shows the current config values     (alias: ls)
+    set       Changes config values               (alias: s)
+    remove    Deletes the config file             (alias: rm)
 
 How to use:
-    postit config init
-
-    postit config drop
-
     postit config env
 
     postit config path
+
+    postit config init
 
     postit config list
 
     postit config set [OPTIONS]
 
-Default config:
+    postit config remove
+
+Examples:
+    postit config set --persister tasks.json --force-copy true
+
+    postit config set  // You must provide a flag and value to set
+
+Config values:
     After running 'postit config init', postit will generate a file with the
     default settings, which you can change by using 'postit config set [OPTIONS]':
 
@@ -412,7 +417,7 @@ Default config:
     - drop_after_copy (bool): false by default.
       If 'true', drops a persister (file or table) after copying.
     
-    You can also check https://docs.rs/postit/latest/postit/struct.Config.html for more info."
+You can also check https://docs.rs/postit/latest/postit/struct.Config.html for more info."
         );
     }
 }

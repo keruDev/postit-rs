@@ -58,7 +58,7 @@ impl Config {
             sub::Config::Env => Self::print_env(),
             sub::Config::Path => Self::print_path(),
             sub::Config::Init => Self::init(),
-            sub::Config::Drop => Self::drop(),
+            sub::Config::Remove => Self::remove(),
             sub::Config::List => Self::list(),
             sub::Config::Set(args) => Self::set(args),
         }
@@ -73,8 +73,7 @@ impl Config {
         let path = &Self::path()?;
 
         if path.exists() {
-            let path = path.to_string_lossy().into_owned();
-            return Err(super::Error::FileAlreadyExists(path));
+            return Err(super::Error::FileAlreadyExists(path.to_owned()));
         }
 
         if let Some(parent) = path.parent() {
@@ -99,7 +98,7 @@ impl Config {
     /// Displays an error message if `POSTIT_ROOT` is empty.
     #[inline]
     pub fn print_env() -> super::Result<()> {
-        let env = Self::env_var();
+        let env = Self::env().unwrap_or_default();
 
         if env.is_empty() {
             return Err(super::Error::EmptyEnvVar);
@@ -115,12 +114,9 @@ impl Config {
     /// Displays an error message if the config file is not located at the expected path.
     #[inline]
     pub fn print_path() -> super::Result<()> {
-        let path = Self::path()?;
+        Self::_check_path_exists()?;
 
-        if !path.exists() {
-            let parent = path.parent().unwrap().to_string_lossy().into_owned();
-            return Err(super::Error::FileDoesntExist(parent));
-        }
+        let path = Self::path()?;
 
         println!("{}", path.display());
 
@@ -132,23 +128,29 @@ impl Config {
     /// # Panics
     /// If the config file can't be deleted.
     #[inline]
-    pub fn drop() -> super::Result<()> {
+    pub fn remove() -> super::Result<()> {
         let path = &Self::path()?;
 
         if !path.exists() {
-            let parent = path.parent().unwrap().to_string_lossy().into_owned();
-            return Err(super::Error::FileDoesntExist(parent));
+            let parent = path.parent().unwrap();
+            return Err(super::Error::FileDoesntExist(parent.to_owned()));
         }
 
         fs::remove_file(path).map_err(|e| {
             eprintln!("Config file couldn't be deleted.");
             super::Error::Io(e)
-        })
+        })?;
+
+        println!("Config file removed from '{}'", path.parent().unwrap().display());
+
+        Ok(())
     }
 
     /// Displays a list of the current config values.
     #[inline]
     pub fn list() -> super::Result<()> {
+        Self::_check_path_exists()?;
+
         println!("{}", Self::load()?);
 
         Ok(())
@@ -159,6 +161,8 @@ impl Config {
     /// Displays an error message if there are no values provided.
     #[inline]
     pub fn set(args: args::ConfigSet) -> super::Result<()> {
+        Self::_check_path_exists()?;
+
         if args.persister.is_none()
             && args.force_drop.is_none()
             && args.force_copy.is_none()
@@ -169,21 +173,27 @@ impl Config {
 
         let mut config = Self::load()?;
 
-        if let Some(persister) = args.persister {
-            config.persister = persister;
+        if let Some(new) = args.persister {
+            println!("persister: {} -> {}", config.persister, new);
+            config.persister = new;
         }
 
-        if let Some(force_drop) = args.force_drop {
-            config.force_drop = force_drop;
+        if let Some(new) = args.force_drop {
+            println!("force_drop: {} -> {}", config.force_drop, new);
+            config.force_drop = new;
         }
 
-        if let Some(force_copy) = args.force_copy {
-            config.force_copy = force_copy;
+        if let Some(new) = args.force_copy {
+            println!("force_copy: {} -> {}", config.force_copy, new);
+            config.force_copy = new;
         }
 
-        if let Some(drop_after_copy) = args.drop_after_copy {
-            config.drop_after_copy = drop_after_copy;
+        if let Some(new) = args.drop_after_copy {
+            println!("drop_after_copy: {} -> {}", config.drop_after_copy, new);
+            config.drop_after_copy = new;
         }
+
+        println!();
 
         config.save()
     }
@@ -191,10 +201,36 @@ impl Config {
 
 // Utility methods to interact with the configuration
 impl Config {
-    /// Returns the value of the `POSTIT_ROOT` env var.
+    /// Returns the value of the `POSTIT_ROOT` environment variable, which must
+    /// have a path structure.
     #[inline]
-    pub fn env_var() -> String {
-        env::var("POSTIT_ROOT").unwrap_or_default()
+    pub fn env() -> super::Result<String> {
+        env::var("POSTIT_ROOT").map_err(super::Error::Env)
+    }
+
+    /// Returns the value of the `POSTIT_ROOT` environment variable, which must
+    /// have a path structure.
+    #[inline]
+    pub fn get_env_path() -> super::Result<PathBuf> {
+        let env = Self::env();
+
+        let path = match env {
+            Ok(v) if v.is_empty() => Err(super::Error::EmptyEnvVar),
+            Ok(v) => Ok(PathBuf::from(v)),
+
+            Err(super::Error::Env(e)) => match e {
+                env::VarError::NotPresent => Self::default_config_path(),
+                env::VarError::NotUnicode(msg) => Err(super::Error::NotUnicode(msg)),
+            },
+
+            Err(_) => unreachable!(),
+        }?;
+
+        if path.is_relative() {
+            return Err(super::Error::InvalidPathEnvVar(path));
+        }
+
+        Ok(path)
     }
 
     /// Returns the name of the config file.
@@ -203,15 +239,14 @@ impl Config {
         String::from(".postit.toml")
     }
 
-    /// Returns the default path of postit's generated files.
+    /// Returns the HOME path of the currently used OS, which will be the
+    /// default path of postit's generated files.
     ///
     /// # Panics
     /// If the user's home directory can't be located.
     #[inline]
-    pub fn default_path() -> PathBuf {
-        dirs::home_dir()
-            .expect("Couldn't locate the user's home directory")
-            .join(".postit")
+    pub fn home() -> PathBuf {
+        dirs::home_dir().expect("Couldn't locate the user's home directory")
     }
 
     /// Returns the default path of postit's config file.
@@ -220,7 +255,7 @@ impl Config {
     /// If the path can't be created
     #[inline]
     pub fn default_config_path() -> super::Result<PathBuf> {
-        Ok(Self::default_path().join(Self::config_file_name()))
+        Ok(Self::home().join(".postit").join(Self::config_file_name()))
     }
 
     /// Returns the path of the config file in the `POSTIT_ROOT` env var.
@@ -229,13 +264,20 @@ impl Config {
     /// If the path can't be created
     #[inline]
     pub fn path() -> super::Result<PathBuf> {
-        let env = Self::env_var();
+        Ok(Self::get_env_path()?.join(Self::config_file_name()))
+    }
 
-        if env.is_empty() {
-            return Self::default_config_path();
+    /// Checks if the path exists.
+    #[inline]
+    pub fn _check_path_exists() -> super::Result<()> {
+        let path = Self::path()?;
+
+        if !path.exists() {
+            let parent = path.parent().unwrap();
+            return Err(super::Error::FileDoesntExist(parent.to_owned()));
         }
 
-        Ok(PathBuf::from(env).join(Self::config_file_name()))
+        Ok(())
     }
 
     /// Obtains the path for the File instance, which is the parent path that
@@ -258,16 +300,14 @@ impl Config {
     pub fn build_path<T: AsRef<Path>>(path: T) -> super::Result<PathBuf> {
         let path_str = path.as_ref().to_str().unwrap();
 
-        let mut parent = Self::get_parent_path()?;
+        let parent = Self::get_parent_path()?;
         let parent_str = parent.to_str().unwrap();
 
         if path_str.starts_with(parent_str) || path_str.contains(parent_str) {
             return Ok(path.as_ref().to_path_buf());
         }
 
-        parent.push(path);
-
-        Ok(parent)
+        Ok(parent.join(path))
     }
 
     /// Loads the config from a file or creates it if it doesn't exist.
@@ -279,7 +319,7 @@ impl Config {
         let path = &Self::path()?;
 
         if !path.exists() {
-            Self::init()?;
+            return Ok(Self::default());
         }
 
         let content = fs::read_to_string(path).map_err(|e| {
@@ -310,7 +350,11 @@ impl Config {
         file.write_all(toml.as_bytes()).map_err(|e| {
             eprintln!("Failed to save config to file: {e}");
             super::Error::Io(e)
-        })
+        })?;
+
+        println!("Configuration saved");
+
+        Ok(())
     }
 
     /// Builds a persister based on the passed value.
