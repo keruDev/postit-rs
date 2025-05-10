@@ -9,9 +9,10 @@ use std::path::{Path, PathBuf};
 use std::{fmt, fs};
 
 use super::{error, Csv, Json, Xml};
+use crate::config::Config;
 use crate::models::{Task, Todo};
 use crate::traits::{FilePersister, Persister};
-use crate::{Action, Config};
+use crate::Action;
 
 /// Possible file formats.
 #[derive(Debug, PartialEq, Eq)]
@@ -87,6 +88,10 @@ impl File {
         let path = persister.path();
         let file_name = path.file_name().unwrap();
         let file_path = Config::build_path(file_name)?;
+
+        if !file_path.exists() {
+            fs::create_dir_all(file_path.parent().unwrap())?;
+        }
 
         Ok(Self { file: Self::get_persister(file_path) })
     }
@@ -251,7 +256,7 @@ impl Persister for File {
     #[inline]
     fn clean(&self) -> crate::Result<()> {
         self.file.clean().map_err(|e| {
-            eprintln!("Can't clean the '{:?}' file", self.file_name());
+            eprintln!("Can't clean the '{}' file", self.file_name().display());
 
             crate::Error::Fs(e)
         })

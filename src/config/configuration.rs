@@ -7,9 +7,6 @@ use std::{env, fmt, fs};
 use serde::{Deserialize, Serialize};
 
 use crate::cli::{arguments as args, subcommands as sub};
-use crate::db::Orm;
-use crate::fs::File;
-use crate::traits::Persister;
 
 /// Contains the configuration used while running `postit`.
 ///
@@ -208,10 +205,16 @@ impl Config {
         env::var("POSTIT_ROOT").map_err(super::Error::Env)
     }
 
+    /// Returns the name of the config file.
+    #[inline]
+    pub fn config_file_name() -> String {
+        String::from(".postit.toml")
+    }
+
     /// Returns the value of the `POSTIT_ROOT` environment variable, which must
     /// have a path structure.
     #[inline]
-    pub fn get_env_path() -> super::Result<PathBuf> {
+    pub fn path_from_env() -> super::Result<PathBuf> {
         let env = Self::env();
 
         let path = match env {
@@ -219,7 +222,7 @@ impl Config {
             Ok(v) => Ok(PathBuf::from(v)),
 
             Err(super::Error::Env(e)) => match e {
-                env::VarError::NotPresent => Self::default_config_path(),
+                env::VarError::NotPresent => Self::default_config_parent(),
                 env::VarError::NotUnicode(msg) => Err(super::Error::NotUnicode(msg)),
             },
 
@@ -231,12 +234,6 @@ impl Config {
         }
 
         Ok(path)
-    }
-
-    /// Returns the name of the config file.
-    #[inline]
-    pub fn config_file_name() -> String {
-        String::from(".postit.toml")
     }
 
     /// Returns the HOME path of the currently used OS, which will be the
@@ -254,8 +251,8 @@ impl Config {
     /// # Panics
     /// If the path can't be created
     #[inline]
-    pub fn default_config_path() -> super::Result<PathBuf> {
-        Ok(Self::home().join(".postit").join(Self::config_file_name()))
+    pub fn default_config_parent() -> super::Result<PathBuf> {
+        Ok(Self::home().join(".postit"))
     }
 
     /// Returns the path of the config file in the `POSTIT_ROOT` env var.
@@ -264,7 +261,7 @@ impl Config {
     /// If the path can't be created
     #[inline]
     pub fn path() -> super::Result<PathBuf> {
-        Ok(Self::get_env_path()?.join(Self::config_file_name()))
+        Ok(Self::path_from_env()?.join(Self::config_file_name()))
     }
 
     /// Checks if the path exists.
@@ -355,23 +352,5 @@ impl Config {
         println!("Configuration saved");
 
         Ok(())
-    }
-
-    /// Builds a persister based on the passed value.
-    ///
-    /// If the value of `persister` is:
-    /// - `Some`: returns itself.
-    /// - `None`: returns the persister stored in the config file.
-    #[inline]
-    pub fn resolve_persister(persister: Option<String>) -> crate::Result<Box<dyn Persister>> {
-        let path_or_conn = persister.unwrap_or(Self::load()?.persister);
-
-        let persister = if path_or_conn.contains("://") || Orm::is_sqlite(&path_or_conn) {
-            Orm::from(path_or_conn)?.boxed()
-        } else {
-            File::from(path_or_conn)?.boxed()
-        };
-
-        Ok(persister)
     }
 }

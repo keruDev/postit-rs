@@ -3,7 +3,7 @@ exclude-files = [
     "src/main.rs",
     "src/docs/*"
 ]
-target-dir = ".tarpaulin"
+target-dir = "target/tarpaulin"
 run-types = ["Tests"]
 timeout = "1m"
 

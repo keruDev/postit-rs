@@ -48,15 +48,12 @@
     clippy::missing_panics_doc,
 )]
 
-mod config;
+pub mod config;
 mod core;
 pub mod docs;
-mod error;
 pub mod models;
 mod persisters;
 
-pub use config::*;
 pub use core::*;
-pub use error::{Error, Result};
 
 pub use persisters::*;

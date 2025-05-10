@@ -1,6 +1,5 @@
 use std::fs;
 use std::ops::Not;
-use std::path::PathBuf;
 
 use postit::fs::{Csv, File, Format};
 use postit::traits::{FilePersister, Persister};
@@ -40,7 +39,7 @@ fn file_fmt_debug() -> postit::Result<()> {
     let file = File::new(persister.as_ref())?;
 
     let debug_output = format!("{:?}", file);
-    let expected_output = r#"File { file: "tmp/test_file.csv" }"#;
+    let expected_output = format!("File {{ file: {:?} }}", mock.path());
 
     assert_eq!(debug_output, expected_output);
 
@@ -54,7 +53,7 @@ fn path() -> postit::Result<()> {
     let file = File::from(mock.to_string())?;
 
     let result = file.path();
-    let expect = PathBuf::from("tmp/test_file.csv");
+    let expect = mock.path();
 
     assert_eq!(result, expect);
 

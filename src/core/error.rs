@@ -12,13 +12,13 @@ pub enum Error {
     #[error("{0}")]
     Config(#[from] crate::config::Error),
 
-    /// Used for file system related [errors][`super::fs::Error`].
+    /// Used for file system related [errors][`crate::fs::Error`].
     #[error("{0}")]
-    Fs(#[from] super::fs::Error),
+    Fs(#[from] crate::fs::Error),
 
-    /// Used for database related [errors][`super::fs::Error`].
+    /// Used for database related [errors][`crate::fs::Error`].
     #[error("{0}")]
-    Db(#[from] super::db::Error),
+    Db(#[from] crate::db::Error),
 
     /// Used for I/O errors ([`std::io::Error`]).
     #[error("{0}")]

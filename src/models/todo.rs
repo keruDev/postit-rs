@@ -2,9 +2,9 @@
 
 use super::Priority;
 use crate::cli::subcommands as sub;
+use crate::config::Config;
 use crate::models::task::Task;
 use crate::traits::Persister;
-use crate::Config;
 
 /// Contains all the Tasks.
 #[derive(Clone, Debug, PartialEq, Eq)]

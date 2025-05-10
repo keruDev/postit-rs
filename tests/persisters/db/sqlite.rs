@@ -1,10 +1,11 @@
 use std::ops::Not;
 use std::path::PathBuf;
 
+use postit::config::Config;
 use postit::db::{Protocol, Sqlite};
 use postit::models::Todo;
 use postit::traits::DbPersister;
-use postit::{Action, Config};
+use postit::Action;
 
 use crate::mocks::MockConn;
 

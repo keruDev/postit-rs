@@ -2,11 +2,9 @@ use std::ops::Not;
 use std::path::PathBuf;
 
 use postit::cli::{arguments as args, subcommands as sub};
-use postit::db::Protocol;
-use postit::fs::Format;
-use postit::Config;
+use postit::config::Config;
 
-use crate::mocks::{MockConfig, MockConn, MockPath};
+use crate::mocks::{MockConfig, MockEnvVar};
 
 #[test]
 fn fmt_display() -> postit::Result<()> {
@@ -120,7 +118,7 @@ fn env_output() -> postit::Result<()> {
 
 #[test]
 fn env_is_empty() -> postit::Result<()> {
-    std::env::set_var("POSTIT_ROOT", "");
+    let _env = MockEnvVar::set([("POSTIT_ROOT", "")]);
 
     assert!(Config::print_env().is_err());
 
@@ -277,7 +275,7 @@ fn default() -> postit::Result<()> {
 
 #[test]
 fn path_default() -> postit::Result<()> {
-    let expect = Config::default_config_path()?;
+    let expect = Config::path()?;
 
     let result = Config::home()
         .join(".postit")
@@ -290,7 +288,7 @@ fn path_default() -> postit::Result<()> {
 
 #[test]
 fn path_empty_env() -> postit::Result<()> {
-    std::env::set_var("POSTIT_ROOT", "");
+    let _env = MockEnvVar::set([("POSTIT_ROOT", "")]);
 
     assert!(Config::path().is_err());
 
@@ -302,7 +300,7 @@ fn path_custom() -> postit::Result<()> {
     let home = Config::home();
     let tmp = home.join("tmp").to_string_lossy().into_owned();
 
-    std::env::set_var("POSTIT_ROOT", &tmp);
+    let _env = MockEnvVar::set([("POSTIT_ROOT", &tmp)]);
 
     let result = Config::path()?;
     let expect = PathBuf::from(tmp).join(".postit.toml");
@@ -341,44 +339,10 @@ fn save() -> postit::Result<()> {
 fn save_file_doesnt_exist() {
     let _mock = MockConfig::new().unwrap();
 
-    std::env::set_var("POSTIT_ROOT", "//");
+    let _env = MockEnvVar::set([("POSTIT_ROOT", "//")]);
 
     let config = Config::default();
     config.save().unwrap();
 
     assert_eq!(Config::load().unwrap(), Config::default());
-}
-
-#[test]
-fn resolve_persister_file() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv)?;
-    let persister = Config::resolve_persister(Some(mock.to_string()))?;
-
-    assert_eq!(PathBuf::from(persister.to_string()), mock.path());
-
-    Ok(())
-}
-
-#[test]
-fn resolve_persister_db() -> postit::Result<()> {
-    let mock = MockConn::create(Protocol::Mongo)?;
-    let persister = Config::resolve_persister(Some(mock.conn()))?;
-
-    assert_eq!(persister.to_string(), mock.conn());
-
-    Ok(())
-}
-
-#[test]
-fn resolve_persister_none() -> postit::Result<()> {
-    let persister = Config::resolve_persister(None)?.to_string();
-
-    let mut path = Config::get_parent_path()?;
-    path.push(Config::load()?.persister);
-
-    assert_eq!(persister.to_string(), path.to_str().unwrap());
-
-    MockPath::create(Format::Csv)?;
-
-    Ok(())
 }
