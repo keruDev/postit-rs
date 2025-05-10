@@ -1,14 +1,14 @@
 use postit::db::{Mongo, Protocol};
 use postit::fs::{Csv, Format};
 use postit::traits::{DbPersister, FilePersister};
-use postit::Config;
+use postit::Postit;
 
 use crate::mocks::{MockConn, MockPath};
 
 #[test]
 fn persister_eq() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
-    let file = Config::resolve_persister(Some(mock.to_string()))?;
+    let file = Postit::resolve_persister(Some(mock.to_string()))?;
 
     let left = file.clone();
     let right = file.clone();

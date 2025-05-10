@@ -1,12 +1,51 @@
+use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::{fmt, fs};
+use std::{env, fmt, fs};
 
+use postit::config::Config;
 use postit::db::{Orm, Protocol};
 use postit::fs::{Csv, File, Format, Json, Xml};
 use postit::models::Todo;
 use postit::traits::{DbPersister, FilePersister};
-use postit::Config;
+
+pub struct MockEnvVar {
+    vars: HashMap<String, Option<String>>,
+}
+
+impl MockEnvVar {
+    pub fn set<K, V, I>(iter: I) -> Self
+    where
+        K: Into<String>,
+        V: AsRef<OsStr>,
+        I: IntoIterator<Item = (K, V)>,
+    {
+        let mut vars = HashMap::new();
+
+        for (k, v) in iter {
+            let key = k.into();
+            let prev = env::var(&key).ok();
+
+            env::set_var(&key, v);
+
+            vars.insert(key, prev);
+        }
+
+        Self { vars }
+    }
+}
+
+impl Drop for MockEnvVar {
+    fn drop(&mut self) {
+        for (k, v) in &self.vars {
+            match v {
+                Some(val) => env::set_var(k, val),
+                None => env::remove_var(k),
+            }
+        }
+    }
+}
 
 /// A temporary path used for testing purposes.
 ///
@@ -15,6 +54,7 @@ use postit::Config;
 pub struct MockPath {
     pub instance: Box<dyn FilePersister>,
     pub path: PathBuf,
+    _env: MockEnvVar,
 }
 
 impl MockPath {
@@ -29,10 +69,8 @@ impl MockPath {
 
     /// Auxiliary constructor of the `MockPath` struct.
     pub fn blank(format: Format) -> postit::Result<Self> {
-        let home = Config::home();
-        let tmp = home.join("tmp").to_string_lossy().into_owned();
-
-        std::env::set_var("POSTIT_ROOT", tmp);
+        let tmp = env::current_dir()?.join("tmp");
+        let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
 
         let path = Config::build_path("test_file")?;
         let name = path.to_str().unwrap();
@@ -51,17 +89,15 @@ impl MockPath {
 
         fs::write(&path, file.default())?;
 
-        Ok(Self { instance: file, path })
+        Ok(Self { instance: file, path, _env })
     }
 
     pub fn from<T: AsRef<Path>>(path: T) -> postit::Result<Self> {
-        let home = Config::home();
-        let tmp = home.join("tmp").to_string_lossy().into_owned();
-
-        std::env::set_var("POSTIT_ROOT", tmp);
+        let tmp = env::current_dir()?.join("tmp");
+        let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
 
         let mut path = path.as_ref().to_path_buf();
-        let var = std::env::var("POSTIT_ROOT").map_err(postit::Error::wrap)?;
+        let var = env::var("POSTIT_ROOT").map_err(postit::Error::wrap)?;
         let tmp = Path::new(&var);
 
         if !path.exists() {
@@ -74,7 +110,7 @@ impl MockPath {
 
         let file = File::get_persister(&path);
 
-        Ok(Self { instance: file, path })
+        Ok(Self { instance: file, path, _env })
     }
 
     pub fn csv(name: &str) -> Box<dyn FilePersister> {
@@ -114,24 +150,26 @@ impl Drop for MockPath {
 /// to delete the temporary connection string when the test ends.
 pub struct MockConn {
     pub instance: Box<dyn DbPersister>,
+    _env: MockEnvVar,
 }
 
 impl MockConn {
     /// Constructor of the `MockPath` struct.
     pub fn new(conn: &str) -> postit::Result<Self> {
-        let home = Config::home();
-        let tmp = home.join("tmp").to_string_lossy().into_owned();
+        let tmp = env::current_dir()?.join("tmp");
+        let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
 
-        std::env::set_var("POSTIT_ROOT", tmp);
-
-        let env = std::env::var("POSTIT_ROOT").unwrap();
+        let env = env::var("POSTIT_ROOT").map_err(postit::Error::wrap)?;
         let path = PathBuf::from(env);
 
         if !path.exists() {
-            fs::create_dir_all(path.parent().unwrap())?;
+            fs::create_dir_all(path)?;
         }
 
-        Ok(Self { instance: Orm::get_persister(conn)? })
+        Ok(Self {
+            instance: Orm::get_persister(conn)?,
+            _env,
+        })
     }
 
     pub fn conn(&self) -> String {
@@ -173,21 +211,20 @@ impl Clone for MockConn {
 pub struct MockConfig {
     pub path: PathBuf,
     pub config: Config,
+    _env: MockEnvVar,
 }
 
 impl MockConfig {
     /// Constructor of the `MockConfig` struct.
     pub fn new() -> postit::Result<Self> {
-        let home = Config::home();
-        let tmp = home.join("tmp").to_string_lossy().into_owned();
-
-        std::env::set_var("POSTIT_ROOT", tmp);
+        let tmp = env::current_dir()?.join("tmp");
+        let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
 
         Config::init()?;
 
         let path = Config::path()?;
 
-        Ok(Self { path, config: Config::load()? })
+        Ok(Self { path, config: Config::load()?, _env })
     }
 
     pub fn save(&mut self) -> postit::Result<()> {
@@ -200,7 +237,7 @@ impl MockConfig {
     }
 
     pub fn home() -> postit::Result<String> {
-        std::env::var("HOME").map_err(postit::Error::wrap)
+        env::var("HOME").map_err(postit::Error::wrap)
     }
 
     pub fn path(&self) -> PathBuf {

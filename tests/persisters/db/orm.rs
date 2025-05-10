@@ -1,9 +1,9 @@
 use std::ops::Not;
 
+use postit::config::Config;
 use postit::db::{Orm, Protocol, Sqlite};
 use postit::models::{Task, Todo};
 use postit::traits::{DbPersister, Persister};
-use postit::Config;
 
 use crate::mocks::MockConn;
 

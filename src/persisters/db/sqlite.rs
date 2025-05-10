@@ -7,9 +7,10 @@ use std::path::Path;
 
 use sqlite::{Connection, State, Statement};
 
+use crate::config::Config;
 use crate::models::{Task, Todo};
 use crate::traits::DbPersister;
-use crate::{Action, Config};
+use crate::Action;
 
 /// Representation of a `SQLite` database.
 pub struct Sqlite {
@@ -38,6 +39,10 @@ impl Sqlite {
     #[inline]
     pub fn from<T: AsRef<Path>>(conn: T) -> crate::Result<Self> {
         let path = Config::build_path(conn.as_ref())?;
+
+        if !path.exists() {
+            fs::create_dir_all(path.parent().unwrap())?;
+        }
 
         let instance = Self {
             conn_str: path.to_string_lossy().into_owned(),

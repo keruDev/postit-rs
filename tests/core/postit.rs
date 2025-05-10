@@ -1,15 +1,18 @@
 use std::ops::Not;
+use std::path::PathBuf;
 
 use postit::cli::{arguments as args, subcommands as sub};
+use postit::config::Config;
+use postit::db::Protocol;
 use postit::fs::{File, Format};
 use postit::models::{Priority, Task, Todo};
 use postit::traits::Persister;
-use postit::{Cli, Command, Config, Postit};
+use postit::{Cli, Command, Postit};
 
-use crate::mocks::{MockConfig, MockPath};
+use crate::mocks::{MockConfig, MockConn, MockEnvVar, MockPath};
 
 fn fakes(mock: &MockPath) -> postit::Result<(Box<dyn Persister>, Todo)> {
-    let persister = Config::resolve_persister(Some(mock.to_string()))?;
+    let persister = Postit::resolve_persister(Some(mock.to_string()))?;
     let todo = Todo::new(persister.tasks()?);
 
     Ok((persister, todo))
@@ -22,6 +25,40 @@ fn expected(mock: &MockPath) -> postit::Result<(File, Todo)> {
     let todo = Todo::from(&file)?;
 
     Ok((file, todo))
+}
+
+#[test]
+fn resolve_persister_file() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Csv)?;
+    let persister = Postit::resolve_persister(Some(mock.to_string()))?;
+
+    assert_eq!(PathBuf::from(persister.to_string()), mock.path());
+
+    Ok(())
+}
+
+#[test]
+fn resolve_persister_db() -> postit::Result<()> {
+    let mock = MockConn::create(Protocol::Mongo)?;
+    let persister = Postit::resolve_persister(Some(mock.conn()))?;
+
+    assert_eq!(persister.to_string(), mock.conn());
+
+    Ok(())
+}
+
+#[test]
+fn resolve_persister_none() -> postit::Result<()> {
+    let persister = Postit::resolve_persister(None)?.to_string();
+
+    let mut path = Config::get_parent_path()?;
+    path.push(Config::load()?.persister);
+
+    assert_eq!(persister.to_string(), path.to_str().unwrap());
+
+    MockPath::create(Format::Csv)?;
+
+    Ok(())
 }
 
 #[test]
@@ -320,7 +357,7 @@ fn copy_same_paths() -> postit::Result<()> {
         }),
     };
 
-    assert!(Postit::run(cli).is_err());
+    Postit::run(cli)?;
 
     Ok(())
 }
@@ -339,7 +376,7 @@ fn copy_no_left_path() -> postit::Result<()> {
 
     drop(left);
 
-    assert!(Postit::run(cli).is_err());
+    Postit::run(cli)?;
 
     Ok(())
 }
@@ -360,7 +397,7 @@ fn copy_path_exists() -> postit::Result<()> {
         }),
     };
 
-    assert!(Postit::run(cli).is_err());
+    Postit::run(cli)?;
 
     Ok(())
 }
@@ -447,15 +484,16 @@ fn remove() -> postit::Result<()> {
 #[test]
 fn config() -> postit::Result<()> {
     let home = Config::home();
-    let tmp = home.join("tmp").to_string_lossy().into_owned();
+    let tmp = home.join("tmp");
 
-    std::env::set_var("POSTIT_ROOT", tmp);
+    let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
 
     let cli = Cli {
         command: Command::Config(args::Config { subcommand: sub::Config::Init }),
     };
 
-    assert!(Postit::run(cli).is_ok());
+    Postit::run(cli)?;
+
     assert!(Config::path()?.exists());
 
     Config::remove()?;
