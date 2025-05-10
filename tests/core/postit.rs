@@ -446,7 +446,10 @@ fn remove() -> postit::Result<()> {
 
 #[test]
 fn config() -> postit::Result<()> {
-    std::env::set_var("POSTIT_ROOT", "tmp");
+    let home = Config::home();
+    let tmp = home.join("tmp").to_string_lossy().into_owned();
+
+    std::env::set_var("POSTIT_ROOT", tmp);
 
     let cli = Cli {
         command: Command::Config(args::Config { subcommand: sub::Config::Init }),
@@ -455,7 +458,7 @@ fn config() -> postit::Result<()> {
     assert!(Postit::run(cli).is_ok());
     assert!(Config::path()?.exists());
 
-    Config::drop()?;
+    Config::remove()?;
 
     Ok(())
 }

@@ -27,7 +27,7 @@ impl Postit {
     /// If there is any error while operating a persister.
     #[inline]
     pub fn run(cli: Cli) -> crate::Result<()> {
-        match cli.command {
+        let result = match cli.command {
             Command::Example(args) => {
                 Self::example(&args);
                 Ok(())
@@ -47,7 +47,13 @@ impl Postit {
             Command::Copy(args) => Self::copy(args),
             Command::Clean(args) => Self::clean(args),
             Command::Remove(args) => Self::remove(args),
+        };
+
+        if let Err(e) = &result {
+            eprintln!("{e}");
         }
+
+        Ok(())
     }
 
     /// Shows use cases for every other command.

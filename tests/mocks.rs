@@ -29,7 +29,10 @@ impl MockPath {
 
     /// Auxiliary constructor of the `MockPath` struct.
     pub fn blank(format: Format) -> postit::Result<Self> {
-        std::env::set_var("POSTIT_ROOT", "tmp");
+        let home = Config::home();
+        let tmp = home.join("tmp").to_string_lossy().into_owned();
+
+        std::env::set_var("POSTIT_ROOT", tmp);
 
         let path = Config::build_path("test_file")?;
         let name = path.to_str().unwrap();
@@ -52,7 +55,10 @@ impl MockPath {
     }
 
     pub fn from<T: AsRef<Path>>(path: T) -> postit::Result<Self> {
-        std::env::set_var("POSTIT_ROOT", "tmp");
+        let home = Config::home();
+        let tmp = home.join("tmp").to_string_lossy().into_owned();
+
+        std::env::set_var("POSTIT_ROOT", tmp);
 
         let mut path = path.as_ref().to_path_buf();
         let var = std::env::var("POSTIT_ROOT").map_err(postit::Error::wrap)?;
@@ -113,7 +119,13 @@ pub struct MockConn {
 impl MockConn {
     /// Constructor of the `MockPath` struct.
     pub fn new(conn: &str) -> postit::Result<Self> {
-        let path = PathBuf::from("tmp");
+        let home = Config::home();
+        let tmp = home.join("tmp").to_string_lossy().into_owned();
+
+        std::env::set_var("POSTIT_ROOT", tmp);
+
+        let env = std::env::var("POSTIT_ROOT").unwrap();
+        let path = PathBuf::from(env);
 
         if !path.exists() {
             fs::create_dir_all(path.parent().unwrap())?;
@@ -166,7 +178,10 @@ pub struct MockConfig {
 impl MockConfig {
     /// Constructor of the `MockConfig` struct.
     pub fn new() -> postit::Result<Self> {
-        std::env::set_var("POSTIT_ROOT", "tmp");
+        let home = Config::home();
+        let tmp = home.join("tmp").to_string_lossy().into_owned();
+
+        std::env::set_var("POSTIT_ROOT", tmp);
 
         Config::init()?;
 
@@ -182,6 +197,10 @@ impl MockConfig {
         file.write_all(toml.as_bytes())?;
 
         Ok(())
+    }
+
+    pub fn home() -> postit::Result<String> {
+        std::env::var("HOME").map_err(postit::Error::wrap)
     }
 
     pub fn path(&self) -> PathBuf {
