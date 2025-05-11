@@ -146,7 +146,16 @@ impl Config {
     /// Displays a list of the current config values.
     #[inline]
     pub fn list() -> super::Result<()> {
-        Self::_check_path_exists()?;
+        let result = Self::_check_path_exists();
+
+        if let Err(e) = result {
+            println!("Default configuration:");
+            println!("{}", Self::default());
+            println!();
+            eprintln!("{e}");
+
+            return Ok(());
+        }
 
         println!("{}", Self::load()?);
 

@@ -193,8 +193,8 @@ impl DbPersister for Sqlite {
             #[rustfmt::skip]
             stmt.bind(&[
                 &task.content,
-                &*task.priority,
-                &*i32::from(task.checked).to_string()
+                task.priority.to_str(),
+                i32::from(task.checked).to_string().as_str()
             ][..])?;
 
             stmt.next().map(|_| ())?;

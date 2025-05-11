@@ -133,7 +133,10 @@ impl File {
             return Ok(());
         }
 
-        println!("Creating {}", path.display());
+        let file = path.file_name().unwrap();
+        let parent = path.parent().unwrap();
+
+        println!("Creating '{}' at '{}'", file.to_string_lossy(), parent.display());
 
         fs::write(path, self.file.default())?;
 
@@ -247,10 +250,14 @@ impl Persister for File {
             let path = self.file.path();
             let name = path.file_name().unwrap();
 
-            eprintln!("Can't replace the '{name:?}' file");
+            eprintln!("Can't replace the '{}' file", name.to_string_lossy());
 
             crate::Error::Fs(e)
-        })
+        })?;
+
+        println!("Replaced the contents of '{}'", self.file.path().to_string_lossy());
+
+        Ok(())
     }
 
     #[inline]
@@ -259,7 +266,11 @@ impl Persister for File {
             eprintln!("Can't clean the '{}' file", self.file_name().display());
 
             crate::Error::Fs(e)
-        })
+        })?;
+
+        println!("Cleaned '{}'", self.file.path().display());
+
+        Ok(())
     }
 
     #[inline]
@@ -268,7 +279,11 @@ impl Persister for File {
 
         if !path.exists() {
             if let (Some(file), Some(parent)) = (path.file_name(), path.parent()) {
-                let msg = format!("The file {:?} doesn't exist at {}", file, parent.display());
+                let msg = format!(
+                    "The file '{}' doesn't exist at '{}'",
+                    file.to_string_lossy(),
+                    parent.display()
+                );
                 let err = super::Error::Other(msg.into());
 
                 return Err(crate::Error::Fs(err));
@@ -279,7 +294,14 @@ impl Persister for File {
             eprintln!("Can't delete the '{:?}' file", self.file_name());
 
             crate::Error::Fs(e)
-        })
+        })?;
+
+        let file = path.file_name().unwrap();
+        let parent = path.parent().unwrap();
+
+        println!("Removed the {} file from {}", file.to_string_lossy(), parent.display());
+
+        Ok(())
     }
 }
 

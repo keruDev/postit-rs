@@ -69,7 +69,7 @@ impl PartialEq for Box<dyn Persister> {
 impl Clone for Box<dyn Persister> {
     #[inline]
     fn clone(&self) -> Self {
-        crate::Postit::resolve_persister(Some(self.to_string())).unwrap()
+        crate::Postit::get_persister(Some(self.to_string())).unwrap()
     }
 }
 
