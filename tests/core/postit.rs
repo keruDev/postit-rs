@@ -12,7 +12,7 @@ use postit::{Cli, Command, Postit};
 use crate::mocks::{MockConfig, MockConn, MockEnvVar, MockPath};
 
 fn fakes(mock: &MockPath) -> postit::Result<(Box<dyn Persister>, Todo)> {
-    let persister = Postit::resolve_persister(Some(mock.to_string()))?;
+    let persister = Postit::get_persister(Some(mock.to_string()))?;
     let todo = Todo::new(persister.tasks()?);
 
     Ok((persister, todo))
@@ -28,9 +28,9 @@ fn expected(mock: &MockPath) -> postit::Result<(File, Todo)> {
 }
 
 #[test]
-fn resolve_persister_file() -> postit::Result<()> {
+fn get_persister_file() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
-    let persister = Postit::resolve_persister(Some(mock.to_string()))?;
+    let persister = Postit::get_persister(Some(mock.to_string()))?;
 
     assert_eq!(PathBuf::from(persister.to_string()), mock.path());
 
@@ -38,9 +38,9 @@ fn resolve_persister_file() -> postit::Result<()> {
 }
 
 #[test]
-fn resolve_persister_db() -> postit::Result<()> {
+fn get_persister_db() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Mongo)?;
-    let persister = Postit::resolve_persister(Some(mock.conn()))?;
+    let persister = Postit::get_persister(Some(mock.conn()))?;
 
     assert_eq!(persister.to_string(), mock.conn());
 
@@ -48,8 +48,8 @@ fn resolve_persister_db() -> postit::Result<()> {
 }
 
 #[test]
-fn resolve_persister_none() -> postit::Result<()> {
-    let persister = Postit::resolve_persister(None)?.to_string();
+fn get_persister_none() -> postit::Result<()> {
+    let persister = Postit::get_persister::<&str>(None)?.to_string();
 
     let mut path = Config::get_parent_path()?;
     path.push(Config::load()?.persister);

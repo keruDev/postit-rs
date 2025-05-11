@@ -77,9 +77,9 @@ impl Xml {
     #[inline]
     pub fn task_to_xml(writer: &mut Writer<&mut Vec<u8>>, task: &Task) -> io::Result<()> {
         let mut task_bytes = BytesStart::new("Task");
-        task_bytes.push_attribute(("id", &*task.id.to_string()));
-        task_bytes.push_attribute(("priority", &*task.priority));
-        task_bytes.push_attribute(("checked", &*task.checked.to_string()));
+        task_bytes.push_attribute(("id", task.id.to_string().as_str()));
+        task_bytes.push_attribute(("priority", task.priority.as_ref()));
+        task_bytes.push_attribute(("checked", task.checked.to_string().as_str()));
 
         writer.write_event(Event::Start(task_bytes))?;
 

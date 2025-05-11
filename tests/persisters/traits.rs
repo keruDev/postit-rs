@@ -8,7 +8,7 @@ use crate::mocks::{MockConn, MockPath};
 #[test]
 fn persister_eq() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
-    let file = Postit::resolve_persister(Some(mock.to_string()))?;
+    let file = Postit::get_persister(Some(mock.to_string()))?;
 
     let left = file.clone();
     let right = file.clone();

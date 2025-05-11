@@ -41,17 +41,6 @@ impl Todo {
         Ok(Self { tasks: persister.tasks()? })
     }
 
-    /// Initializes a `Todo` instance with fake data.
-    #[inline]
-    pub fn sample() -> Self {
-        Self::new(vec![
-            Task::from("1,Task,high,false"),
-            Task::from("2,Task,med,false"),
-            Task::from("3,Task,low,true"),
-            Task::from("4,Task,none,true"),
-        ])
-    }
-
     /// Returns tasks based on the ids passed.
     #[inline]
     pub fn get(&self, ids: &[u32]) -> Vec<&Task> {
@@ -70,9 +59,25 @@ impl Todo {
             .collect()
     }
 
+    /// Initializes a `Todo` instance with fake data.
+    #[inline]
+    pub fn sample() -> Self {
+        Self::new(vec![
+            Task::from("1,Task,high,false"),
+            Task::from("2,Task,med,false"),
+            Task::from("3,Task,low,true"),
+            Task::from("4,Task,none,true"),
+        ])
+    }
+
     /// Shows the current list of tasks.
     #[inline]
     pub fn view(&self) {
+        if self.tasks.is_empty() {
+            println!("There are no tasks to print");
+            return;
+        }
+
         self.tasks.iter().for_each(|task| println!("{task}"));
     }
 
