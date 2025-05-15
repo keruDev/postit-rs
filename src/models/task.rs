@@ -1,7 +1,6 @@
 //! The core unit for task management.
 
 use std::fmt;
-use std::ops::Deref;
 
 use clap::ValueEnum;
 use colored::Colorize as _;
@@ -84,15 +83,6 @@ impl fmt::Display for Priority {
             Self::Low => write!(f, "low"),
             Self::None => write!(f, "none"),
         }
-    }
-}
-
-impl Deref for Priority {
-    type Target = str;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        self.to_str()
     }
 }
 

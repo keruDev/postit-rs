@@ -486,7 +486,7 @@ fn config() -> postit::Result<()> {
     let home = Config::home();
     let tmp = home.join("tmp");
 
-    let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
+    let _env = MockEnvVar::new().set([("POSTIT_ROOT", tmp)]);
 
     let cli = Cli {
         command: Command::Config(args::Config { subcommand: sub::Config::Init }),

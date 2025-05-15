@@ -12,6 +12,10 @@ pub enum Error {
     #[error("Unsupported file format; defaulting to CSV")]
     UnsupportedFormat,
 
+    /// Used when a file doesn't exist when it was expected to.
+    #[error("The file '{0}' doesn't exist")]
+    FileDoesntExist(String),
+
     /// Used for I/O errors ([`std::io::Error`]).
     #[error("{0}")]
     Io(#[from] std::io::Error),

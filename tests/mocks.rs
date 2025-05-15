@@ -14,25 +14,50 @@ pub struct MockEnvVar {
     vars: HashMap<String, Option<String>>,
 }
 
+impl Default for MockEnvVar {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MockEnvVar {
-    pub fn set<K, V, I>(iter: I) -> Self
+    pub fn new() -> Self {
+        Self { vars: HashMap::new() }
+    }
+
+    pub fn set<K, V, I>(mut self, iter: I) -> Self
     where
         K: Into<String>,
         V: AsRef<OsStr>,
         I: IntoIterator<Item = (K, V)>,
     {
-        let mut vars = HashMap::new();
-
         for (k, v) in iter {
             let key = k.into();
             let prev = env::var(&key).ok();
 
             env::set_var(&key, v);
 
-            vars.insert(key, prev);
+            self.vars.insert(key, prev);
         }
 
-        Self { vars }
+        self
+    }
+
+    pub fn rm<K, I>(mut self, iter: I) -> Self
+    where
+        K: Into<String>,
+        I: IntoIterator<Item = K>,
+    {
+        for k in iter {
+            let key = k.into();
+            let prev = env::var(&key).ok();
+
+            env::remove_var(&key);
+
+            self.vars.insert(key, prev);
+        }
+
+        self
     }
 }
 
@@ -49,7 +74,7 @@ impl Drop for MockEnvVar {
 
 /// A temporary path used for testing purposes.
 ///
-/// Implements the `Deref` and `Drop` traits
+/// Implements the `Display` and `Drop` traits
 /// to delete the temporary path when the test ends.
 pub struct MockPath {
     pub instance: Box<dyn FilePersister>,
@@ -70,7 +95,7 @@ impl MockPath {
     /// Auxiliary constructor of the `MockPath` struct.
     pub fn blank(format: Format) -> postit::Result<Self> {
         let tmp = env::current_dir()?.join("tmp");
-        let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
+        let _env = MockEnvVar::new().set([("POSTIT_ROOT", tmp)]);
 
         let path = Config::build_path("test_file")?;
         let name = path.to_str().unwrap();
@@ -94,7 +119,7 @@ impl MockPath {
 
     pub fn from<T: AsRef<Path>>(path: T) -> postit::Result<Self> {
         let tmp = env::current_dir()?.join("tmp");
-        let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
+        let _env = MockEnvVar::new().set([("POSTIT_ROOT", tmp)]);
 
         let mut path = path.as_ref().to_path_buf();
         let var = env::var("POSTIT_ROOT").map_err(postit::Error::wrap)?;
@@ -146,7 +171,7 @@ impl Drop for MockPath {
 
 /// A temporary connection string used for testing purposes.
 ///
-/// Implements the `Deref` and `Drop` traits
+/// Implements the `Drop` and `Clone` traits
 /// to delete the temporary connection string when the test ends.
 pub struct MockConn {
     pub instance: Box<dyn DbPersister>,
@@ -157,7 +182,7 @@ impl MockConn {
     /// Constructor of the `MockPath` struct.
     pub fn new(conn: &str) -> postit::Result<Self> {
         let tmp = env::current_dir()?.join("tmp");
-        let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
+        let _env = MockEnvVar::new().set([("POSTIT_ROOT", tmp)]);
 
         let env = env::var("POSTIT_ROOT").map_err(postit::Error::wrap)?;
         let path = PathBuf::from(env);
@@ -194,19 +219,13 @@ impl MockConn {
 
 impl Drop for MockConn {
     fn drop(&mut self) {
-        self.instance.drop_database().unwrap();
-    }
-}
-
-impl Clone for MockConn {
-    fn clone(&self) -> Self {
-        Self::new(&self.instance.conn()).unwrap()
+        self.instance.drop_table().unwrap();
     }
 }
 
 /// The temporary representation of the Config file.
 ///
-/// Implements the `Deref` and `Drop` traits
+/// Implements the `Display` and `Drop` traits
 /// to delete the temporary path when the test ends.
 pub struct MockConfig {
     pub path: PathBuf,
@@ -218,7 +237,7 @@ impl MockConfig {
     /// Constructor of the `MockConfig` struct.
     pub fn new() -> postit::Result<Self> {
         let tmp = env::current_dir()?.join("tmp");
-        let _env = MockEnvVar::set([("POSTIT_ROOT", tmp)]);
+        let _env = MockEnvVar::new().set([("POSTIT_ROOT", tmp)]);
 
         Config::init()?;
 
@@ -242,12 +261,6 @@ impl MockConfig {
 
     pub fn path(&self) -> PathBuf {
         self.path.clone()
-    }
-}
-
-impl Default for MockConfig {
-    fn default() -> Self {
-        Self::new().unwrap()
     }
 }
 

@@ -70,6 +70,8 @@ fn print_path_not_exists_error() -> postit::Result<()> {
 
 #[test]
 fn path_not_exists_output() -> postit::Result<()> {
+    let _env = MockEnvVar::new().rm(["POSTIT_ROOT"]);
+
     let home = MockConfig::home()?;
     let path = PathBuf::from(home);
 
@@ -118,7 +120,7 @@ fn env_output() -> postit::Result<()> {
 
 #[test]
 fn env_is_empty() -> postit::Result<()> {
-    let _env = MockEnvVar::set([("POSTIT_ROOT", "")]);
+    let _env = MockEnvVar::new().set([("POSTIT_ROOT", "")]);
 
     assert!(Config::print_env().is_err());
 
@@ -275,6 +277,8 @@ fn default() -> postit::Result<()> {
 
 #[test]
 fn path_default() -> postit::Result<()> {
+    let _env = MockEnvVar::new().rm(["POSTIT_ROOT"]);
+
     let expect = Config::path()?;
 
     let result = Config::home()
@@ -288,7 +292,7 @@ fn path_default() -> postit::Result<()> {
 
 #[test]
 fn path_empty_env() -> postit::Result<()> {
-    let _env = MockEnvVar::set([("POSTIT_ROOT", "")]);
+    let _env = MockEnvVar::new().set([("POSTIT_ROOT", "")]);
 
     assert!(Config::path().is_err());
 
@@ -300,7 +304,7 @@ fn path_custom() -> postit::Result<()> {
     let home = Config::home();
     let tmp = home.join("tmp").to_string_lossy().into_owned();
 
-    let _env = MockEnvVar::set([("POSTIT_ROOT", &tmp)]);
+    let _env = MockEnvVar::new().set([("POSTIT_ROOT", &tmp)]);
 
     let result = Config::path()?;
     let expect = PathBuf::from(tmp).join(".postit.toml");
@@ -339,7 +343,7 @@ fn save() -> postit::Result<()> {
 fn save_file_doesnt_exist() {
     let _mock = MockConfig::new().unwrap();
 
-    let _env = MockEnvVar::set([("POSTIT_ROOT", "//")]);
+    let _env = MockEnvVar::new().set([("POSTIT_ROOT", "//")]);
 
     let config = Config::default();
     config.save().unwrap();

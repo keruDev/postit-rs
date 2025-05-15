@@ -4,15 +4,16 @@ use postit::config::Config;
 use postit::db::{Orm, Protocol, Sqlite};
 use postit::models::{Task, Todo};
 use postit::traits::{DbPersister, Persister};
+use postit::Action;
 
 use crate::mocks::MockConn;
 
 #[test]
 fn protocol_from() {
-    assert_eq!(*Protocol::from("file"), *Protocol::Sqlite);
-    assert_eq!(*Protocol::from("sqlite"), *Protocol::Sqlite);
-    assert_eq!(*Protocol::from("mongodb"), *Protocol::Mongo);
-    assert_eq!(*Protocol::from("mongodb+srv"), *Protocol::MongoSrv);
+    assert_eq!(Protocol::from("file"), Protocol::Sqlite);
+    assert_eq!(Protocol::from("sqlite"), Protocol::Sqlite);
+    assert_eq!(Protocol::from("mongodb"), Protocol::Mongo);
+    assert_eq!(Protocol::from("mongodb+srv"), Protocol::MongoSrv);
 }
 
 #[test]
@@ -27,13 +28,6 @@ fn display() {
     assert_eq!(Protocol::Sqlite.to_string(), "sqlite");
     assert_eq!(Protocol::Mongo.to_string(), "mongo");
     assert_eq!(Protocol::MongoSrv.to_string(), "mongo+srv");
-}
-
-#[test]
-fn deref() {
-    assert_eq!(&*Protocol::Sqlite, "sqlite");
-    assert_eq!(&*Protocol::Mongo, "mongo");
-    assert_eq!(&*Protocol::MongoSrv, "mongo+srv");
 }
 
 #[test]
@@ -157,7 +151,7 @@ fn edit_check() -> postit::Result<()> {
     let ids = vec![2, 3];
 
     orm.save(&todo)?;
-    orm.edit(&todo, &ids, postit::Action::Check)?;
+    orm.edit(&todo, &ids, &Action::Check)?;
 
     todo.check(&ids);
 
@@ -177,7 +171,7 @@ fn edit_uncheck() -> postit::Result<()> {
     let ids = vec![2, 3];
 
     orm.save(&todo)?;
-    orm.edit(&todo, &ids, postit::Action::Uncheck)?;
+    orm.edit(&todo, &ids, &Action::Uncheck)?;
 
     todo.uncheck(&ids);
 
@@ -197,7 +191,7 @@ fn edit_drop() -> postit::Result<()> {
     let ids = vec![2, 3];
 
     orm.save(&todo)?;
-    orm.edit(&todo, &ids, postit::Action::Drop)?;
+    orm.edit(&todo, &ids, &Action::Drop)?;
 
     todo.check(&ids);
     todo.drop(&ids);

@@ -49,10 +49,6 @@ impl Sqlite {
             connection: sqlite::open(path).map_err(super::Error::Sqlite)?,
         };
 
-        if !instance.exists()? {
-            instance.create()?;
-        }
-
         Ok(instance)
     }
 
@@ -110,6 +106,21 @@ impl DbPersister for Sqlite {
         self.conn_str.clone()
     }
 
+    #[inline]
+    fn table(&self) -> String {
+        String::from("tasks")
+    }
+
+    #[inline]
+    fn database(&self) -> String {
+        Path::new(&self.conn_str)
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_owned()
+    }
+
     /// Checks if a table exists.
     ///
     /// # Errors
@@ -117,17 +128,19 @@ impl DbPersister for Sqlite {
     #[inline]
     fn exists(&self) -> super::Result<bool> {
         #[rustfmt::skip]
-        let mut stmt = self.connection.prepare("
+        let query = format!("
             SELECT *
             FROM sqlite_master
             WHERE type='table'
-              AND name='tasks'
-        ")?;
+              AND name='{}'
+        ", self.table());
+
+        let mut stmt = self.connection.prepare(query)?;
 
         let mut result = vec![];
 
         while matches!(stmt.next(), Ok(State::Row)) {
-            result.push(stmt.read::<String, _>("name"));
+            result.push(stmt.read::<String, _>("name")?);
         }
 
         Ok(!result.is_empty())
@@ -135,7 +148,24 @@ impl DbPersister for Sqlite {
 
     #[inline]
     fn tasks(&self) -> super::Result<Vec<Task>> {
-        let mut stmt = self.connection.prepare("SELECT * FROM tasks")?;
+        let path = Path::new(&self.conn_str);
+
+        if !path.exists() {
+            let err =
+                format!("The '{}' file doesn't exist", path.file_name().unwrap().to_string_lossy());
+            return Err(super::Error::wrap(err));
+        }
+
+        if !self.exists()? {
+            let err = format!(
+                "The '{}' table has no tasks; add a task first to use this command",
+                self.table()
+            );
+            return Err(super::Error::wrap(err));
+        }
+
+        let query = format!("SELECT * FROM {}", self.table());
+        let mut stmt = self.connection.prepare(query)?;
 
         let mut result = vec![];
 
@@ -152,13 +182,9 @@ impl DbPersister for Sqlite {
             return Ok(0);
         }
 
-        #[rustfmt::skip]
-        let mut stmt = self.connection.prepare("
-            SELECT COUNT(*)
-              AS count
-            FROM tasks
-        ")?;
+        let query = format!("SELECT COUNT(*) AS count FROM {}", self.table());
 
+        let mut stmt = self.connection.prepare(query)?;
         stmt.next()?;
 
         let n = stmt.read::<i64, _>("count")?.try_into().unwrap_or(0);
@@ -167,16 +193,20 @@ impl DbPersister for Sqlite {
     }
 
     #[inline]
-    #[rustfmt::skip]
     fn create(&self) -> super::Result<()> {
-        self.connection.execute("
-            CREATE TABLE IF NOT EXISTS tasks (
+        #[rustfmt::skip]
+        let query = format!("
+            CREATE TABLE IF NOT EXISTS {} (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
                 content     TEXT NOT NULL,
                 priority    TEXT NOT NULL,
                 checked     BOOLEAN NOT NULL CHECK (checked IN (0, 1))
             )
-        ")?;
+        ", self.table());
+
+        self.connection.execute(query)?;
+
+        println!("Created the '{}' table in the '{}' database", self.table(), self.database());
 
         Ok(())
     }
@@ -185,10 +215,12 @@ impl DbPersister for Sqlite {
     fn insert(&self, todo: &Todo) -> super::Result<()> {
         todo.tasks.iter().try_for_each(|task| {
             #[rustfmt::skip]
-            let mut stmt = self.connection.prepare("
-                INSERT INTO tasks (content, priority, checked)
+            let query = format!("
+                INSERT INTO {} (content, priority, checked)
                 VALUES (?, ?, ?)
-            ")?;
+            ", self.table());
+
+            let mut stmt = self.connection.prepare(query)?;
 
             #[rustfmt::skip]
             stmt.bind(&[
@@ -197,14 +229,14 @@ impl DbPersister for Sqlite {
                 i32::from(task.checked).to_string().as_str()
             ][..])?;
 
-            stmt.next().map(|_| ())?;
+            stmt.next()?;
 
             Ok(())
         })
     }
 
     #[inline]
-    fn update(&self, todo: &Todo, ids: &[u32], action: Action) -> super::Result<()> {
+    fn update(&self, todo: &Todo, ids: &[u32], action: &Action) -> super::Result<()> {
         if matches!(action, Action::Drop) {
             return self.delete(ids);
         }
@@ -219,15 +251,15 @@ impl DbPersister for Sqlite {
 
         #[rustfmt::skip]
         let query = format!("
-            UPDATE tasks
+            UPDATE {}
             SET {field} = \"{value}\"
             WHERE id
             IN ({})
-        ", self.format_ids(ids));
+        ", self.table(), self.format_ids(ids));
 
         let mut stmt = self.connection.prepare(query)?;
 
-        stmt.next().map(|_| ())?;
+        stmt.next()?;
 
         Ok(())
     }
@@ -236,32 +268,30 @@ impl DbPersister for Sqlite {
     fn delete(&self, ids: &[u32]) -> super::Result<()> {
         #[rustfmt::skip]
         let query = format!("
-            DELETE FROM tasks
+            DELETE FROM {}
             WHERE id
             IN ({})
-        ", self.format_ids(ids));
+        ", self.table(), self.format_ids(ids));
 
         let mut stmt = self.connection.prepare(query)?;
 
-        stmt.next().map(|_| ())?;
+        stmt.next()?;
 
         Ok(())
     }
 
     #[inline]
-    fn drop_database(&self) -> super::Result<()> {
-        fs::remove_file(self.conn()).map_err(|e| {
-            let err = sqlite::Error {
-                code: Some(1),
-                message: Some(e.to_string()),
-            };
-            super::Error::Sqlite(err)
-        })
+    fn drop_table(&self) -> super::Result<()> {
+        fs::remove_file(self.conn()).map_err(super::Error::wrap)?;
+
+        println!("Removed the '{}' file", self.database());
+
+        Ok(())
     }
 
     #[inline]
     fn clean(&self) -> super::Result<()> {
-        let table = String::from("tasks");
+        let table = self.table();
         let query = format!("DELETE FROM {table}");
 
         let mut stmt = self.connection.prepare(query)?;
@@ -270,7 +300,7 @@ impl DbPersister for Sqlite {
             eprintln!("Error while cleaning table: {e}");
         }
 
-        self.reset_autoincrement(&table).map(|_| ())?;
+        self.reset_autoincrement(&table)?;
 
         Ok(())
     }

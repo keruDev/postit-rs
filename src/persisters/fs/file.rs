@@ -4,7 +4,6 @@
 //! - struct [`File`]: manages files and their operations.
 
 use std::ffi::OsStr;
-use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::{fmt, fs};
 
@@ -53,15 +52,6 @@ impl Format {
     }
 }
 
-impl Deref for Format {
-    type Target = str;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        self.to_str()
-    }
-}
-
 /// Representation of a file that is used to manage a [`Todo`] structure.
 pub struct File {
     /// File that implements the [`FilePersister`] trait.
@@ -71,9 +61,7 @@ pub struct File {
 impl fmt::Debug for File {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("File")
-            .field("file", &self.file.path())
-            .finish()
+        f.debug_struct("File").field("file", &self.path()).finish()
     }
 }
 
@@ -84,9 +72,14 @@ impl File {
     /// # Panics
     /// If the file name can't be extracted from the persister path.
     #[inline]
-    pub fn new(persister: &dyn FilePersister) -> crate::Result<Self> {
-        let path = persister.path();
-        let file_name = path.file_name().unwrap();
+    pub fn new(file: Box<dyn FilePersister>) -> Self {
+        Self { file }
+    }
+
+    /// Creates a `File` instance from a path.
+    #[inline]
+    pub fn from<T: AsRef<str>>(path: T) -> crate::Result<Self> {
+        let file_name = Self::check_name(path.as_ref());
         let file_path = Config::build_path(file_name)?;
 
         if !file_path.exists() {
@@ -96,28 +89,10 @@ impl File {
         Ok(Self { file: Self::get_persister(file_path) })
     }
 
-    /// Creates a `File` instance from a path.
-    #[inline]
-    pub fn from<T: AsRef<str>>(path: T) -> crate::Result<Self> {
-        let file_name = Self::check_name(path.as_ref());
-        let persister = Self::get_persister(file_name);
-
-        Self::new(persister.as_ref())
-    }
-
     /// Returns the path of the file.
     #[inline]
     pub fn path(&self) -> PathBuf {
         self.file.path()
-    }
-
-    /// Returns the file name in the current path.
-    ///
-    /// # Panics
-    /// If the file name can't be extracted from the path.
-    #[inline]
-    pub fn file_name(&self) -> PathBuf {
-        self.file.path().file_name().unwrap().into()
     }
 
     /// Checks the persister's contents. If the persister is empty or its path
@@ -127,16 +102,15 @@ impl File {
     /// In case the persister can't be populated with the default contents.
     #[inline]
     pub fn check_content(&self) -> crate::fs::Result<()> {
-        let path = &self.file.path();
+        let path = &self.path();
 
         if path.exists() {
             return Ok(());
         }
 
         let file = path.file_name().unwrap();
-        let parent = path.parent().unwrap();
 
-        println!("Creating '{}' at '{}'", file.to_string_lossy(), parent.display());
+        println!("Creating '{}'", file.to_string_lossy());
 
         fs::write(path, self.file.default())?;
 
@@ -176,25 +150,25 @@ impl File {
     /// In case the file extension can't be converted to `&str`.
     #[inline]
     pub fn get_persister<T: AsRef<Path>>(path: T) -> Box<dyn FilePersister> {
-        let mut file = path.as_ref().to_path_buf();
+        let mut file_path = path.as_ref().to_path_buf();
 
-        if file.is_dir() {
+        if file_path.is_dir() {
             eprintln!("The persister can't be a directory");
         }
 
-        let ext = file
+        let ext = file_path
             .extension()
             .unwrap_or_else(|| OsStr::new(".csv"))
             .to_str()
             .unwrap();
 
         let format = Format::from(ext);
-        file.set_extension(format.to_str());
+        file_path.set_extension(format.to_str());
 
         match format {
-            Format::Csv => Csv::new(file).boxed(),
-            Format::Json => Json::new(file).boxed(),
-            Format::Xml => Xml::new(file).boxed(),
+            Format::Csv => Csv::new(file_path).boxed(),
+            Format::Json => Json::new(file_path).boxed(),
+            Format::Xml => Xml::new(file_path).boxed(),
         }
     }
 }
@@ -207,27 +181,71 @@ impl Persister for File {
 
     #[inline]
     fn to_string(&self) -> String {
-        self.file.path().to_str().unwrap().to_owned()
+        self.path().to_str().unwrap().to_owned()
+    }
+
+    #[inline]
+    fn create(&self) -> crate::Result<()> {
+        let path = &self.path();
+
+        if path.exists() {
+            println!("The file already exists");
+            return Ok(());
+        }
+
+        let file = path.file_name().unwrap();
+
+        println!("Creating '{}'", file.to_string_lossy());
+
+        fs::write(path, self.file.default())?;
+
+        Ok(())
     }
 
     #[inline]
     fn exists(&self) -> crate::Result<bool> {
-        Ok(self.file.path().exists())
+        Ok(self.path().exists())
+    }
+
+    #[inline]
+    fn view(&self) -> crate::Result<()> {
+        let path = self.path();
+
+        if !path.exists() {
+            let path = path.file_name().unwrap().to_string_lossy().to_string();
+
+            return Err(super::Error::FileDoesntExist(path).into());
+        }
+
+        Todo::new(self.tasks()?).view();
+
+        Ok(())
     }
 
     #[inline]
     fn tasks(&self) -> crate::Result<Vec<Task>> {
-        self.check_content()?;
-        self.file.tasks().map_err(|e| {
-            eprintln!("Can't get tasks");
-            crate::Error::Fs(e)
-        })
+        if !self.exists()? {
+            self.create()?;
+        }
+
+        self.file.tasks().map_err(crate::Error::Fs)
     }
 
     #[inline]
-    fn edit(&self, todo: &Todo, _ids: &[u32], action: Action) -> crate::Result<()> {
+    fn edit(&self, todo: &Todo, _ids: &[u32], action: &Action) -> crate::Result<()> {
+        let path = self.path();
+
+        if !path.exists() {
+            let path = path.file_name().unwrap().to_string_lossy();
+
+            return Err(super::Error::FileDoesntExist(path.to_string()).into());
+        }
+
         self.file.write(todo).map_err(|e| {
-            eprintln!("Can't perform the {action} operation on the '{:?}' file", self.file_name());
+            eprintln!(
+                "Can't perform the {action} operation on '{}'",
+                path.file_name().unwrap().to_string_lossy()
+            );
             crate::Error::Fs(e)
         })
     }
@@ -235,7 +253,7 @@ impl Persister for File {
     #[inline]
     fn save(&self, todo: &Todo) -> crate::Result<()> {
         self.file.write(todo).map_err(|e| {
-            let path = self.file.path();
+            let path = self.path();
             let name = path.file_name().unwrap();
 
             eprintln!("Can't save the '{name:?}' file");
@@ -246,60 +264,54 @@ impl Persister for File {
 
     #[inline]
     fn replace(&self, todo: &Todo) -> crate::Result<()> {
-        self.file.write(todo).map_err(|e| {
-            let path = self.file.path();
-            let name = path.file_name().unwrap();
+        let path = self.path();
+        let file = path.file_name().unwrap().to_string_lossy();
 
-            eprintln!("Can't replace the '{}' file", name.to_string_lossy());
+        self.file.write(todo).map_err(|e| {
+            eprintln!("Can't replace the tasks of '{file}'");
 
             crate::Error::Fs(e)
         })?;
 
-        println!("Replaced the contents of '{}'", self.file.path().to_string_lossy());
+        println!("Replaced the tasks of '{file}'");
 
         Ok(())
     }
 
     #[inline]
     fn clean(&self) -> crate::Result<()> {
-        self.file.clean().map_err(|e| {
-            eprintln!("Can't clean the '{}' file", self.file_name().display());
+        let path = self.path();
+        let file = path.file_name().unwrap().to_string_lossy();
 
+        if !path.exists() {
+            return Err(super::Error::FileDoesntExist(file.to_string()).into());
+        }
+
+        self.file.clean().map_err(|e| {
+            eprintln!("Can't clean '{file}'");
             crate::Error::Fs(e)
         })?;
 
-        println!("Cleaned '{}'", self.file.path().display());
+        println!("Cleaned '{file}'");
 
         Ok(())
     }
 
     #[inline]
     fn remove(&self) -> crate::Result<()> {
-        let path = self.file.path();
+        let path = self.path();
+        let file = path.file_name().unwrap().to_string_lossy();
 
         if !path.exists() {
-            if let (Some(file), Some(parent)) = (path.file_name(), path.parent()) {
-                let msg = format!(
-                    "The file '{}' doesn't exist at '{}'",
-                    file.to_string_lossy(),
-                    parent.display()
-                );
-                let err = super::Error::Other(msg.into());
-
-                return Err(crate::Error::Fs(err));
-            }
+            return Err(super::Error::FileDoesntExist(file.to_string()).into());
         }
 
         self.file.remove().map_err(|e| {
-            eprintln!("Can't delete the '{:?}' file", self.file_name());
-
+            eprintln!("Can't delete the '{file}' file");
             crate::Error::Fs(e)
         })?;
 
-        let file = path.file_name().unwrap();
-        let parent = path.parent().unwrap();
-
-        println!("Removed the {} file from {}", file.to_string_lossy(), parent.display());
+        println!("Removed the '{file}' file");
 
         Ok(())
     }
