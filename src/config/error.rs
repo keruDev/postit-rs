@@ -1,6 +1,5 @@
 //! Defines errors related to configuration management.
 
-use std::ffi::OsString;
 use std::path::PathBuf;
 
 use thiserror::Error;
@@ -20,8 +19,8 @@ pub enum Error {
     InvalidPathEnvVar(PathBuf),
 
     /// Used when the `POSTIT_ROOT`
-    #[error("The value of 'POSTIT_ROOT' is not unicode: {}", &0)]
-    NotUnicode(OsString),
+    #[error("The value of 'POSTIT_ROOT' is not unicode: {0}")]
+    NotUnicode(String),
 
     /// Used when the configuration file doesn't exist when it was expected to.
     #[error("The configuration file doesn't exist at '{0}'")]

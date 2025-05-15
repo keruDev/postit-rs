@@ -99,6 +99,11 @@ impl Todo {
     /// Changes the `priority` property of tasks (selected by using `ids`).
     #[inline]
     pub fn set_priority(&mut self, ids: &[u32], priority: &Priority) {
+        if self.tasks.is_empty() {
+            eprintln!("There are no tasks to edit");
+            return;
+        }
+
         for task in self.get_mut(ids) {
             task.priority = priority.clone();
         }
@@ -107,6 +112,11 @@ impl Todo {
     /// Changes the `content` property of tasks (selected by using `ids`).
     #[inline]
     pub fn set_content(&mut self, ids: &[u32], content: &str) {
+        if self.tasks.is_empty() {
+            eprintln!("There are no tasks to edit");
+            return;
+        }
+
         for task in self.get_mut(ids) {
             task.content = String::from(content);
         }
@@ -116,6 +126,11 @@ impl Todo {
     /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     #[inline]
     pub fn check(&mut self, ids: &[u32]) -> Vec<u32> {
+        if self.tasks.is_empty() {
+            eprintln!("There are no tasks to check");
+            return Vec::new();
+        }
+
         let mut changed_ids = Vec::<u32>::new();
 
         for task in self.get_mut(ids) {
@@ -132,6 +147,11 @@ impl Todo {
     /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     #[inline]
     pub fn uncheck(&mut self, ids: &[u32]) -> Vec<u32> {
+        if self.tasks.is_empty() {
+            eprintln!("There are no tasks to uncheck");
+            return Vec::new();
+        }
+
         let mut changed_ids = Vec::<u32>::new();
 
         for task in self.get_mut(ids) {
@@ -148,6 +168,11 @@ impl Todo {
     /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     #[inline]
     pub fn drop(&mut self, ids: &[u32]) -> Vec<u32> {
+        if self.tasks.is_empty() {
+            eprintln!("There are no tasks to drop");
+            return Vec::new();
+        }
+
         let force_drop = Config::load().unwrap().force_drop;
         let mut changed_ids = Vec::<u32>::new();
 

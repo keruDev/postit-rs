@@ -44,9 +44,9 @@ impl Postit {
             Command::View(args) => Self::view(args),
             Command::Add(args) => Self::add(args),
             Command::Set(args) => Self::set(args),
-            Command::Check(args) => Self::edit(args, Action::Check),
-            Command::Uncheck(args) => Self::edit(args, Action::Uncheck),
-            Command::Drop(args) => Self::edit(args, Action::Drop),
+            Command::Check(args) => Self::edit(args, &Action::Check),
+            Command::Uncheck(args) => Self::edit(args, &Action::Uncheck),
+            Command::Drop(args) => Self::edit(args, &Action::Drop),
             Command::Sample(args) => Self::sample(args),
             Command::Copy(args) => Self::copy(&args),
             Command::Clean(args) => Self::clean(args),
@@ -96,17 +96,17 @@ impl Postit {
 
     /// Shows the list of current tasks.
     fn view(args: args::Persister) -> super::Result<()> {
-        let persister = Self::get_persister(args.persister)?;
-        let tasks = persister.tasks()?;
-
-        Todo::new(tasks).view();
-
-        Ok(())
+        Self::get_persister(args.persister)?.view()
     }
 
     /// Adds a new task to the list.
     fn add(args: args::Add) -> super::Result<()> {
         let persister = Self::get_persister(args.persister)?;
+
+        if !persister.exists()? {
+            persister.create()?;
+        }
+
         let mut todo = Todo::from(persister.as_ref())?;
 
         let id = todo.tasks.last().map_or(1, |last| last.id + 1);
@@ -116,14 +116,18 @@ impl Postit {
         todo.add(task);
         persister.save(&todo)?;
 
-        todo.view();
-
-        Ok(())
+        persister.view()
     }
 
     /// Changes the values of a task depending on the `Set` variant.
     fn set(args: args::Set) -> super::Result<()> {
         let persister = Self::get_persister(args.persister)?;
+
+        if !persister.exists()? {
+            let msg = "The persister doesn't exist; add a task first to use this command";
+            return Err(super::Error::wrap(msg));
+        }
+
         let mut todo = Todo::from(persister.as_ref())?;
 
         todo.set(&args.subcommand);
@@ -133,16 +137,20 @@ impl Postit {
             sub::Set::Priority(args) => (args.ids, Action::SetPriority),
         };
 
-        persister.edit(&todo, &ids, action)?;
+        persister.edit(&todo, &ids, &action)?;
 
-        todo.view();
-
-        Ok(())
+        persister.view()
     }
 
     /// Edits tasks based on the action passed.
-    fn edit(args: args::Edit, action: Action) -> super::Result<()> {
+    fn edit(args: args::Edit, action: &Action) -> super::Result<()> {
         let persister = Self::get_persister(args.persister)?;
+
+        if !persister.exists()? {
+            let msg = "The persister doesn't exist; add a task first to use this command";
+            return Err(super::Error::wrap(msg));
+        }
+
         let mut todo = Todo::from(persister.as_ref())?;
 
         let changed_ids = match action {
@@ -154,9 +162,7 @@ impl Postit {
 
         persister.edit(&todo, &changed_ids, action)?;
 
-        Todo::from(persister.as_ref())?.view();
-
-        Ok(())
+        persister.view()
     }
 
     /// Copies the contents of a persister to another.
@@ -168,17 +174,21 @@ impl Postit {
     fn copy(args: &args::Copy) -> super::Result<()> {
         if args.left == args.right {
             let msg = "Both persisters are the same";
-            return Err(super::Error::Other(msg.into()));
+            return Err(super::Error::wrap(msg));
         }
 
         let left = Self::get_persister(Some(&args.left))?;
 
         if left.tasks()? == Vec::new() {
             let msg = format!("The persister '{}' has no tasks to copy", left.to_string());
-            return Err(super::Error::Other(msg.into()));
+            return Err(super::Error::wrap(msg));
         }
 
         let right = Self::get_persister(Some(&args.right))?;
+
+        if !right.exists()? {
+            right.create()?;
+        }
 
         let config = Config::load()?;
 
@@ -188,50 +198,43 @@ impl Postit {
                 right.to_string()
             );
 
-            return Err(super::Error::Other(msg.into()));
+            return Err(super::Error::wrap(msg));
         }
 
-        let todo = Todo::from(left.as_ref())?;
-        right.replace(&todo)?;
+        right.replace(&Todo::from(left.as_ref())?)?;
 
         if config.drop_after_copy {
             left.remove()?;
         }
 
-        todo.view();
-
         println!("The tasks of '{}' have been copied to '{}'", args.left, args.right);
 
-        Ok(())
+        right.view()
     }
 
     /// Populates the persister with fake data for testing purposes.
     fn sample(args: args::Persister) -> super::Result<()> {
         let persister = Self::get_persister(args.persister)?;
-        let todo = Todo::sample();
 
-        persister.clean()?;
-        persister.save(&todo)?;
+        if !persister.exists()? {
+            persister.create()?;
+        }
 
-        todo.view();
+        persister.replace(&Todo::sample())?;
 
         println!("Sample generated at '{}'", persister.to_string());
 
-        Ok(())
+        persister.view()
     }
 
     /// Cleans the tasks from a file.
     fn clean(args: args::Persister) -> super::Result<()> {
-        let persister = Self::get_persister(args.persister)?;
-
-        persister.clean()
+        Self::get_persister(args.persister)?.clean()
     }
 
     /// Removes a persister completely (file or table).
     fn remove(args: args::Persister) -> super::Result<()> {
-        let persister = Self::get_persister(args.persister)?;
-
-        persister.remove()
+        Self::get_persister(args.persister)?.remove()
     }
 
     /// Manages the configuration file.   

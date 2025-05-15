@@ -19,8 +19,14 @@ pub trait Persister: fmt::Debug {
     /// The value that created the `Persister` instance.
     fn to_string(&self) -> String;
 
+    /// Creates the database instance.
+    fn create(&self) -> crate::Result<()>;
+
     /// Checks wether a persister exists or not.
     fn exists(&self) -> crate::Result<bool>;
+
+    /// Displays the tasks stored at the persister.
+    fn view(&self) -> crate::Result<()>;
 
     /// Returns the tasks collected from the persister's contents.
     ///
@@ -32,7 +38,7 @@ pub trait Persister: fmt::Debug {
     ///
     /// # Errors
     /// Returns an error if the persister can't be edited.
-    fn edit(&self, todo: &Todo, ids: &[u32], action: Action) -> crate::Result<()>;
+    fn edit(&self, todo: &Todo, ids: &[u32], action: &Action) -> crate::Result<()>;
 
     /// Saves a Todo instance as the persister's content.
     ///
@@ -129,6 +135,12 @@ pub trait DbPersister {
     /// Returns the connection string.
     fn conn(&self) -> String;
 
+    /// Returns the table used.
+    fn table(&self) -> String;
+
+    /// Returns the database used.
+    fn database(&self) -> String;
+
     /// Checks if a table exists.
     fn exists(&self) -> db::Result<bool>;
 
@@ -160,7 +172,7 @@ pub trait DbPersister {
     ///
     /// # Errors
     /// Returns an error if tasks can't be updated.
-    fn update(&self, todo: &Todo, ids: &[u32], action: Action) -> db::Result<()>;
+    fn update(&self, todo: &Todo, ids: &[u32], action: &Action) -> db::Result<()>;
 
     /// Deletes data from a table.
     ///
@@ -168,16 +180,16 @@ pub trait DbPersister {
     /// Returns an error if tasks can't be deleted.
     fn delete(&self, ids: &[u32]) -> db::Result<()>;
 
-    /// Drops the specified database.
+    /// Drops the specified table.
     ///
     /// # Errors
-    /// Returns an error if the database can't be dropped.
-    fn drop_database(&self) -> db::Result<()>;
+    /// Returns an error if the table can't be dropped.
+    fn drop_table(&self) -> db::Result<()>;
 
     /// Deletes all tasks from the persister.
     ///
     /// # Errors
-    /// Returns an error if the database can't be cleaned
+    /// Returns an error if the table can't be cleaned
     fn clean(&self) -> db::Result<()>;
 }
 

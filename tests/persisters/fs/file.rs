@@ -25,18 +25,11 @@ fn format_from() {
 }
 
 #[test]
-fn format_deref() {
-    assert_eq!(&*Format::Csv, "csv");
-    assert_eq!(&*Format::Json, "json");
-    assert_eq!(&*Format::Xml, "xml");
-}
-
-#[test]
 fn file_fmt_debug() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
 
     let persister = File::get_persister(mock.path());
-    let file = File::new(persister.as_ref())?;
+    let file = File::new(persister);
 
     let debug_output = format!("{:?}", file);
     let expected_output = format!("File {{ file: {:?} }}", mock.path());
@@ -65,7 +58,7 @@ fn from() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
 
     let result = File::from(mock.to_string())?;
-    let expect = File::new(Csv::new(mock.path()).boxed().as_ref())?;
+    let expect = File::new(Csv::new(mock.path()).boxed());
 
     assert_eq!(result, expect);
 
@@ -94,7 +87,7 @@ fn check_content_is_empty() -> postit::Result<()> {
     let persister = File::get_persister(mock.path());
     let expect = persister.default();
 
-    let file = File::new(persister.as_ref())?;
+    let file = File::new(persister);
     file.check_content()?;
 
     let result = fs::read_to_string(mock.path())?;
@@ -111,7 +104,7 @@ fn check_content_exists() -> postit::Result<()> {
     let persister = File::get_persister(mock.path());
     let expect = persister.default();
 
-    let file = File::new(persister.as_ref())?;
+    let file = File::new(persister);
     file.check_content()?;
 
     let result = fs::read_to_string(mock.path())?;
@@ -201,7 +194,7 @@ fn check_name_no_name() -> postit::Result<()> {
     let path = ".csv";
     let file = File::from(path)?;
 
-    assert_eq!(file.file_name().to_str().unwrap(), "tasks.csv");
+    assert_eq!(file.path().file_name().unwrap(), "tasks.csv");
 
     Ok(())
 }

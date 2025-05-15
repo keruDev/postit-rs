@@ -23,4 +23,19 @@ pub enum Error {
     /// Represent a `MongoDB` error.
     #[error("Error on MongoDB: {0}")]
     Mongo(#[from] mongodb::error::Error),
+
+    /// Any error that doesn't belong into the previous variants.
+    #[error("{0}")]
+    Other(#[from] Box<dyn std::error::Error + Send + Sync>),
+}
+
+impl Error {
+    /// Wraps any error-like value into [`Error::Other`].
+    #[inline]
+    pub fn wrap<E>(err: E) -> Self
+    where
+        E: Into<Box<dyn std::error::Error + Send + Sync>>,
+    {
+        Self::Other(err.into())
+    }
 }

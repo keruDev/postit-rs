@@ -85,7 +85,7 @@ impl Config {
             super::Error::Io(e)
         })?;
 
-        println!("Config file created at '{}'", path.display());
+        println!("Configuration file created at '{}'", path.display());
 
         Ok(())
     }
@@ -152,9 +152,8 @@ impl Config {
             println!("Default configuration:");
             println!("{}", Self::default());
             println!();
-            eprintln!("{e}");
 
-            return Ok(());
+            return Err(e);
         }
 
         println!("{}", Self::load()?);
@@ -232,7 +231,9 @@ impl Config {
 
             Err(super::Error::Env(e)) => match e {
                 env::VarError::NotPresent => Self::default_config_parent(),
-                env::VarError::NotUnicode(msg) => Err(super::Error::NotUnicode(msg)),
+                env::VarError::NotUnicode(msg) => {
+                    Err(super::Error::NotUnicode(msg.into_string().unwrap()))
+                }
             },
 
             Err(_) => unreachable!(),

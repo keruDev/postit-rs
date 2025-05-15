@@ -4,7 +4,6 @@
 //! - struct [`Orm`]: manages database connections and their operations.
 
 use std::fmt;
-use std::ops::Deref;
 use std::path::Path;
 
 use super::{Mongo, Sqlite};
@@ -14,6 +13,7 @@ use crate::traits::{DbPersister, Persister};
 use crate::Action;
 
 /// A database protocol.
+#[derive(Debug, PartialEq, Eq)]
 pub enum Protocol {
     /// An `SQLite` database (associated persister: [`Sqlite`]).
     Sqlite,
@@ -62,15 +62,6 @@ impl fmt::Display for Protocol {
     }
 }
 
-impl Deref for Protocol {
-    type Target = str;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        self.to_str()
-    }
-}
-
 /// Abstraction of database actions, used to manage a [`Todo`] structure.
 pub struct Orm {
     /// Database that implements the [`DbPersister`] trait.
@@ -90,8 +81,8 @@ impl Orm {
     /// Constructor of the `Orm` struct, which controls instances of structs
     /// that implement the [`DbPersister`] trait.
     #[inline]
-    pub const fn new(persister: Box<dyn DbPersister>) -> Self {
-        Self { db: persister }
+    pub const fn new(db: Box<dyn DbPersister>) -> Self {
+        Self { db }
     }
 
     /// Creates a `Orm` instance from a connection string.
@@ -153,24 +144,36 @@ impl Persister for Orm {
     }
 
     #[inline]
-    fn exists(&self) -> crate::Result<bool> {
-        self.db.exists().map_err(|e| {
-            eprintln!("Can't check wether the tasks table exists or not");
+    fn create(&self) -> crate::Result<()> {
+        self.db.create().map_err(|e| {
+            eprintln!("Can't create the table");
             crate::Error::Db(e)
         })
+    }
+
+    #[inline]
+    fn exists(&self) -> crate::Result<bool> {
+        self.db.exists().map_err(|e| {
+            eprintln!("The table doesn't exist; add a task first to use this command");
+            crate::Error::Db(e)
+        })
+    }
+
+    #[inline]
+    fn view(&self) -> crate::Result<()> {
+        Todo::new(self.tasks()?).view();
+
+        Ok(())
     }
 
     #[inline]
     fn tasks(&self) -> crate::Result<Vec<Task>> {
-        self.db.tasks().map_err(|e| {
-            eprintln!("Can't get tasks");
-            crate::Error::Db(e)
-        })
+        self.db.tasks().map_err(crate::Error::Db)
     }
 
     #[inline]
-    fn edit(&self, todo: &Todo, ids: &[u32], action: Action) -> crate::Result<()> {
-        self.db.update(todo, ids, action.clone()).map_err(|e| {
+    fn edit(&self, todo: &Todo, ids: &[u32], action: &Action) -> crate::Result<()> {
+        self.db.update(todo, ids, action).map_err(|e| {
             eprintln!("Can't perform the '{action}' action");
             crate::Error::Db(e)
         })
@@ -180,7 +183,7 @@ impl Persister for Orm {
     fn save(&self, todo: &Todo) -> crate::Result<()> {
         if self.db.count()? == 0 {
             return self.db.insert(todo).map_err(|e| {
-                eprintln!("Can't insert into the database");
+                eprintln!("Can't insert into the table");
                 crate::Error::Db(e)
             });
         }
@@ -189,36 +192,55 @@ impl Persister for Orm {
         let task = Todo::new(last);
 
         self.db.insert(&task).map_err(|e| {
-            eprintln!("Can't insert into the database");
+            eprintln!("Can't insert into the table");
             crate::Error::Db(e)
         })
     }
 
     #[inline]
     fn replace(&self, todo: &Todo) -> crate::Result<()> {
-        if let Err(e) = self.db.clean() {
-            eprintln!("Can't clean the database");
-            return Err(crate::Error::Db(e));
+        if self.exists()? {
+            self.db.clean()?;
         }
 
         self.db.insert(todo).map_err(|e| {
-            eprintln!("Can't insert into the database");
+            eprintln!("Can't insert into the table");
             crate::Error::Db(e)
-        })
+        })?;
+
+        println!("Replaced the tasks of '{}'", self.db.conn());
+
+        Ok(())
     }
 
     #[inline]
     fn clean(&self) -> crate::Result<()> {
+        if self.tasks()?.is_empty() {
+            eprintln!("There are no tasks to delete in the table");
+            return Ok(());
+        }
+
         self.db.clean().map_err(|e| {
-            eprintln!("Can't clean the database");
+            eprintln!("Can't clean the table");
             crate::Error::Db(e)
-        })
+        })?;
+
+        println!("Cleaned the tasks from the '{}' table", self.db.table());
+
+        Ok(())
     }
 
     #[inline]
     fn remove(&self) -> crate::Result<()> {
-        self.db.drop_database().map_err(|e| {
-            eprintln!("Can't drop the database");
+        let table = self.db.table();
+
+        if !self.exists()? {
+            eprintln!("There is no '{table}' table to remove at '{}'", self.to_string());
+            return Ok(());
+        }
+
+        self.db.drop_table().map_err(|e| {
+            eprintln!("Can't drop the table");
             crate::Error::Db(e)
         })
     }

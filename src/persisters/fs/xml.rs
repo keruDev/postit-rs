@@ -30,7 +30,7 @@ impl Xml {
     /// Basic structure to initialize a XML file.
     #[inline]
     pub fn prolog() -> String {
-        String::from(r#"<?xml version="1.0" encoding="UTF-8"?>\n"#)
+        String::from(r#"<?xml version="1.0" encoding="UTF-8"?>"#) + "\n"
     }
 
     /// Document Type Definition of a XML file.
@@ -78,7 +78,7 @@ impl Xml {
     pub fn task_to_xml(writer: &mut Writer<&mut Vec<u8>>, task: &Task) -> io::Result<()> {
         let mut task_bytes = BytesStart::new("Task");
         task_bytes.push_attribute(("id", task.id.to_string().as_str()));
-        task_bytes.push_attribute(("priority", task.priority.as_ref()));
+        task_bytes.push_attribute(("priority", task.priority.to_str()));
         task_bytes.push_attribute(("checked", task.checked.to_string().as_str()));
 
         writer.write_event(Event::Start(task_bytes))?;
