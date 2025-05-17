@@ -273,9 +273,9 @@ fn manage_set_err_path_doesnt_exist() -> postit::Result<()> {
         drop_after_copy: None,
     };
 
-    let result = Config::manage(sub::Config::Set(args)).unwrap_err();
+    let err = Config::manage(sub::Config::Set(args)).unwrap_err();
 
-    assert!(matches!(result, postit::config::Error::FileDoesntExist(_)));
+    assert!(matches!(err, postit::config::Error::FileDoesntExist(_)));
 
     Ok(())
 }
@@ -291,9 +291,9 @@ fn manage_set_err_none_set() -> postit::Result<()> {
         drop_after_copy: None,
     };
 
-    let result = Config::manage(sub::Config::Set(args)).unwrap_err();
+    let err = Config::manage(sub::Config::Set(args)).unwrap_err();
 
-    assert!(matches!(result, postit::config::Error::EmptySetArgs));
+    assert!(matches!(err, postit::config::Error::EmptySetArgs));
 
     Ok(())
 }

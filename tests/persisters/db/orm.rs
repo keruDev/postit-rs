@@ -76,8 +76,8 @@ fn get_persister() -> postit::Result<()> {
 
 #[test]
 fn get_persister_empty() {
-    let result = Orm::get_persister("").unwrap_err();
-    assert!(matches!(result, postit::Error::Db(postit::db::Error::IncorrectConnectionString)));
+    let err = Orm::get_persister("").unwrap_err();
+    assert!(matches!(err, postit::Error::Db(postit::db::Error::IncorrectConnectionString)));
 }
 
 #[test]

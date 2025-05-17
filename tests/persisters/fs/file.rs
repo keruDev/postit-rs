@@ -38,7 +38,7 @@ fn format_from() {
 fn file_fmt_debug() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
 
-    let persister = File::get_persister(mock.path());
+    let persister = File::get_persister(mock.path())?;
     let file = File::new(persister);
 
     let debug_output = format!("{:?}", file);
@@ -55,7 +55,7 @@ fn path() -> postit::Result<()> {
 
     let file = File::from(mock.to_string())?;
 
-    let result = file.path();
+    let result = file.path().to_path_buf();
     let expect = mock.path();
 
     assert_eq!(result, expect);
@@ -94,7 +94,7 @@ fn check_name_ok() -> postit::Result<()> {
 fn check_content_is_empty() -> postit::Result<()> {
     let mock = MockPath::blank(Format::Csv)?;
 
-    let persister = File::get_persister(mock.path());
+    let persister = File::get_persister(mock.path())?;
     let expect = persister.default();
 
     let file = File::new(persister);
@@ -111,7 +111,7 @@ fn check_content_is_empty() -> postit::Result<()> {
 fn check_content_exists() -> postit::Result<()> {
     let mock = MockPath::blank(Format::Csv)?;
 
-    let persister = File::get_persister(mock.path());
+    let persister = File::get_persister(mock.path())?;
     let expect = persister.default();
 
     let file = File::new(persister);
@@ -129,7 +129,7 @@ fn check_content_not_exists() -> postit::Result<()> {
     let mock = MockPath::blank(Format::Csv)?;
     mock.instance.remove()?;
 
-    let persister = File::get_persister(mock.path());
+    let persister = File::get_persister(mock.path())?;
     let expect = persister.default();
 
     let file = File::new(persister);
@@ -159,9 +159,9 @@ fn check_name_no_ext() {
 fn get_persister_csv() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
 
-    let path = File::get_persister(mock.path()).path();
+    let file = File::get_persister(mock.path())?;
 
-    let result = path.extension().unwrap();
+    let result = file.path().extension().unwrap();
     let expect = "csv";
 
     assert_eq!(result, expect);
@@ -173,9 +173,9 @@ fn get_persister_csv() -> postit::Result<()> {
 fn get_persister_json() -> postit::Result<()> {
     let mock = MockPath::create(Format::Json)?;
 
-    let path = File::get_persister(mock.path()).path();
+    let file = File::get_persister(mock.path())?;
 
-    let result = path.extension().unwrap();
+    let result = file.path().extension().unwrap();
     let expect = "json";
 
     assert_eq!(result, expect);
@@ -187,9 +187,9 @@ fn get_persister_json() -> postit::Result<()> {
 fn get_persister_xml() -> postit::Result<()> {
     let mock = MockPath::create(Format::Xml)?;
 
-    let path = File::get_persister(mock.path()).path();
+    let file = File::get_persister(mock.path())?;
 
-    let result = path.extension().unwrap();
+    let result = file.path().extension().unwrap();
     let expect = "xml";
 
     assert_eq!(result, expect);
@@ -198,23 +198,27 @@ fn get_persister_xml() -> postit::Result<()> {
 }
 
 #[test]
-fn get_persister_txt() {
-    let path = File::get_persister("test.txt").path();
+fn get_persister_txt() -> postit::Result<()> {
+    let file = File::get_persister("test.txt")?;
 
-    let result = path.extension().unwrap();
+    let result = file.path().extension().unwrap();
     let expect = "csv";
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
-fn get_persister_any() {
-    let path = File::get_persister("test.toml").path();
+fn get_persister_any() -> postit::Result<()> {
+    let file = File::get_persister("test.toml")?;
 
-    let result = path.extension().unwrap();
+    let result = file.path().extension().unwrap();
     let expect = "csv";
 
     assert_eq!(result, expect);
+
+    Ok(())
 }
 
 #[test]
@@ -229,15 +233,17 @@ fn check_name_no_name() -> postit::Result<()> {
 
 #[test]
 fn get_persister_dot() {
-    File::get_persister(".");
+    let err = File::get_persister(".");
+
+    assert!(matches!(err.unwrap_err(), postit::Error::Fs(postit::fs::Error::IsDirectory)));
 }
 
 #[test]
 fn file_persister_eq() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
 
-    let left = File::get_persister(mock.path());
-    let right = File::get_persister(mock.path());
+    let left = File::get_persister(mock.path())?;
+    let right = File::get_persister(mock.path())?;
 
     assert!(left == right);
 

@@ -30,6 +30,9 @@ impl Command {
     }
 
     /// Use case of the 'sample' command.
+    ///
+    /// # Panics
+    /// If there is an unexpected error while displaying the example.
     #[inline]
     pub fn sample() {
         println!(
@@ -50,6 +53,9 @@ Sample:"
     }
 
     /// Use case of the 'view' command.
+    ///
+    /// # Panics
+    /// If there is an unexpected error while displaying the example.
     #[inline]
     pub fn view() {
         println!(
@@ -69,6 +75,9 @@ How to use:
     }
 
     /// Use case of the 'add' command.
+    ///
+    /// # Panics
+    /// If there is an unexpected error while displaying the example.
     #[inline]
     pub fn add() {
         let line = "5,New task,low,false";
@@ -185,6 +194,9 @@ Description:
     }
 
     /// Use case of the 'check' command.
+    ///
+    /// # Panics
+    /// If there is an unexpected error while displaying the example.
     #[inline]
     pub fn check() {
         println!(
@@ -214,6 +226,9 @@ How to use:
     }
 
     /// Use case of the 'uncheck' command.
+    ///
+    /// # Panics
+    /// If there is an unexpected error while displaying the example.
     #[inline]
     pub fn uncheck() {
         println!(
@@ -243,6 +258,9 @@ How to use:
     }
 
     /// Use case of the 'drop' command.
+    ///
+    /// # Panics
+    /// If there is an unexpected error while displaying the example.
     #[inline]
     pub fn drop() {
         fn force_drop() {

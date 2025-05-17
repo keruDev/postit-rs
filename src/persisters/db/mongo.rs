@@ -34,8 +34,9 @@ impl Clone for Mongo {
 impl Mongo {
     /// Creates a `Mongo` instance from a URI.
     ///
-    /// # Panics
-    /// If the URI can't be converted to str.
+    /// # Errors
+    /// - [`ClientOptions`] can't be parsed.
+    /// - [`Client`] couldn't be opened.
     #[inline]
     pub fn from<T: AsRef<str>>(uri: T) -> super::Result<Self> {
         let uri = uri.as_ref();
@@ -86,10 +87,6 @@ impl DbPersister for Mongo {
         String::from("test")
     }
 
-    /// Checks if a table exists.
-    ///
-    /// # Errors
-    /// In case the statement can't be prepared.
     #[inline]
     fn exists(&self) -> super::Result<bool> {
         let names = self.db().list_collection_names().run()?;

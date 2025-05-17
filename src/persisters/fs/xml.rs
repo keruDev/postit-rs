@@ -53,7 +53,7 @@ impl Xml {
     /// Writes a [Todo] instance into XML writer and returns a buffer with the content.
     ///
     /// # Errors
-    /// In case the XML Event can't be written.
+    /// - The XML Event can't be written.
     #[inline]
     pub fn todo_to_xml(todo: &Todo) -> super::Result<Vec<u8>> {
         let mut buffer = Vec::new();
@@ -73,7 +73,7 @@ impl Xml {
     /// Writes a [Task] instance into XML writer.
     ///
     /// # Errors
-    /// In case the XML Event can't be written.
+    /// - The XML Event can't be written.
     #[inline]
     pub fn task_to_xml(writer: &mut Writer<&mut Vec<u8>>, task: &Task) -> io::Result<()> {
         let mut task_bytes = BytesStart::new("Task");
@@ -90,8 +90,8 @@ impl Xml {
 
     /// Reads the tasks from an XML reader and returns a vector of tasks.
     ///
-    /// # Panics
-    /// If a value can't be unescaped.
+    /// # Errors
+    /// - A value can't be unescaped.
     #[inline]
     pub fn xml_to_tasks(mut reader: Reader<&[u8]>) -> super::Result<Vec<Task>> {
         let mut tasks = vec![];
@@ -149,8 +149,8 @@ impl FilePersister for Xml {
     }
 
     #[inline]
-    fn path(&self) -> PathBuf {
-        self.path.clone()
+    fn path(&self) -> &PathBuf {
+        &self.path
     }
 
     #[inline]

@@ -49,6 +49,9 @@ impl fmt::Display for Config {
 // Methods for managing the 'config' commands
 impl Config {
     /// Manages the `.postit.toml` file using a `ConfigSubcommand` instance.
+    ///
+    /// # Errors
+    /// - Any error while doing operations on a the configuration file.
     #[inline]
     pub fn manage(subcommand: sub::Config) -> super::Result<()> {
         match subcommand {
@@ -63,21 +66,22 @@ impl Config {
 
     /// Creates the config file from the default values.
     ///
-    /// # Panics
-    /// If there is any error while creating, reading or writing the config file.
+    /// # Errors
+    /// - The path can't be obtained.
+    /// - The config file already exists at the used path.
     #[inline]
     pub fn init() -> super::Result<()> {
-        let path = &Self::path()?;
+        let path = Self::path()?;
 
         if path.exists() {
-            return Err(super::Error::FileAlreadyExists(path.clone()));
+            return Err(super::Error::FileAlreadyExists(path));
         }
 
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
         }
 
-        let mut file = fs::File::create(path)?;
+        let mut file = fs::File::create(&path)?;
         let toml = toml::to_string_pretty(&Self::default())?;
 
         file.write_all(toml.as_bytes()).map_err(|e| {
@@ -92,7 +96,8 @@ impl Config {
 
     /// Prints the value of the `POSTIT_ROOT` env var.
     ///
-    /// Displays an error message if `POSTIT_ROOT` is empty.
+    /// # Errors
+    /// - The `POSTIT_ROOT` exists but is empty.
     #[inline]
     pub fn print_env() -> super::Result<()> {
         let env = Self::env().unwrap_or_default();
@@ -108,7 +113,9 @@ impl Config {
 
     /// Prints the path of the config file.
     ///
-    /// Displays an error message if the config file is not located at the expected path.
+    /// # Errors
+    /// - The file doesn't exist at the parent path.
+    /// - The path can't be obtained from the `POSTIT_ROOT` env var.
     #[inline]
     pub fn print_path() -> super::Result<()> {
         Self::_check_path_exists()?;
@@ -122,18 +129,22 @@ impl Config {
 
     /// Deletes the config file.
     ///
+    /// # Errors
+    /// - The path can't be obtained from the `POSTIT_ROOT` env var.
+    /// - The file doesn't exist at the parent path.
+    ///
     /// # Panics
-    /// If the config file can't be deleted.
+    /// - The parent can't be obtained from the path.
     #[inline]
     pub fn remove() -> super::Result<()> {
-        let path = &Self::path()?;
+        let path = Self::path()?;
 
         if !path.exists() {
             let parent = path.parent().unwrap().to_path_buf();
             return Err(super::Error::FileDoesntExist(parent));
         }
 
-        fs::remove_file(path).map_err(|e| {
+        fs::remove_file(&path).map_err(|e| {
             eprintln!("Config file couldn't be deleted.");
             super::Error::Io(e)
         })?;
@@ -144,6 +155,10 @@ impl Config {
     }
 
     /// Displays a list of the current config values.
+    ///
+    /// # Errors
+    /// - The file doesn't exist at the parent path (displays default config too).
+    /// - The configuration can't be loaded.
     #[inline]
     pub fn list() -> super::Result<()> {
         let result = Self::_check_path_exists();
@@ -163,7 +178,10 @@ impl Config {
 
     /// Sets a value for the passed key.
     ///
-    /// Displays an error message if there are no values provided.
+    /// # Errors
+    /// - The file doesn't exist at the parent path.
+    /// - There are no values provided.
+    /// - The configuration can't be loaded.
     #[inline]
     pub fn set(args: args::ConfigSet) -> super::Result<()> {
         Self::_check_path_exists()?;
@@ -208,6 +226,9 @@ impl Config {
 impl Config {
     /// Returns the value of the `POSTIT_ROOT` environment variable, which must
     /// have a path structure.
+    ///
+    /// # Errors
+    /// - The `POSTIT_ROOT` env var is not present or has not unicode characters.
     #[inline]
     pub fn env() -> super::Result<String> {
         env::var("POSTIT_ROOT").map_err(super::Error::Env)
@@ -221,6 +242,11 @@ impl Config {
 
     /// Returns the value of the `POSTIT_ROOT` environment variable, which must
     /// have a path structure.
+    ///
+    /// # Errors
+    /// - The `POSTIT_ROOT` exists but is empty.
+    /// - The value of `POSTIT_ROOT` contains not unicode characters.
+    /// - The path from `POSTIT_ROOT` is relative.
     #[inline]
     pub fn path_from_env() -> super::Result<PathBuf> {
         let env = Self::env();
@@ -230,7 +256,7 @@ impl Config {
             Ok(v) => Ok(PathBuf::from(v)),
 
             Err(super::Error::Env(e)) => match e {
-                env::VarError::NotPresent => Self::default_config_parent(),
+                env::VarError::NotPresent => Ok(Self::default_config_parent()),
                 env::VarError::NotUnicode(msg) => Err(super::Error::NotUnicode(msg)),
             },
 
@@ -248,31 +274,34 @@ impl Config {
     /// default path of postit's generated files.
     ///
     /// # Panics
-    /// If the user's home directory can't be located.
+    /// - The user's home directory can't be located.
     #[inline]
     pub fn home() -> PathBuf {
         dirs::home_dir().expect("Couldn't locate the user's home directory")
     }
 
     /// Returns the default path of postit's config file.
-    ///
-    /// # Panics
-    /// If the path can't be created
     #[inline]
-    pub fn default_config_parent() -> super::Result<PathBuf> {
-        Ok(Self::home().join(".postit"))
+    pub fn default_config_parent() -> PathBuf {
+        Self::home().join(".postit")
     }
 
     /// Returns the path of the config file in the `POSTIT_ROOT` env var.
     ///
-    /// # Panics
-    /// If the path can't be created
+    /// # Errors
+    /// - The path can't be obtained from the `POSTIT_ROOT` env var.
     #[inline]
     pub fn path() -> super::Result<PathBuf> {
         Ok(Self::path_from_env()?.join(Self::config_file_name()))
     }
 
     /// Checks if the path exists.
+    ///
+    /// # Errors
+    /// - The file doesn't exist at the parent path.
+    ///
+    /// # Panics
+    /// - The parent can't be obtained from the path.
     #[inline]
     pub fn _check_path_exists() -> super::Result<()> {
         let path = Self::path()?;
@@ -288,8 +317,11 @@ impl Config {
     /// Obtains the path for the File instance, which is the parent path that
     /// the stores the config file.
     ///
+    /// # Errors
+    /// - The path can't be obtained.
+    ///
     /// # Panics
-    /// If the parent path can't be extracted from the configuration path.
+    /// - The parent path can't be extracted from the configuration path.
     #[inline]
     pub fn get_parent_path() -> super::Result<PathBuf> {
         Ok(Self::path()?.parent().unwrap().to_path_buf())
@@ -298,18 +330,20 @@ impl Config {
     /// Returns the path constructed from pushing the file persister path to
     /// the parent path (the one where .postit.toml is stored).
     ///
+    /// # Errors
+    /// - The path passed doesn't have a parent path.
+    ///
     /// # Panics
     /// - If the path can't be converted to str.
     /// - If the parent path can't be converted to str.
     #[inline]
     pub fn build_path<T: AsRef<Path>>(path: T) -> super::Result<PathBuf> {
-        let path_str = path.as_ref().to_str().unwrap();
+        let path = path.as_ref();
 
         let parent = Self::get_parent_path()?;
-        let parent_str = parent.to_str().unwrap();
 
-        if path_str.starts_with(parent_str) || path_str.contains(parent_str) {
-            return Ok(path.as_ref().to_path_buf());
+        if path.starts_with(&parent) {
+            return Ok(path.to_path_buf());
         }
 
         Ok(parent.join(path))
@@ -317,11 +351,12 @@ impl Config {
 
     /// Loads the config from a file or creates it if it doesn't exist.
     ///
-    /// # Panics
-    /// If the config file can't be loaded.
+    /// # Errors
+    /// - The config file can't be loaded.
+    /// - The config file can't be read.
     #[inline]
     pub fn load() -> super::Result<Self> {
-        let path = &Self::path()?;
+        let path = Self::path()?;
 
         if !path.exists() {
             return Ok(Self::default());
@@ -330,17 +365,20 @@ impl Config {
         let content = fs::read_to_string(path).map_err(|e| {
             eprintln!("Failed to read config file");
             super::Error::Io(e)
-        });
+        })?;
 
-        let config = toml::from_str(&content?)?;
+        let config = toml::from_str(&content)?;
 
         Ok(config)
     }
 
     /// Saves the config instance to a file.
     ///
-    /// # Panics
-    /// If the config file can't be saved.
+    /// # Errors
+    /// - The config path can't be obtained.
+    /// - The config file can't be created.
+    /// - The config can't be formatted to TOML.
+    /// - The config file can't be saved.
     #[inline]
     pub fn save(&self) -> super::Result<()> {
         let path = Self::path()?;

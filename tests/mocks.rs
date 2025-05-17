@@ -106,7 +106,7 @@ impl MockPath {
             Format::Xml => Self::xml(name),
         };
 
-        let path = file.path();
+        let path = file.path().to_path_buf();
 
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
@@ -133,7 +133,7 @@ impl MockPath {
             path = tmp.join(path);
         }
 
-        let file = File::get_persister(&path);
+        let file = File::get_persister(&path)?;
 
         Ok(Self { instance: file, path, _env })
     }

@@ -86,6 +86,9 @@ impl Orm {
     }
 
     /// Creates a `Orm` instance from a connection string.
+    ///
+    /// # Errors
+    /// - The database persister can't be obtained.
     #[inline]
     pub fn from<T: AsRef<str>>(conn: T) -> crate::Result<Self> {
         Ok(Self { db: Self::get_persister(conn)? })
@@ -94,7 +97,7 @@ impl Orm {
     /// Checks if the passed connection string has an Sqlite format.
     ///
     /// # Panics
-    /// In case the extension can't be converted to str.
+    /// - The extension can't be converted to `&str`.
     #[inline]
     pub fn is_sqlite(conn: &str) -> bool {
         conn.eq(":memory:")
@@ -108,7 +111,8 @@ impl Orm {
     /// a connection string.
     ///
     /// # Errors
-    /// If the path can't be converted to str.
+    /// - If the persister can't be obtained.
+    /// - If the connection string is empty.
     #[inline]
     pub fn get_persister<T: AsRef<str>>(conn: T) -> crate::Result<Box<dyn DbPersister>> {
         let conn = conn.as_ref();

@@ -43,9 +43,12 @@ impl Clone for Sqlite {
 impl Sqlite {
     /// Creates a `Sqlite` instance from a connection string.
     ///
-    /// # Panics
-    /// - If the path can't be converted to str.
+    /// # Errors
+    /// - If the path of the file can't be constructed from the Config path.
     /// - If a connection to the `SQLite` file can't be opened.
+    ///
+    /// # Panics
+    /// - The path can't be converted to &str.
     #[inline]
     pub fn from<T: AsRef<Path>>(conn: T) -> crate::Result<Self> {
         let path = Config::build_path(conn.as_ref())?;
@@ -73,8 +76,8 @@ impl Sqlite {
 
     /// Reads one row from the current statement.
     ///
-    /// # Panics
-    /// If a value can't be unwrapped.
+    /// # Errors
+    /// - A value can't be read.
     #[inline]
     pub fn read_row(&self, stmt: &Statement) -> super::Result<String> {
         let row = format!(
@@ -91,7 +94,7 @@ impl Sqlite {
     /// Resets the autoincrement value.
     ///
     /// # Errors
-    /// Returns an error if the statement can't be evaluated.
+    /// - The statement can't be evaluated.
     #[inline]
     pub fn reset_autoincrement(&self, table: &str) -> sqlite::Result<State> {
         #[rustfmt::skip]
@@ -134,7 +137,8 @@ impl DbPersister for Sqlite {
     /// Checks if a table exists.
     ///
     /// # Errors
-    /// In case the statement can't be prepared.
+    /// - The statement can't be prepared.
+    /// - The name column can't be read.
     #[inline]
     fn exists(&self) -> super::Result<bool> {
         #[rustfmt::skip]

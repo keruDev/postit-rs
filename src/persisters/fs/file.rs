@@ -68,15 +68,19 @@ impl fmt::Debug for File {
 impl File {
     /// Constructor of the `File` struct, which controls instances of structs
     /// that implement the [`FilePersister`] trait.
-    ///
-    /// # Panics
-    /// If the file name can't be extracted from the persister path.
     #[inline]
     pub fn new(file: Box<dyn FilePersister>) -> Self {
         Self { file }
     }
 
     /// Creates a `File` instance from a path.
+    ///
+    /// # Errors
+    /// - The path of the file can't be constructed from the Config path.
+    /// - The persister can't be obtained.
+    ///
+    /// # Panics
+    /// - The parent directory can't be obtained (only in case it has to be created).
     #[inline]
     pub fn from<T: AsRef<str>>(path: T) -> crate::Result<Self> {
         let file_name = Self::check_name(path.as_ref());
@@ -86,12 +90,12 @@ impl File {
             fs::create_dir_all(file_path.parent().unwrap())?;
         }
 
-        Ok(Self { file: Self::get_persister(file_path) })
+        Ok(Self { file: Self::get_persister(file_path)? })
     }
 
     /// Returns the path of the file.
     #[inline]
-    pub fn path(&self) -> PathBuf {
+    pub fn path(&self) -> &PathBuf {
         self.file.path()
     }
 
@@ -99,7 +103,10 @@ impl File {
     /// doesn't exists, the persister will get populated by the default contents.
     ///
     /// # Errors
-    /// In case the persister can't be populated with the default contents.
+    /// - The persister can't be populated with the default contents.
+    ///
+    /// # Panics
+    /// - The file name can't be obtained.
     #[inline]
     pub fn check_content(&self) -> crate::fs::Result<()> {
         let path = &self.path();
@@ -146,14 +153,17 @@ impl File {
 
     /// Returns a struct that implements the `FilePersister` trait based on the file extension.
     ///
+    /// # Errors
+    /// - The path passed is a directory (a file is expected).
+    ///
     /// # Panics
-    /// In case the file extension can't be converted to `&str`.
+    /// - The file extension can't be converted to `&str`.
     #[inline]
-    pub fn get_persister<T: AsRef<Path>>(path: T) -> Box<dyn FilePersister> {
+    pub fn get_persister<T: AsRef<Path>>(path: T) -> crate::Result<Box<dyn FilePersister>> {
         let mut file_path = path.as_ref().to_path_buf();
 
         if file_path.is_dir() {
-            eprintln!("The persister can't be a directory");
+            return Err(crate::Error::Fs(error::Error::IsDirectory));
         }
 
         let ext = file_path
@@ -165,11 +175,13 @@ impl File {
         let format = Format::from(ext);
         file_path.set_extension(format.to_str());
 
-        match format {
+        let file = match format {
             Format::Csv => Csv::new(file_path).boxed(),
             Format::Json => Json::new(file_path).boxed(),
             Format::Xml => Xml::new(file_path).boxed(),
-        }
+        };
+
+        Ok(file)
     }
 }
 
