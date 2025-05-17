@@ -13,6 +13,7 @@ use crate::traits::DbPersister;
 use crate::Action;
 
 /// Representation of a `Mongo` database.
+#[derive(Debug)]
 pub struct Mongo {
     /// URI used to connect to the `Mongo` database.
     conn_str: String,
@@ -203,6 +204,15 @@ impl DbPersister for Mongo {
         self.collection::<Task>().drop().run()?;
 
         println!("Removed the '{}' collection", self.table());
+
+        Ok(())
+    }
+
+    #[inline]
+    fn drop_database(&self) -> super::Result<()> {
+        self.db().drop().run()?;
+
+        println!("Removed the '{}' database", self.database());
 
         Ok(())
     }

@@ -1,12 +1,20 @@
 use std::ops::Not;
 
 use postit::config::Config;
-use postit::db::{Orm, Protocol, Sqlite};
+use postit::db::{Mongo, Orm, Protocol};
 use postit::models::{Task, Todo};
 use postit::traits::{DbPersister, Persister};
 use postit::Action;
 
 use crate::mocks::MockConn;
+
+#[test]
+fn error_wrap() {
+    let msg = "Error";
+    let err = postit::db::Error::wrap(msg);
+
+    assert!(matches!(err, postit::db::Error::Other(_)));
+}
 
 #[test]
 fn protocol_from() {
@@ -38,7 +46,7 @@ fn orm_fmt_debug() -> postit::Result<()> {
     let orm = Orm::new(persister);
 
     let debug_output = format!("{:?}", orm);
-    let expected_output = r#"Orm { db: "Box<dyn DbPersister>" }"#;
+    let expected_output = format!("Orm {{ db: {:?} }}", mock.conn());
 
     assert_eq!(debug_output, expected_output);
 
@@ -48,6 +56,7 @@ fn orm_fmt_debug() -> postit::Result<()> {
 #[test]
 fn is_sqlite() {
     assert!(Orm::is_sqlite(":memory:"));
+    assert!(Orm::is_sqlite("sqlite:///tasks.db"));
     assert!(Orm::is_sqlite("test.db"));
     assert!(Orm::is_sqlite("test.sqlite"));
     assert!(Orm::is_sqlite("test.sqlite3"));
@@ -66,10 +75,9 @@ fn get_persister() -> postit::Result<()> {
 }
 
 #[test]
-fn get_persister_empty() -> postit::Result<()> {
-    assert!(Orm::get_persister("").is_err());
-
-    Ok(())
+fn get_persister_empty() {
+    let result = Orm::get_persister("").unwrap_err();
+    assert!(matches!(result, postit::Error::Db(postit::db::Error::IncorrectConnectionString)));
 }
 
 #[test]
@@ -98,11 +106,44 @@ fn to_string() -> postit::Result<()> {
 }
 
 #[test]
+fn create() -> postit::Result<()> {
+    let mock = MockConn::create(Protocol::Sqlite)?;
+    let orm = Orm::from(mock.conn())?;
+
+    assert!(orm.create().is_ok());
+    assert!(mock.instance.exists().is_ok());
+
+    Ok(())
+}
+
+#[test]
 fn exists() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite)?;
     let orm = Orm::from(mock.conn())?;
 
-    assert!(orm.exists()?);
+    assert!(orm.exists().is_ok_and(|bool| bool));
+
+    Ok(())
+}
+
+#[test]
+fn view_ok() -> postit::Result<()> {
+    let mock = MockConn::create(Protocol::Sqlite)?;
+    let orm = Orm::from(mock.conn())?;
+
+    orm.save(&Todo::sample())?;
+
+    assert!(orm.view().is_ok());
+
+    Ok(())
+}
+
+#[test]
+fn view_err() -> postit::Result<()> {
+    let mock = MockConn::create(Protocol::Sqlite)?;
+    let orm = Orm::from(mock.conn())?;
+
+    assert!(orm.view().is_err());
 
     Ok(())
 }
@@ -120,8 +161,9 @@ fn save_twice() -> postit::Result<()> {
     orm.save(&todo)?;
 
     let result = orm.tasks()?;
+    let expect = todo.tasks;
 
-    assert_eq!(result, todo.tasks);
+    assert_eq!(result, expect);
 
     Ok(())
 }
@@ -136,8 +178,9 @@ fn save_and_tasks() -> postit::Result<()> {
     orm.save(&todo)?;
 
     let result = orm.tasks()?;
+    let expect = todo.tasks;
 
-    assert_eq!(result, todo.tasks);
+    assert_eq!(result, expect);
 
     Ok(())
 }
@@ -150,14 +193,15 @@ fn edit_check() -> postit::Result<()> {
     let orm = Orm::from(mock.conn())?;
     let ids = vec![2, 3];
 
-    orm.save(&todo)?;
-    orm.edit(&todo, &ids, &Action::Check)?;
+    assert!(orm.save(&todo).is_ok());
+    assert!(orm.edit(&todo, &ids, &Action::Check).is_ok());
 
-    todo.check(&ids);
+    todo.check(&ids)?;
 
     let result = orm.tasks()?;
+    let expect = todo.tasks;
 
-    assert_eq!(result, todo.tasks);
+    assert_eq!(result, expect);
 
     Ok(())
 }
@@ -170,10 +214,10 @@ fn edit_uncheck() -> postit::Result<()> {
     let orm = Orm::from(mock.conn())?;
     let ids = vec![2, 3];
 
-    orm.save(&todo)?;
-    orm.edit(&todo, &ids, &Action::Uncheck)?;
+    assert!(orm.save(&todo).is_ok());
+    assert!(orm.edit(&todo, &ids, &Action::Uncheck).is_ok());
 
-    todo.uncheck(&ids);
+    todo.uncheck(&ids)?;
 
     let result = orm.tasks()?;
 
@@ -190,11 +234,11 @@ fn edit_drop() -> postit::Result<()> {
     let orm = Orm::from(mock.conn())?;
     let ids = vec![2, 3];
 
-    orm.save(&todo)?;
-    orm.edit(&todo, &ids, &Action::Drop)?;
+    assert!(orm.save(&todo).is_ok());
+    assert!(orm.edit(&todo, &ids, &Action::Drop).is_ok());
 
-    todo.check(&ids);
-    todo.drop(&ids);
+    todo.check(&ids)?;
+    todo.drop(&ids)?;
 
     let result = orm.tasks()?;
 
@@ -206,15 +250,15 @@ fn edit_drop() -> postit::Result<()> {
 #[test]
 fn tasks() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite)?;
+    let orm = Orm::from(mock.conn())?;
     let todo = Todo::sample();
 
-    let orm = Orm::from(mock.conn())?;
-
-    orm.save(&todo)?;
+    assert!(orm.save(&todo).is_ok());
 
     let result = orm.tasks()?;
+    let expect = todo.tasks;
 
-    assert_eq!(result, todo.tasks);
+    assert_eq!(result, expect);
 
     Ok(())
 }
@@ -227,7 +271,7 @@ fn replace() -> postit::Result<()> {
 
     let orm = Orm::from(mock.conn())?;
 
-    orm.replace(&todo)?;
+    assert!(orm.replace(&todo).is_ok());
 
     let result = orm.tasks()?;
     let expect = todo.tasks;
@@ -238,11 +282,22 @@ fn replace() -> postit::Result<()> {
 }
 
 #[test]
-fn clean() -> postit::Result<()> {
+fn clean_empty() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite)?;
     let orm = Orm::from(mock.conn())?;
 
-    orm.clean()?;
+    assert!(orm.clean().is_ok());
+
+    Ok(())
+}
+
+#[test]
+fn clean_not_empty() -> postit::Result<()> {
+    let mock = MockConn::create(Protocol::Sqlite)?;
+    let orm = Orm::from(mock.conn())?;
+    orm.save(&Todo::sample())?;
+
+    assert!(orm.clean().is_ok());
 
     let result = orm.tasks()?;
     let expect = Vec::new();
@@ -254,12 +309,13 @@ fn clean() -> postit::Result<()> {
 
 #[test]
 fn remove() -> postit::Result<()> {
-    let sqlite = Sqlite::from("test_tasks.db")?;
-    let orm = Orm::from(sqlite.conn())?;
+    let mongo = Mongo::from("mongodb://localhost:27017")?;
+    mongo.create()?;
 
-    orm.remove()?;
+    let orm = Orm::from(mongo.conn())?;
 
-    assert!(std::path::PathBuf::from(sqlite.conn()).exists().not());
+    assert!(orm.remove().is_ok());
+    assert!(mongo.exists().is_ok_and(|bool| !bool));
 
     Ok(())
 }

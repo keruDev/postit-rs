@@ -7,6 +7,14 @@ use postit::config::Config;
 use crate::mocks::{MockConfig, MockEnvVar};
 
 #[test]
+fn error_wrap() {
+    let msg = "Error";
+    let err = postit::config::Error::wrap(msg);
+
+    assert!(matches!(err, postit::config::Error::Other(_)));
+}
+
+#[test]
 fn fmt_display() -> postit::Result<()> {
     let config = Config {
         persister: "tasks.json".to_string(),
@@ -83,7 +91,7 @@ fn path_not_exists_output() -> postit::Result<()> {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
 
-    assert!(output.status.success());
+    assert!(output.status.success().not());
     assert!(stderr.contains(path.parent().unwrap().to_str().unwrap()));
 
     Ok(())
@@ -174,6 +182,13 @@ fn manage_list() -> postit::Result<()> {
 }
 
 #[test]
+fn manage_list_err() {
+    let _env = MockEnvVar::new().rm(["POSTIT_ROOT"]);
+
+    assert!(Config::manage(sub::Config::List).is_err());
+}
+
+#[test]
 fn manage_list_output() -> postit::Result<()> {
     let _mock = MockConfig::new()?;
 
@@ -193,20 +208,6 @@ drop_after_copy: false";
 
     assert!(output.status.success());
     assert!(stdout.trim().contains(expect.trim()));
-
-    Ok(())
-}
-
-#[test]
-fn manage_set_all_none() -> postit::Result<()> {
-    let args = args::ConfigSet {
-        persister: None,
-        force_drop: None,
-        force_copy: None,
-        drop_after_copy: None,
-    };
-
-    assert!(Config::manage(sub::Config::Set(args)).is_err());
 
     Ok(())
 }
@@ -264,6 +265,40 @@ fn manage_set_all() -> postit::Result<()> {
 }
 
 #[test]
+fn manage_set_err_path_doesnt_exist() -> postit::Result<()> {
+    let args = args::ConfigSet {
+        persister: None,
+        force_drop: None,
+        force_copy: None,
+        drop_after_copy: None,
+    };
+
+    let result = Config::manage(sub::Config::Set(args)).unwrap_err();
+
+    assert!(matches!(result, postit::config::Error::FileDoesntExist(_)));
+
+    Ok(())
+}
+
+#[test]
+fn manage_set_err_none_set() -> postit::Result<()> {
+    let _mock = MockConfig::new()?;
+
+    let args = args::ConfigSet {
+        persister: None,
+        force_drop: None,
+        force_copy: None,
+        drop_after_copy: None,
+    };
+
+    let result = Config::manage(sub::Config::Set(args)).unwrap_err();
+
+    assert!(matches!(result, postit::config::Error::EmptySetArgs));
+
+    Ok(())
+}
+
+#[test]
 fn default() -> postit::Result<()> {
     let config = Config::default();
 
@@ -273,6 +308,27 @@ fn default() -> postit::Result<()> {
     assert!(config.drop_after_copy.not());
 
     Ok(())
+}
+
+#[test]
+fn path_from_env_err_not_unicode() {
+    use std::os::unix::ffi::OsStrExt;
+
+    let value = std::ffi::OsStr::from_bytes(b"\xFFinvalid");
+    let _env = MockEnvVar::new().set([("POSTIT_ROOT", value)]);
+
+    let err = Config::path_from_env().unwrap_err();
+
+    assert!(matches!(err, postit::config::Error::NotUnicode(_)));
+}
+
+#[test]
+fn path_from_env_err_relative_path() {
+    let _env = MockEnvVar::new().set([("POSTIT_ROOT", ".")]);
+
+    let err = Config::path_from_env().unwrap_err();
+
+    assert!(matches!(err, postit::config::Error::InvalidPathEnvVar(_)));
 }
 
 #[test]

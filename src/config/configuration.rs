@@ -70,7 +70,7 @@ impl Config {
         let path = &Self::path()?;
 
         if path.exists() {
-            return Err(super::Error::FileAlreadyExists(path.to_owned()));
+            return Err(super::Error::FileAlreadyExists(path.clone()));
         }
 
         if let Some(parent) = path.parent() {
@@ -129,8 +129,8 @@ impl Config {
         let path = &Self::path()?;
 
         if !path.exists() {
-            let parent = path.parent().unwrap();
-            return Err(super::Error::FileDoesntExist(parent.to_owned()));
+            let parent = path.parent().unwrap().to_path_buf();
+            return Err(super::Error::FileDoesntExist(parent));
         }
 
         fs::remove_file(path).map_err(|e| {
@@ -231,9 +231,7 @@ impl Config {
 
             Err(super::Error::Env(e)) => match e {
                 env::VarError::NotPresent => Self::default_config_parent(),
-                env::VarError::NotUnicode(msg) => {
-                    Err(super::Error::NotUnicode(msg.into_string().unwrap()))
-                }
+                env::VarError::NotUnicode(msg) => Err(super::Error::NotUnicode(msg)),
             },
 
             Err(_) => unreachable!(),
@@ -280,8 +278,8 @@ impl Config {
         let path = Self::path()?;
 
         if !path.exists() {
-            let parent = path.parent().unwrap();
-            return Err(super::Error::FileDoesntExist(parent.to_owned()));
+            let parent = path.parent().unwrap().to_path_buf();
+            return Err(super::Error::FileDoesntExist(parent));
         }
 
         Ok(())
@@ -294,7 +292,7 @@ impl Config {
     /// If the parent path can't be extracted from the configuration path.
     #[inline]
     pub fn get_parent_path() -> super::Result<PathBuf> {
-        Ok(Self::path()?.parent().unwrap().to_owned())
+        Ok(Self::path()?.parent().unwrap().to_path_buf())
     }
 
     /// Returns the path constructed from pushing the file persister path to

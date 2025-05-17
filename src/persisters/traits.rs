@@ -1,6 +1,6 @@
 //! Contains traits related to data persisting actions, such as reading or writing.
 
-use std::fmt;
+use std::fmt::{self, Debug};
 use std::fs::File;
 use std::path::PathBuf;
 
@@ -128,7 +128,7 @@ impl PartialEq for Box<dyn FilePersister> {
 }
 
 /// Includes basic methods for data management in a database.
-pub trait DbPersister {
+pub trait DbPersister: Debug {
     /// Returns the database instance inside a [`Box`] pointer.
     fn boxed(self) -> Box<dyn DbPersister>;
 
@@ -185,6 +185,12 @@ pub trait DbPersister {
     /// # Errors
     /// Returns an error if the table can't be dropped.
     fn drop_table(&self) -> db::Result<()>;
+
+    /// Drops the specified database.
+    ///
+    /// # Errors
+    /// Returns an error if the database can't be dropped.
+    fn drop_database(&self) -> db::Result<()>;
 
     /// Deletes all tasks from the persister.
     ///

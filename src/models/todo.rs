@@ -24,7 +24,7 @@ impl From<Task> for Vec<Task> {
 impl From<&Task> for Vec<Task> {
     #[inline]
     fn from(task: &Task) -> Self {
-        vec![task.to_owned()]
+        vec![task.clone()]
     }
 }
 
@@ -72,13 +72,15 @@ impl Todo {
 
     /// Shows the current list of tasks.
     #[inline]
-    pub fn view(&self) {
+    pub fn view(&self) -> crate::Result<()> {
         if self.tasks.is_empty() {
-            println!("There are no tasks to print");
-            return;
+            let err = "There are no tasks to print";
+            return Err(crate::Error::wrap(err));
         }
 
         self.tasks.iter().for_each(|task| println!("{task}"));
+
+        Ok(())
     }
 
     /// Adds a task to the task list.
@@ -89,7 +91,7 @@ impl Todo {
 
     /// Changes values of tasks based on the `set` subcommand used.
     #[inline]
-    pub fn set(&mut self, cmnd: &sub::Set) {
+    pub fn set(&mut self, cmnd: &sub::Set) -> crate::Result<()> {
         match cmnd {
             sub::Set::Priority(args) => self.set_priority(&args.ids, &args.priority),
             sub::Set::Content(args) => self.set_content(&args.ids, &args.content),
@@ -98,40 +100,44 @@ impl Todo {
 
     /// Changes the `priority` property of tasks (selected by using `ids`).
     #[inline]
-    pub fn set_priority(&mut self, ids: &[u32], priority: &Priority) {
+    pub fn set_priority(&mut self, ids: &[u32], priority: &Priority) -> crate::Result<()> {
         if self.tasks.is_empty() {
-            eprintln!("There are no tasks to edit");
-            return;
+            let err = "There are no tasks to edit";
+            return Err(crate::Error::wrap(err));
         }
 
         for task in self.get_mut(ids) {
             task.priority = priority.clone();
         }
+
+        Ok(())
     }
 
     /// Changes the `content` property of tasks (selected by using `ids`).
     #[inline]
-    pub fn set_content(&mut self, ids: &[u32], content: &str) {
+    pub fn set_content(&mut self, ids: &[u32], content: &str) -> crate::Result<()> {
         if self.tasks.is_empty() {
-            eprintln!("There are no tasks to edit");
-            return;
+            let err = "There are no tasks to edit";
+            return Err(crate::Error::wrap(err));
         }
 
         for task in self.get_mut(ids) {
             task.content = String::from(content);
         }
+
+        Ok(())
     }
 
     /// Marks a task as checked.
     /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     #[inline]
-    pub fn check(&mut self, ids: &[u32]) -> Vec<u32> {
+    pub fn check(&mut self, ids: &[u32]) -> crate::Result<Vec<u32>> {
         if self.tasks.is_empty() {
-            eprintln!("There are no tasks to check");
-            return Vec::new();
+            let err = "There are no tasks to check";
+            return Err(crate::Error::wrap(err));
         }
 
-        let mut changed_ids = Vec::<u32>::new();
+        let mut changed_ids = vec![];
 
         for task in self.get_mut(ids) {
             match task.check() {
@@ -140,19 +146,19 @@ impl Todo {
             }
         }
 
-        changed_ids
+        Ok(changed_ids)
     }
 
     /// Marks a task as unchecked.
     /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     #[inline]
-    pub fn uncheck(&mut self, ids: &[u32]) -> Vec<u32> {
+    pub fn uncheck(&mut self, ids: &[u32]) -> crate::Result<Vec<u32>> {
         if self.tasks.is_empty() {
-            eprintln!("There are no tasks to uncheck");
-            return Vec::new();
+            let err = "There are no tasks to uncheck";
+            return Err(crate::Error::wrap(err));
         }
 
-        let mut changed_ids = Vec::<u32>::new();
+        let mut changed_ids = vec![];
 
         for task in self.get_mut(ids) {
             match task.uncheck() {
@@ -161,20 +167,20 @@ impl Todo {
             }
         }
 
-        changed_ids
+        Ok(changed_ids)
     }
 
     /// Drops a task from the list.
     /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
     #[inline]
-    pub fn drop(&mut self, ids: &[u32]) -> Vec<u32> {
+    pub fn drop(&mut self, ids: &[u32]) -> crate::Result<Vec<u32>> {
         if self.tasks.is_empty() {
-            eprintln!("There are no tasks to drop");
-            return Vec::new();
+            let err = "There are no tasks to drop";
+            return Err(crate::Error::wrap(err));
         }
 
         let force_drop = Config::load().unwrap().force_drop;
-        let mut changed_ids = Vec::<u32>::new();
+        let mut changed_ids = vec![];
 
         self.tasks.retain(|task| {
             let id_exists = ids.contains(&task.id);
@@ -200,6 +206,6 @@ impl Todo {
             !is_retained
         });
 
-        changed_ids
+        Ok(changed_ids)
     }
 }

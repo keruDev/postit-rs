@@ -94,7 +94,7 @@ impl Xml {
     /// If a value can't be unescaped.
     #[inline]
     pub fn xml_to_tasks(mut reader: Reader<&[u8]>) -> super::Result<Vec<Task>> {
-        let mut tasks = Vec::<Task>::new();
+        let mut tasks = vec![];
         let mut task = None::<Task>;
 
         loop {
@@ -169,6 +169,7 @@ impl FilePersister for Xml {
     #[inline]
     fn open(&self) -> super::Result<fs::File> {
         let file = fs::OpenOptions::new()
+            .read(true)
             .write(true)
             .create(true)
             .truncate(true)

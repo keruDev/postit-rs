@@ -9,7 +9,7 @@ use postit::models::{Priority, Task, Todo};
 use postit::traits::Persister;
 use postit::{Cli, Command, Postit};
 
-use crate::mocks::{MockConfig, MockConn, MockEnvVar, MockPath};
+use crate::mocks::{MockConfig, MockConn, MockPath};
 
 fn fakes(mock: &MockPath) -> postit::Result<(Box<dyn Persister>, Todo)> {
     let persister = Postit::get_persister(Some(mock.to_string()))?;
@@ -62,25 +62,21 @@ fn get_persister_none() -> postit::Result<()> {
 }
 
 #[test]
-fn example_no_panic() -> postit::Result<()> {
+fn example() {
     let cli = Cli {
         command: Command::Example(args::Example { subcommand: sub::Example::Add }),
     };
 
-    Postit::run(cli)?;
-
-    Ok(())
+    assert!(Postit::run(cli).is_ok());
 }
 
 #[test]
-fn flag_no_panic() -> postit::Result<()> {
+fn flag() {
     let cli = Cli {
         command: Command::Flag(args::Flag { subcommand: sub::Flag::Persister }),
     };
 
-    Postit::run(cli)?;
-
-    Ok(())
+    assert!(Postit::run(cli).is_ok());
 }
 
 #[test]
@@ -92,7 +88,7 @@ fn view() -> postit::Result<()> {
         command: Command::View(args::Persister { persister: Some(file.to_string()) }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
     let (expected_file, expected_todo) = expected(&mock)?;
 
@@ -117,7 +113,7 @@ fn add() -> postit::Result<()> {
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
     todo.add(Task::from(&line));
     file.save(&todo)?;
@@ -148,7 +144,7 @@ fn set_priority() -> postit::Result<()> {
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
     let tasks = todo.get_mut(&ids);
 
@@ -184,7 +180,7 @@ fn set_content() -> postit::Result<()> {
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
     let tasks = todo.get_mut(&ids);
 
@@ -203,6 +199,23 @@ fn set_content() -> postit::Result<()> {
 }
 
 #[test]
+fn set_err() -> postit::Result<()> {
+    let cli = Cli {
+        command: Command::Set(args::Set {
+            persister: Some("test.txt".to_string()),
+            subcommand: sub::Set::Content(args::SetContent {
+                content: String::from("New task"),
+                ids: vec![2, 3],
+            }),
+        }),
+    };
+
+    assert!(Postit::run(cli).is_err());
+
+    Ok(())
+}
+
+#[test]
 fn check() -> postit::Result<()> {
     let mock = MockPath::create(Format::Csv)?;
     let ids = vec![2, 3];
@@ -211,13 +224,13 @@ fn check() -> postit::Result<()> {
     let cli = Cli {
         command: Command::Check(args::Edit {
             persister: Some(file.to_string()),
-            ids: ids.to_owned(),
+            ids: ids.clone(),
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
-    todo.check(&ids);
+    todo.check(&ids)?;
     file.save(&todo)?;
 
     let (expected_file, expected_todo) = expected(&mock)?;
@@ -237,19 +250,33 @@ fn uncheck() -> postit::Result<()> {
     let cli = Cli {
         command: Command::Uncheck(args::Edit {
             persister: Some(file.to_string()),
-            ids: ids.to_owned(),
+            ids: ids.clone(),
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
-    todo.check(&ids);
+    todo.check(&ids)?;
     file.save(&todo)?;
 
     let (expected_file, expected_todo) = expected(&mock)?;
 
     assert_eq!(todo, expected_todo);
     assert_eq!(file.tasks()?, expected_file.tasks()?);
+
+    Ok(())
+}
+
+#[test]
+fn edit_err() -> postit::Result<()> {
+    let file = "fake.csv";
+    let ids = vec![2, 3];
+
+    let cli = Cli {
+        command: Command::Check(args::Edit { persister: Some(file.to_string()), ids }),
+    };
+
+    assert!(Postit::run(cli).is_err());
 
     Ok(())
 }
@@ -267,13 +294,13 @@ fn drop_no_force_drop() -> postit::Result<()> {
     let cli = Cli {
         command: Command::Drop(args::Edit {
             persister: Some(file.to_string()),
-            ids: ids.to_owned(),
+            ids: ids.clone(),
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
-    todo.check(&ids);
+    todo.check(&ids)?;
     file.save(&todo)?;
 
     let (expected_file, expected_todo) = expected(&mock)?;
@@ -298,13 +325,13 @@ fn drop_force() -> postit::Result<()> {
     let cli = Cli {
         command: Command::Drop(args::Edit {
             persister: Some(file.to_string()),
-            ids: ids.to_owned(),
+            ids: ids.clone(),
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
-    todo.check(&ids);
+    todo.check(&ids)?;
     file.save(&todo)?;
 
     let (expected_file, expected_todo) = expected(&mock)?;
@@ -332,7 +359,7 @@ fn copy() -> postit::Result<()> {
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
     let mock_right = MockPath::from(right_path)?;
 
@@ -357,7 +384,7 @@ fn copy_same_paths() -> postit::Result<()> {
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_err());
 
     Ok(())
 }
@@ -376,7 +403,7 @@ fn copy_no_left_path() -> postit::Result<()> {
 
     drop(left);
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_err());
 
     Ok(())
 }
@@ -397,7 +424,7 @@ fn copy_path_exists() -> postit::Result<()> {
         }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_err());
 
     Ok(())
 }
@@ -419,8 +446,7 @@ fn copy_drop_after_copy() -> postit::Result<()> {
         }),
     };
 
-    Postit::run(cli)?;
-
+    assert!(Postit::run(cli).is_ok());
     assert!(left.path().exists().not());
 
     Ok(())
@@ -434,7 +460,7 @@ fn sample() -> postit::Result<()> {
         command: Command::Sample(args::Persister { persister: Some(mock.to_string()) }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
     let file = File::from(mock.to_string())?;
 
@@ -454,7 +480,7 @@ fn clean() -> postit::Result<()> {
         command: Command::Clean(args::Persister { persister: Some(mock.to_string()) }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
     let file = File::from(mock.to_string())?;
 
@@ -474,7 +500,7 @@ fn remove() -> postit::Result<()> {
         command: Command::Remove(args::Persister { persister: Some(mock.to_string()) }),
     };
 
-    Postit::run(cli)?;
+    assert!(Postit::run(cli).is_ok());
 
     assert!(mock.path().exists().not());
 
@@ -483,20 +509,15 @@ fn remove() -> postit::Result<()> {
 
 #[test]
 fn config() -> postit::Result<()> {
-    let home = Config::home();
-    let tmp = home.join("tmp");
-
-    let _env = MockEnvVar::new().set([("POSTIT_ROOT", tmp)]);
+    let mock = MockConfig::new()?;
+    Config::remove()?;
 
     let cli = Cli {
         command: Command::Config(args::Config { subcommand: sub::Config::Init }),
     };
 
-    Postit::run(cli)?;
-
-    assert!(Config::path()?.exists());
-
-    Config::remove()?;
+    assert!(Postit::run(cli).is_ok());
+    assert!(mock.path.exists());
 
     Ok(())
 }

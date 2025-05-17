@@ -72,7 +72,7 @@ impl fmt::Debug for Orm {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Orm")
-            .field("db", &"Box<dyn DbPersister>")
+            .field("db", &self.to_string())
             .finish()
     }
 }
@@ -126,8 +126,8 @@ impl Orm {
         let protocol = parts[0];
 
         match Protocol::from(protocol) {
-            Protocol::Sqlite => Ok(Sqlite::from(conn)?.boxed()),
             Protocol::Mongo | Protocol::MongoSrv => Ok(Mongo::from(conn)?.boxed()),
+            Protocol::Sqlite => unreachable!(),
         }
     }
 }
@@ -161,7 +161,7 @@ impl Persister for Orm {
 
     #[inline]
     fn view(&self) -> crate::Result<()> {
-        Todo::new(self.tasks()?).view();
+        Todo::new(self.tasks()?).view()?;
 
         Ok(())
     }
@@ -188,7 +188,7 @@ impl Persister for Orm {
             });
         }
 
-        let last = todo.tasks.last().unwrap().to_owned();
+        let last = todo.tasks.last().unwrap().clone();
         let task = Todo::new(last);
 
         self.db.insert(&task).map_err(|e| {
@@ -242,6 +242,10 @@ impl Persister for Orm {
         self.db.drop_table().map_err(|e| {
             eprintln!("Can't drop the table");
             crate::Error::Db(e)
-        })
+        })?;
+
+        print!("Removed the '{}' table from '{}'", self.db.table(), self.db.conn());
+
+        Ok(())
     }
 }

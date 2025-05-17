@@ -202,10 +202,14 @@ impl MockConn {
     }
 
     pub fn create(protocol: Protocol) -> postit::Result<Self> {
-        match protocol {
+        let mock = match protocol {
             Protocol::Sqlite => Self::sqlite(),
             Protocol::Mongo | Protocol::MongoSrv => Self::mongo(),
-        }
+        }?;
+
+        mock.instance.create()?;
+
+        Ok(mock)
     }
 
     pub fn sqlite() -> postit::Result<Self> {
@@ -219,7 +223,11 @@ impl MockConn {
 
 impl Drop for MockConn {
     fn drop(&mut self) {
-        self.instance.drop_table().unwrap();
+        if Orm::is_sqlite(&self.instance.conn()) {
+            self.instance.drop_database().unwrap()
+        } else {
+            self.instance.drop_table().unwrap()
+        }
     }
 }
 

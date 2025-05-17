@@ -56,6 +56,7 @@ impl FilePersister for Json {
     #[inline]
     fn open(&self) -> super::Result<fs::File> {
         let file = fs::OpenOptions::new()
+            .read(true)
             .write(true)
             .create(true)
             .truncate(true)

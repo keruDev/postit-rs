@@ -1,5 +1,3 @@
-use std::ops::Not;
-
 use postit::db::{Mongo, Protocol};
 use postit::models::Todo;
 use postit::traits::DbPersister;
@@ -42,8 +40,9 @@ fn count_table_doesnt_exist() -> postit::Result<()> {
 #[test]
 fn exists() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Mongo)?;
+    let mongo = Mongo::from(mock.conn())?;
 
-    assert!(Mongo::from(mock.conn())?.exists()?);
+    assert!(mongo.exists().is_ok_and(|bool| bool));
 
     Ok(())
 }
@@ -96,7 +95,9 @@ fn create() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.create()?;
 
-    assert!(Mongo::from(mock.conn())?.exists()?);
+    let mongo = Mongo::from(mock.conn())?;
+
+    assert!(mongo.exists().is_ok_and(|bool| bool));
 
     Ok(())
 }
@@ -124,7 +125,7 @@ fn update_check() -> postit::Result<()> {
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, &Action::Check)?;
 
-    todo.check(&ids);
+    todo.check(&ids)?;
 
     let result = mock.instance.tasks()?;
 
@@ -142,7 +143,7 @@ fn update_uncheck() -> postit::Result<()> {
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, &Action::Uncheck)?;
 
-    todo.uncheck(&ids);
+    todo.uncheck(&ids)?;
 
     let result = mock.instance.tasks()?;
 
@@ -156,7 +157,7 @@ fn update_set_content() -> postit::Result<()> {
     let ids = vec![2, 3];
 
     let mut todo = Todo::sample();
-    todo.set_content(&ids, "test");
+    todo.set_content(&ids, "test")?;
 
     let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.insert(&todo)?;
@@ -174,7 +175,7 @@ fn update_set_priority() -> postit::Result<()> {
     let ids = vec![2, 3];
 
     let mut todo = Todo::sample();
-    todo.set_priority(&ids, &postit::models::Priority::High);
+    todo.set_priority(&ids, &postit::models::Priority::High)?;
 
     let mock = MockConn::create(Protocol::Mongo)?;
     mock.instance.insert(&todo)?;
@@ -196,8 +197,8 @@ fn update_delete() -> postit::Result<()> {
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, &Action::Drop)?;
 
-    todo.check(&ids);
-    todo.drop(&ids);
+    todo.check(&ids)?;
+    todo.drop(&ids)?;
 
     let result = mock.instance.tasks()?;
 
@@ -210,15 +211,24 @@ fn update_delete() -> postit::Result<()> {
 fn drop_table() -> postit::Result<()> {
     // Doesn't use mocks because of conflicts with the Drop trait.
     let mongo = Mongo::from("mongodb://localhost:27017")?;
-    mongo.drop_table()?;
 
-    assert!(mongo.exists()?.not());
+    assert!(mongo.drop_table().is_ok());
+    assert!(mongo.exists().is_ok_and(|bool| !bool));
 
     Ok(())
 }
 
 #[test]
-fn tasks() -> postit::Result<()> {
+fn drop_database() -> postit::Result<()> {
+    let mongo = Mongo::from("mongodb://localhost:27017")?;
+
+    assert!(mongo.drop_database().is_ok());
+
+    Ok(())
+}
+
+#[test]
+fn tasks_ok() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Mongo)?;
     let todo = Todo::sample();
 
@@ -226,6 +236,16 @@ fn tasks() -> postit::Result<()> {
     mongo.insert(&todo)?;
 
     assert_eq!(todo.tasks, mongo.tasks()?);
+
+    Ok(())
+}
+
+#[test]
+fn tasks_err() -> postit::Result<()> {
+    let mock = MockConn::create(Protocol::Mongo)?;
+    mock.instance.drop_table()?;
+
+    assert!(matches!(mock.instance.tasks().unwrap_err(), postit::db::Error::Other(_)));
 
     Ok(())
 }

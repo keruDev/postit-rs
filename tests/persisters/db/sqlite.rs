@@ -10,6 +10,20 @@ use postit::Action;
 use crate::mocks::MockConn;
 
 #[test]
+fn fmt_debug() -> postit::Result<()> {
+    let mock = MockConn::create(Protocol::Sqlite)?;
+    let sqlite = Sqlite::from(mock.conn())?;
+
+    let result = format!("{:?}", sqlite);
+    let expect =
+        format!("Sqlite {{ conn_str: {:?}, connection: \"[connection omitted]\" }}", sqlite.conn());
+
+    assert_eq!(result, expect);
+
+    Ok(())
+}
+
+#[test]
 fn clone() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite)?;
 
@@ -47,8 +61,9 @@ fn count_table_doesnt_exist() -> postit::Result<()> {
 #[test]
 fn exists() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite)?;
+    let sqlite = Sqlite::from(mock.conn())?;
 
-    assert!(Sqlite::from(mock.conn())?.exists()?);
+    assert!(sqlite.exists().is_ok_and(|bool| bool));
 
     Ok(())
 }
@@ -118,7 +133,9 @@ fn create() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite)?;
     mock.instance.create()?;
 
-    assert!(Sqlite::from(mock.conn())?.exists()?);
+    let sqlite = Sqlite::from(mock.conn())?;
+
+    assert!(sqlite.exists().is_ok_and(|bool| bool));
 
     Ok(())
 }
@@ -146,7 +163,7 @@ fn update_check() -> postit::Result<()> {
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, &Action::Check)?;
 
-    todo.check(&ids);
+    todo.check(&ids)?;
 
     let result = mock.instance.tasks()?;
 
@@ -164,7 +181,7 @@ fn update_uncheck() -> postit::Result<()> {
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, &Action::Uncheck)?;
 
-    todo.uncheck(&ids);
+    todo.uncheck(&ids)?;
 
     let result = mock.instance.tasks()?;
 
@@ -178,7 +195,7 @@ fn update_set_content() -> postit::Result<()> {
     let ids = vec![2, 3];
 
     let mut todo = Todo::sample();
-    todo.set_content(&ids, "test");
+    todo.set_content(&ids, "test")?;
 
     let mock = MockConn::create(Protocol::Sqlite)?;
     mock.instance.insert(&todo)?;
@@ -196,7 +213,7 @@ fn update_set_priority() -> postit::Result<()> {
     let ids = vec![2, 3];
 
     let mut todo = Todo::sample();
-    todo.set_priority(&ids, &postit::models::Priority::High);
+    todo.set_priority(&ids, &postit::models::Priority::High)?;
 
     let mock = MockConn::create(Protocol::Sqlite)?;
     mock.instance.insert(&todo)?;
@@ -218,8 +235,8 @@ fn update_delete() -> postit::Result<()> {
     mock.instance.insert(&todo)?;
     mock.instance.update(&todo, &ids, &Action::Drop)?;
 
-    todo.check(&ids);
-    todo.drop(&ids);
+    todo.check(&ids)?;
+    todo.drop(&ids)?;
 
     let result = mock.instance.tasks()?;
 
@@ -230,9 +247,19 @@ fn update_delete() -> postit::Result<()> {
 
 #[test]
 fn drop_table() -> postit::Result<()> {
+    let mock = MockConn::create(Protocol::Sqlite)?;
+    mock.instance.drop_table()?;
+
+    assert!(mock.instance.exists().is_ok_and(|bool| !bool));
+
+    Ok(())
+}
+
+#[test]
+fn drop_database() -> postit::Result<()> {
     // Doesn't use mocks because of conflicts with the Drop trait.
     let sqlite = Sqlite::from("test_tasks.db")?;
-    sqlite.drop_table()?;
+    sqlite.drop_database()?;
 
     assert!(std::path::PathBuf::from(sqlite.conn()).exists().not());
 
@@ -240,7 +267,7 @@ fn drop_table() -> postit::Result<()> {
 }
 
 #[test]
-fn tasks() -> postit::Result<()> {
+fn tasks_ok() -> postit::Result<()> {
     let mock = MockConn::create(Protocol::Sqlite)?;
     let todo = Todo::sample();
 
@@ -248,6 +275,16 @@ fn tasks() -> postit::Result<()> {
     sqlite.insert(&todo)?;
 
     assert_eq!(todo.tasks, sqlite.tasks()?);
+
+    Ok(())
+}
+
+#[test]
+fn tasks_err() -> postit::Result<()> {
+    let mock = MockConn::create(Protocol::Sqlite)?;
+    mock.instance.drop_table()?;
+
+    assert!(mock.instance.tasks().is_err());
 
     Ok(())
 }
