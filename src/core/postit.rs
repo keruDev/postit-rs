@@ -28,7 +28,7 @@ impl Postit {
     /// Runs `Postit` commands based on the commands and arguments provided.
     ///
     /// # Errors
-    /// If there is any error while operating a persister.
+    /// - Any error while doing operations on a persister.
     #[inline]
     pub fn run(cli: Cli) -> super::Result<()> {
         match cli.command {
@@ -59,6 +59,9 @@ impl Postit {
     /// If the value of `persister` is:
     /// - `Some`: returns itself.
     /// - `None`: returns the persister stored in the config file.
+    ///
+    /// # Errors
+    /// - The persister can't be obtained.
     #[inline]
     pub fn get_persister<T>(persister: Option<T>) -> crate::Result<Box<dyn Persister>>
     where
@@ -162,9 +165,9 @@ impl Postit {
     /// Copies the contents of a persister to another.
     ///
     /// # Errors
-    /// - If both persisters are the same.
-    /// - If the left persister has no tasks.
-    /// - If the right persister has tasks.    
+    /// - Both persisters are the same.
+    /// - The left persister has no tasks.
+    /// - The right persister has tasks.    
     fn copy(args: &args::Copy) -> super::Result<()> {
         if args.left == args.right {
             let msg = "Both persisters are the same";

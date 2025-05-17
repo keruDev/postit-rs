@@ -44,8 +44,6 @@
     clippy::struct_excessive_bools,
     // TMP
     clippy::expect_used,
-    clippy::missing_errors_doc,
-    clippy::missing_panics_doc,
 )]
 
 pub mod config;

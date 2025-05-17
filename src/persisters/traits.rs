@@ -19,49 +19,58 @@ pub trait Persister: fmt::Debug {
     /// The value that created the `Persister` instance.
     fn to_string(&self) -> String;
 
-    /// Creates the database instance.
+    /// Creates the persister instance.
+    ///
+    /// # Errors
+    /// - The persister can't be created.
     fn create(&self) -> crate::Result<()>;
 
     /// Checks wether a persister exists or not.
+    ///
+    /// # Errors
+    /// - The persister's existence can't be checked.
     fn exists(&self) -> crate::Result<bool>;
 
     /// Displays the tasks stored at the persister.
+    ///
+    /// # Errors
+    /// - The tasks to display can't be obtained.
     fn view(&self) -> crate::Result<()>;
 
     /// Returns the tasks collected from the persister's contents.
     ///
     /// # Errors
-    /// If the tasks can't be extracted from the persister.
+    /// - The tasks can't be extracted from the persister.
     fn tasks(&self) -> crate::Result<Vec<Task>>;
 
     /// Edits a persister by managing an [`Action`] variant.
     ///
     /// # Errors
-    /// Returns an error if the persister can't be edited.
+    /// - The persister can't be edited.
     fn edit(&self, todo: &Todo, ids: &[u32], action: &Action) -> crate::Result<()>;
 
     /// Saves a Todo instance as the persister's content.
     ///
     /// # Errors
-    /// Returns an error if the persister's contents can't be saved.
+    /// - The persister's contents can't be saved.
     fn save(&self, todo: &Todo) -> crate::Result<()>;
 
     /// Replaces the current data with a new [`Todo`] instance.
     ///
     /// # Errors
-    /// Returns an error if the persister's contents can't be replaced.
+    /// - The persister's contents can't be replaced.
     fn replace(&self, todo: &Todo) -> crate::Result<()>;
 
     /// Deletes all tasks from the persister.
     ///
     /// # Errors
-    /// Returns an error if the persister can't be cleaned.
+    /// - The persister can't be cleaned.
     fn clean(&self) -> crate::Result<()>;
 
     /// Removes a persister completely (file or table).
     ///
     /// # Errors
-    /// Returns an error if the persister can't be removed.
+    /// - The persister can't be removed.
     fn remove(&self) -> crate::Result<()>;
 }
 
@@ -80,12 +89,12 @@ impl Clone for Box<dyn Persister> {
 }
 
 /// Includes basic methods for data management in a file.
-pub trait FilePersister {
+pub trait FilePersister: Debug {
     /// Returns the file instance inside a [`Box`] pointer.
     fn boxed(self) -> Box<dyn FilePersister>;
 
     /// Returns the file's path.
-    fn path(&self) -> PathBuf;
+    fn path(&self) -> &PathBuf;
 
     /// Returns a String used to initialize the file.
     fn default(&self) -> String;
@@ -93,30 +102,31 @@ pub trait FilePersister {
     /// Returns the tasks collected from the file's contents.
     ///
     /// # Errors
-    /// If the tasks can't be extracted from the file.
+    /// - The tasks can't be extracted from the file.
     fn tasks(&self) -> fs::Result<Vec<Task>>;
 
     /// Grants access to an open file.
     ///
     /// # Errors
-    /// Returns an error if the file can't be opened.
+    /// - The file can't be opened.
     fn open(&self) -> fs::Result<File>;
 
     /// Writes into a file.
+    ///
     /// # Errors
-    /// Returns an error if tasks can't be written.
+    /// - Tasks can't be written.
     fn write(&self, todo: &Todo) -> fs::Result<()>;
 
     /// Deletes all tasks from the persister.
     ///
     /// # Errors
-    /// Returns an error if the file can't be cleaned.
+    /// - The file can't be cleaned.
     fn clean(&self) -> fs::Result<()>;
 
     /// Removes or deletes a file.
     ///
     /// # Errors
-    /// Returns an error if the file can't be removed.
+    /// - The file can't be removed.
     fn remove(&self) -> fs::Result<()>;
 }
 
@@ -142,60 +152,63 @@ pub trait DbPersister: Debug {
     fn database(&self) -> String;
 
     /// Checks if a table exists.
+    ///
+    /// # Errors
+    /// - The database's or table's existence can't be checked.
     fn exists(&self) -> db::Result<bool>;
 
     /// Returns the tasks collected from the database's contents.
     ///
     /// # Errors
-    /// If the tasks can't be extracted from the database.
+    /// - The tasks can't be extracted from the database.
     fn tasks(&self) -> db::Result<Vec<Task>>;
 
     /// Returns the number of results in a table.
     ///
     /// # Errors
-    /// Returns an error if the number of tasks can't be returned.
+    /// - The number of tasks can't be returned.
     fn count(&self) -> db::Result<u32>;
 
     /// Creates a table.
     ///
     /// # Errors
-    /// Returns an error if the table can't be created.
+    /// - The table can't be created.
     fn create(&self) -> db::Result<()>;
 
     /// Inserts data into a table.
     ///
     /// # Errors
-    /// Returns an error if tasks can't be inserted.
+    /// - Tasks can't be inserted.
     fn insert(&self, todo: &Todo) -> db::Result<()>;
 
     /// Updates data from a table.
     ///
     /// # Errors
-    /// Returns an error if tasks can't be updated.
+    /// - Tasks can't be updated.
     fn update(&self, todo: &Todo, ids: &[u32], action: &Action) -> db::Result<()>;
 
     /// Deletes data from a table.
     ///
     /// # Errors
-    /// Returns an error if tasks can't be deleted.
+    /// - Tasks can't be deleted.
     fn delete(&self, ids: &[u32]) -> db::Result<()>;
 
     /// Drops the specified table.
     ///
     /// # Errors
-    /// Returns an error if the table can't be dropped.
+    /// - The table can't be dropped.
     fn drop_table(&self) -> db::Result<()>;
 
     /// Drops the specified database.
     ///
     /// # Errors
-    /// Returns an error if the database can't be dropped.
+    /// - The database can't be dropped.
     fn drop_database(&self) -> db::Result<()>;
 
     /// Deletes all tasks from the persister.
     ///
     /// # Errors
-    /// Returns an error if the table can't be cleaned
+    /// - The table can't be cleaned
     fn clean(&self) -> db::Result<()>;
 }
 

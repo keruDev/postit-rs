@@ -182,7 +182,7 @@ impl Task {
     /// Marks the task as checked.
     ///
     /// # Errors
-    /// If the task is already checked, an error will be returned.
+    /// - The task is already checked.
     #[inline]
     pub const fn check(&mut self) -> Result<&Self, error::Error> {
         if self.checked {
@@ -196,7 +196,7 @@ impl Task {
     /// Marks the task as unchecked.
     ///
     /// # Errors
-    /// If the task is already unchecked, an error will be returned.
+    /// - The task is already unchecked.
     #[inline]
     pub const fn uncheck(&mut self) -> Result<&Self, error::Error> {
         if self.checked {

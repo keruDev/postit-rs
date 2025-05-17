@@ -36,8 +36,8 @@ impl FilePersister for Json {
     }
 
     #[inline]
-    fn path(&self) -> PathBuf {
-        self.path.clone()
+    fn path(&self) -> &PathBuf {
+        &self.path
     }
 
     #[inline]

@@ -36,6 +36,9 @@ impl Todo {
     }
 
     /// Creates a `Todo` instance from a persister's contents.
+    ///
+    /// # Errors
+    /// - The tasks can't be obtained from the persister.
     #[inline]
     pub fn from(persister: &dyn Persister) -> crate::Result<Self> {
         Ok(Self { tasks: persister.tasks()? })
@@ -71,6 +74,9 @@ impl Todo {
     }
 
     /// Shows the current list of tasks.
+    ///
+    /// # Errors
+    /// - There are no tasks stored in the instance.
     #[inline]
     pub fn view(&self) -> crate::Result<()> {
         if self.tasks.is_empty() {
@@ -90,6 +96,9 @@ impl Todo {
     }
 
     /// Changes values of tasks based on the `set` subcommand used.
+    ///
+    /// # Errors
+    /// - Bubbled up from [`Todo::set_priority`] or [`Todo::set_content`].
     #[inline]
     pub fn set(&mut self, cmnd: &sub::Set) -> crate::Result<()> {
         match cmnd {
@@ -99,6 +108,9 @@ impl Todo {
     }
 
     /// Changes the `priority` property of tasks (selected by using `ids`).
+    ///
+    /// # Errors
+    /// - There are no tasks stored in the instance.
     #[inline]
     pub fn set_priority(&mut self, ids: &[u32], priority: &Priority) -> crate::Result<()> {
         if self.tasks.is_empty() {
@@ -114,6 +126,9 @@ impl Todo {
     }
 
     /// Changes the `content` property of tasks (selected by using `ids`).
+    ///
+    /// # Errors
+    /// - There are no tasks stored in the instance.
     #[inline]
     pub fn set_content(&mut self, ids: &[u32], content: &str) -> crate::Result<()> {
         if self.tasks.is_empty() {
@@ -130,6 +145,9 @@ impl Todo {
 
     /// Marks a task as checked.
     /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
+    ///
+    /// # Errors
+    /// - There are no tasks stored in the instance.
     #[inline]
     pub fn check(&mut self, ids: &[u32]) -> crate::Result<Vec<u32>> {
         if self.tasks.is_empty() {
@@ -151,6 +169,9 @@ impl Todo {
 
     /// Marks a task as unchecked.
     /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
+    ///
+    /// # Errors
+    /// - There are no tasks stored in the instance.
     #[inline]
     pub fn uncheck(&mut self, ids: &[u32]) -> crate::Result<Vec<u32>> {
         if self.tasks.is_empty() {
@@ -171,7 +192,11 @@ impl Todo {
     }
 
     /// Drops a task from the list.
-    /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.
+    /// Returns a `Vec<u32>` containing the IDs of the tasks that changed.    
+    ///
+    /// # Errors
+    /// - If there are no tasks stored in the instance.
+    /// - The configuration can't be loaded.
     #[inline]
     pub fn drop(&mut self, ids: &[u32]) -> crate::Result<Vec<u32>> {
         if self.tasks.is_empty() {
@@ -179,7 +204,7 @@ impl Todo {
             return Err(crate::Error::wrap(err));
         }
 
-        let force_drop = Config::load().unwrap().force_drop;
+        let force_drop = Config::load()?.force_drop;
         let mut changed_ids = vec![];
 
         self.tasks.retain(|task| {

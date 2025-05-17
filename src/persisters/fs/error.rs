@@ -8,6 +8,10 @@ pub type Result<T> = std::result::Result<T, self::Error>;
 /// Errors related to file and path management.
 #[derive(Error, Debug)]
 pub enum Error {
+    /// Used when the file is actually a directory.
+    #[error("The persister can't be a directory")]
+    IsDirectory,
+
     /// Used for file format related issues.
     #[error("Unsupported file format; defaulting to CSV")]
     UnsupportedFormat,
