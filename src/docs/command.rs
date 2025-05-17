@@ -46,7 +46,7 @@ How to use:
 Sample:"
         );
 
-        Todo::sample().view();
+        Todo::sample().view().unwrap();
     }
 
     /// Use case of the 'view' command.
@@ -65,7 +65,7 @@ How to use:
 "
         );
 
-        Todo::sample().view();
+        Todo::sample().view().unwrap();
     }
 
     /// Use case of the 'add' command.
@@ -99,13 +99,13 @@ How to use:
 
         println!("Before:");
 
-        todo.view();
+        todo.view().unwrap();
 
         println!();
         println!("After:");
 
         todo.add(task);
-        todo.view();
+        todo.view().unwrap();
     }
 
     /// Use case of the 'set' command.
@@ -130,13 +130,13 @@ How to use (content):
 
             println!("Before:");
 
-            todo.view();
+            todo.view().unwrap();
 
             println!();
             println!("After:");
 
-            todo.set_content(&[2], new_content);
-            todo.view();
+            todo.set_content(&[2], new_content).unwrap();
+            todo.view().unwrap();
         }
 
         fn set_priority() {
@@ -158,13 +158,13 @@ How to use (priority):
 
             println!("Before:");
 
-            todo.view();
+            todo.view().unwrap();
 
             println!();
             println!("After:");
 
-            todo.set_priority(&[2], &new_priority);
-            todo.view();
+            todo.set_priority(&[2], &new_priority).unwrap();
+            todo.view().unwrap();
         }
 
         println!(
@@ -204,13 +204,13 @@ How to use:
 
         println!("Before:");
 
-        todo.view();
+        todo.view().unwrap();
 
         println!();
         println!("After:");
 
-        todo.check(&[2, 3]);
-        todo.view();
+        todo.check(&[2, 3]).unwrap();
+        todo.view().unwrap();
     }
 
     /// Use case of the 'uncheck' command.
@@ -233,13 +233,13 @@ How to use:
 
         println!("Before:");
 
-        todo.view();
+        todo.view().unwrap();
 
         println!();
         println!("After:");
 
-        todo.uncheck(&[2, 3]);
-        todo.view();
+        todo.uncheck(&[2, 3]).unwrap();
+        todo.view().unwrap();
     }
 
     /// Use case of the 'drop' command.
@@ -258,14 +258,14 @@ Config:
 
             println!("Before:");
 
-            todo.view();
+            todo.view().unwrap();
 
             println!();
             println!("After:");
 
-            todo.check(&[2]);
-            todo.drop(&[2, 3]);
-            todo.view();
+            todo.check(&[2]).unwrap();
+            todo.drop(&[2, 3]).unwrap();
+            todo.view().unwrap();
         }
 
         println!(
@@ -285,13 +285,13 @@ How to use:
 
         println!("Before:");
 
-        todo.view();
+        todo.view().unwrap();
 
         println!();
         println!("After:");
 
-        todo.drop(&[2, 3]);
-        todo.view();
+        todo.drop(&[2, 3]).unwrap();
+        todo.view().unwrap();
 
         force_drop();
     }

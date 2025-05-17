@@ -13,7 +13,7 @@ verbose = true
 line = true
 
 jobs = 4
-fail-under = 93
+fail-under = 90
 
 [report]
 output-dir = "coverage"

@@ -3,6 +3,7 @@ use std::io::Read;
 use std::ops::Not;
 
 use postit::fs::{Csv, Format};
+use postit::models::Todo;
 use postit::traits::FilePersister;
 
 use crate::mocks::MockPath;
@@ -29,6 +30,21 @@ fn open() -> postit::Result<()> {
 
     csv.read_to_end(&mut result)?;
     file.read_to_end(&mut expect)?;
+
+    assert_eq!(result, expect);
+
+    Ok(())
+}
+
+#[test]
+fn write() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Csv)?;
+    let todo = Todo::sample();
+
+    mock.instance.write(&todo)?;
+
+    let result = mock.instance.tasks()?;
+    let expect = todo.tasks;
 
     assert_eq!(result, expect);
 

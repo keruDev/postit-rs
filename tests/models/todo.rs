@@ -1,13 +1,4 @@
-use postit::fs::{File, Format};
-use postit::models::{Task, Todo};
-
-use crate::mocks::MockPath;
-
-fn fakes(mock: &MockPath) -> postit::Result<Todo> {
-    let file = File::from(mock.to_string())?;
-
-    Todo::from(&file)
-}
+use postit::models::{Priority, Task, Todo};
 
 #[test]
 fn new() {
@@ -18,42 +9,44 @@ fn new() {
 }
 
 #[test]
-fn get() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv)?;
-
-    let todo = fakes(&mock)?;
+fn get() {
+    let todo = Todo::sample();
     let clone = todo.clone();
 
-    let ids = vec![2, 3];
-    let tasks = todo.get(&ids);
+    let ids = &[2, 3];
+    let tasks = todo.get(ids);
     let expect = vec![&clone.tasks[1], &clone.tasks[2]];
 
     assert_eq!(tasks, expect);
-
-    Ok(())
 }
 
 #[test]
-fn get_mut() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv)?;
-
-    let mut todo = fakes(&mock)?;
+fn get_mut() {
+    let mut todo = Todo::sample();
     let clone = todo.clone();
 
-    let ids = vec![2, 3];
-    let tasks = todo.get_mut(&ids);
+    let ids = &[2, 3];
+    let tasks = todo.get_mut(ids);
     let expect = vec![&clone.tasks[1], &clone.tasks[2]];
 
     assert_eq!(tasks, expect);
-
-    Ok(())
 }
 
 #[test]
-fn add_ok() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv)?;
+fn view_ok() {
+    let todo = Todo::sample();
 
-    let mut todo = fakes(&mock)?;
+    assert!(todo.view().is_ok());
+}
+
+#[test]
+fn view_err() {
+    assert!(Todo::new(&[]).view().is_err());
+}
+
+#[test]
+fn add_ok() {
+    let mut todo = Todo::sample();
     let mut expect = todo.clone();
 
     let task = Task::from("5,Test,med,false");
@@ -62,15 +55,55 @@ fn add_ok() -> postit::Result<()> {
     expect.tasks.push(task);
 
     assert_eq!(todo, expect);
+}
+
+#[test]
+fn set_content_ok() -> postit::Result<()> {
+    let ids = &[1];
+    let mut todo = Todo::sample();
+    todo.set_content(ids, "test")?;
+
+    let result = &todo.tasks[0];
+    let expect = todo.get(ids)[0];
+
+    assert_eq!(result, expect);
 
     Ok(())
 }
 
 #[test]
-fn check_ok() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv)?;
+fn set_content_err() {
+    let mut todo = Todo::new(&[]);
+    let result = todo.set_content(&[1], "test");
 
-    let mut todo = fakes(&mock)?;
+    assert!(result.is_err());
+}
+
+#[test]
+fn set_priority_ok() -> postit::Result<()> {
+    let ids = &[1];
+    let mut todo = Todo::sample();
+    todo.set_priority(ids, &Priority::Med)?;
+
+    let result = &todo.tasks[0];
+    let expect = todo.get(ids)[0];
+
+    assert_eq!(result, expect);
+
+    Ok(())
+}
+
+#[test]
+fn set_priority_err() {
+    let mut todo = Todo::new(&[]);
+    let result = todo.set_priority(&[1], &Priority::Med);
+
+    assert!(result.is_err());
+}
+
+#[test]
+fn check_ok() {
+    let mut todo = Todo::sample();
     let mut expect = todo.clone();
 
     let task = Task::from("5,Test,med,false");
@@ -79,15 +112,16 @@ fn check_ok() -> postit::Result<()> {
     expect.tasks.push(task);
 
     assert_eq!(todo, expect);
-
-    Ok(())
 }
 
 #[test]
-fn uncheck_ok() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv)?;
+fn check_err() {
+    assert!(Todo::new(&[]).check(&[1]).is_err());
+}
 
-    let mut todo = fakes(&mock)?;
+#[test]
+fn uncheck_ok() {
+    let mut todo = Todo::sample();
     let mut expect = todo.clone();
 
     let task = Task::from("5,Test,med,true");
@@ -96,21 +130,23 @@ fn uncheck_ok() -> postit::Result<()> {
     expect.tasks.push(task);
 
     assert_eq!(todo, expect);
-
-    Ok(())
 }
 
 #[test]
-fn drop() -> postit::Result<()> {
-    let mock = MockPath::create(Format::Csv)?;
+fn uncheck_err() {
+    let err = Todo::new(&[]).uncheck(&[1]).unwrap_err();
+    assert!(matches!(err, postit::Error::Other(_)));
+}
 
-    let mut todo = fakes(&mock)?;
+#[test]
+fn drop_ok() -> postit::Result<()> {
+    let mut todo = Todo::sample();
     let mut expect = todo.clone();
 
-    let ids = vec![2, 3];
+    let ids = &[2, 3];
 
-    todo.check(&ids);
-    todo.drop(&ids);
+    todo.check(ids)?;
+    todo.drop(ids)?;
 
     expect.tasks.remove(1);
     expect.tasks.remove(1);
@@ -118,4 +154,9 @@ fn drop() -> postit::Result<()> {
     assert_eq!(todo, expect);
 
     Ok(())
+}
+
+#[test]
+fn drop_err() {
+    assert!(Todo::new(&[]).drop(&[1]).is_err());
 }

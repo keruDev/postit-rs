@@ -189,8 +189,8 @@ impl Persister for File {
         let path = &self.path();
 
         if path.exists() {
-            println!("The file already exists");
-            return Ok(());
+            let err = "The file already exists";
+            return Err(crate::Error::wrap(err));
         }
 
         let file = path.file_name().unwrap();
@@ -213,11 +213,10 @@ impl Persister for File {
 
         if !path.exists() {
             let path = path.file_name().unwrap().to_string_lossy().to_string();
-
             return Err(super::Error::FileDoesntExist(path).into());
         }
 
-        Todo::new(self.tasks()?).view();
+        Todo::new(self.tasks()?).view()?;
 
         Ok(())
     }
@@ -237,7 +236,6 @@ impl Persister for File {
 
         if !path.exists() {
             let path = path.file_name().unwrap().to_string_lossy();
-
             return Err(super::Error::FileDoesntExist(path.to_string()).into());
         }
 
@@ -269,7 +267,6 @@ impl Persister for File {
 
         self.file.write(todo).map_err(|e| {
             eprintln!("Can't replace the tasks of '{file}'");
-
             crate::Error::Fs(e)
         })?;
 

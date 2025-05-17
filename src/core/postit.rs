@@ -31,7 +31,7 @@ impl Postit {
     /// If there is any error while operating a persister.
     #[inline]
     pub fn run(cli: Cli) -> super::Result<()> {
-        let result = match cli.command {
+        match cli.command {
             Command::Example(args) => {
                 Self::example(&args);
                 Ok(())
@@ -51,13 +51,7 @@ impl Postit {
             Command::Copy(args) => Self::copy(&args),
             Command::Clean(args) => Self::clean(args),
             Command::Remove(args) => Self::remove(args),
-        };
-
-        if let Err(e) = &result {
-            eprintln!("{e}");
         }
-
-        Ok(())
     }
 
     /// Builds a persister based on the passed value.
@@ -130,7 +124,7 @@ impl Postit {
 
         let mut todo = Todo::from(persister.as_ref())?;
 
-        todo.set(&args.subcommand);
+        todo.set(&args.subcommand)?;
 
         let (ids, action) = match args.subcommand {
             sub::Set::Content(args) => (args.ids, Action::SetContent),
@@ -158,7 +152,7 @@ impl Postit {
             Action::Uncheck => todo.uncheck(&args.ids),
             Action::Drop => todo.drop(&args.ids),
             Action::SetContent | Action::SetPriority => unreachable!(),
-        };
+        }?;
 
         persister.edit(&todo, &changed_ids, action)?;
 

@@ -1,3 +1,5 @@
+use std::fs;
+use std::io::Read;
 use std::ops::Not;
 
 use postit::fs::{Format, Xml};
@@ -28,6 +30,30 @@ fn tasks() -> postit::Result<()> {
     assert_eq!(result, expect);
 
     Ok(())
+}
+
+#[test]
+fn open_ok() -> postit::Result<()> {
+    let mock = MockPath::create(Format::Xml)?;
+
+    let mut json = Xml::new(mock.path()).open()?;
+    let mut file = fs::File::open(mock.path())?;
+
+    let mut result = Vec::new();
+    let mut expect = Vec::new();
+
+    json.read_to_end(&mut result)?;
+    file.read_to_end(&mut expect)?;
+
+    assert_eq!(result, expect);
+
+    Ok(())
+}
+
+#[test]
+fn open_err() {
+    let err = Xml::new("tmp/fake.xml").open().unwrap_err();
+    assert!(matches!(err, postit::fs::Error::Io(_)));
 }
 
 #[test]
