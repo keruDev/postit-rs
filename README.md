@@ -89,13 +89,13 @@ Here are some of its current features and some planned ones as well:
 Features:
 - Commands and flags to manage tasks and files.
 - Variety of supported persisters:
-  - File: `csv`, `json`, `xml`.
-  - Db: `sqlite`.
+  - File extensions: `csv`, `json`, `xml`.
+  - DB protocols: `sqlite`, `mongodb`, `mongodb+srv`.
 - Configuration file to change postit's behavior (more info in the [Configuration](#configuration) section).
 
 Roadmap:
 - [x] XML support
-- [ ] MongoDB support
+- [x] MongoDB support
 - [ ] MySQL support
 - [ ] Tasks filtering and sorting
 
