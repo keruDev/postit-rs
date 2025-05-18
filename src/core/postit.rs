@@ -169,25 +169,31 @@ impl Postit {
     /// - The left persister has no tasks.
     /// - The right persister has tasks.    
     fn copy(args: &args::Copy) -> super::Result<()> {
-        if args.left == args.right {
+        let config = Config::load()?;
+
+        let (left_path, right_path) = match args.left.as_ref() {
+            "from" => (&args.right, &config.persister),
+            "to" => (&config.persister, &args.right),
+            _ => (&args.left, &args.right),
+        };
+
+        if left_path == right_path {
             let msg = "Both persisters are the same";
             return Err(super::Error::wrap(msg));
         }
 
-        let left = Self::get_persister(Some(&args.left))?;
+        let left = Self::get_persister(Some(left_path))?;
 
-        if left.tasks()? == Vec::new() {
+        if left.tasks()?.is_empty() {
             let msg = format!("The persister '{}' has no tasks to copy", left.to_string());
             return Err(super::Error::wrap(msg));
         }
 
-        let right = Self::get_persister(Some(&args.right))?;
+        let right = Self::get_persister(Some(right_path))?;
 
         if !right.exists()? {
             right.create()?;
         }
-
-        let config = Config::load()?;
 
         if !config.force_copy && right.tasks()? != Vec::new() {
             let msg = format!(
@@ -204,7 +210,7 @@ impl Postit {
             left.remove()?;
         }
 
-        println!("The tasks of '{}' have been copied to '{}'", args.left, args.right);
+        println!("The tasks of '{left_path}' have been copied to '{right_path}'");
 
         right.view()
     }

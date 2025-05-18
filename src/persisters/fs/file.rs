@@ -232,7 +232,7 @@ impl Persister for File {
     #[inline]
     fn tasks(&self) -> crate::Result<Vec<Task>> {
         if !self.exists()? {
-            self.create()?;
+            return Ok(Vec::new());
         }
 
         self.file.tasks().map_err(crate::Error::Fs)
