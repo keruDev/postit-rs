@@ -115,9 +115,7 @@ impl File {
             return Ok(());
         }
 
-        let file = path.file_name().unwrap();
-
-        println!("Creating '{}'", file.to_string_lossy());
+        println!("Creating '{}'", path.file_name().unwrap().to_string_lossy());
 
         fs::write(path, self.file.default())?;
 
@@ -205,9 +203,7 @@ impl Persister for File {
             return Err(crate::Error::wrap(err));
         }
 
-        let file = path.file_name().unwrap();
-
-        println!("Creating '{}'", file.to_string_lossy());
+        println!("Creating '{}'", path.file_name().unwrap().to_string_lossy());
 
         fs::write(path, self.file.default())?;
 
@@ -264,9 +260,9 @@ impl Persister for File {
     fn save(&self, todo: &Todo) -> crate::Result<()> {
         self.file.write(todo).map_err(|e| {
             let path = self.path();
-            let name = path.file_name().unwrap();
+            let file = path.file_name().unwrap().to_string_lossy();
 
-            eprintln!("Can't save the '{name:?}' file");
+            eprintln!("Can't save the '{file}' file");
 
             crate::Error::Fs(e)
         })
