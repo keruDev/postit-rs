@@ -344,7 +344,18 @@ Config:
 
     If you want to copy your tasks and delete the '<LEFT>' persister, you can do so
     by setting the 'drop_after_copy' config to 'true'. This will delete the file or
-    table located at '<LEFT>'."
+    table located at '<LEFT>'.
+
+Special parameters:
+    There are two special parameters that go into the '<LEFT>' argument.
+
+    Assuming the persister defined at the configuration file is 'tasks.csv':
+
+    - 'from': copies the tasks from '<RIGHT>' to the persister defined at the config.
+      'postit copy from tasks.json' is the same as 'postit copy tasks.json tasks.csv'
+
+    - 'to': copies the tasks from the persister defined at the config to '<RIGHT>'.
+      'postit copy to tasks.json' is the same as 'postit copy tasks.csv tasks.json'"
         );
     }
 
