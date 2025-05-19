@@ -1,4 +1,4 @@
-//! Contains examples of how to use every command, including their usage, alias
+//! Contains documentations for use every command, including their usage, aliases,
 //! a description and a use example to showcase the command's functionalities.
 
 #![allow(clippy::single_call_fn)]
@@ -11,7 +11,7 @@ use crate::models::{Priority, Task, Todo};
 pub struct Command;
 
 impl Command {
-    /// Uses the [`sub::Example`] value passed to show its corresponding example.
+    /// Uses the [`sub::Docs`] value passed to show its corresponding example.
     #[inline]
     pub fn run(cmnd: &sub::Docs) {
         match *cmnd {
