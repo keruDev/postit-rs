@@ -10,12 +10,12 @@ pub mod arguments {
     use super::subcommands as sub;
     use crate::models::Priority;
 
-    /// Arguments of the 'example' command.
+    /// Arguments of the 'docs' command.
     #[derive(Args, Debug)]
-    pub struct Example {
-        /// Subcommand the `Example` command will use.
+    pub struct Docs {
+        /// Subcommand the `Docs` command will use.
         #[command(subcommand)]
-        pub subcommand: sub::Example,
+        pub subcommand: sub::Docs,
     }
 
     /// Arguments of the 'flag' command.
@@ -173,34 +173,34 @@ pub mod subcommands {
     /// Subcommands for the 'Flag' command
     #[derive(Subcommand, Debug)]
     pub enum Flag {
-        /// Use example for the 'persister' flag
+        /// Documentation of for the 'persister' flag
         Persister,
     }
 
-    /// Subcommands for the 'Example' command
+    /// Subcommands for the 'Docs' command
     #[derive(Subcommand, Debug)]
-    pub enum Example {
-        /// Use example for the 'config' command
+    pub enum Docs {
+        /// Documentation of the 'config' command
         Config,
-        /// Use example for the 'view' command
+        /// Documentation of the 'view' command
         View,
-        /// Use example for the 'add' command
+        /// Documentation of the 'add' command
         Add,
-        /// Use example for the 'set' command
+        /// Documentation of the 'set' command
         Set,
-        /// Use example for the 'check' command
+        /// Documentation of the 'check' command
         Check,
-        /// Use example for the 'uncheck' command
+        /// Documentation of the 'uncheck' command
         Uncheck,
-        /// Use example for the 'drop' command
+        /// Documentation of the 'drop' command
         Drop,
-        /// Use example for the 'copy' command
+        /// Documentation of the 'copy' command
         Copy,
-        /// Use example for the 'clean' command
+        /// Documentation of the 'clean' command
         Clean,
-        /// Use example for the 'remove' command
+        /// Documentation of the 'remove' command
         Remove,
-        /// Use example for the 'sample' command
+        /// Documentation of the 'sample' command
         Sample,
     }
 }
@@ -252,11 +252,11 @@ pub enum Command {
     #[command(alias = "sa")]
     Sample(args::Persister),
 
-    /// Provides use examples for commands
-    #[command(alias = "ex")]
-    Example(args::Example),
+    /// Provides documentation and use examples for commands
+    #[command(alias = "man")]
+    Docs(args::Docs),
 
-    /// Provides use examples for flags
+    /// Provides documentation and use examples for flags
     #[command(alias = "f")]
     Flag(args::Flag),
 }

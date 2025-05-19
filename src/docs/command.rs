@@ -13,19 +13,19 @@ pub struct Command;
 impl Command {
     /// Uses the [`sub::Example`] value passed to show its corresponding example.
     #[inline]
-    pub fn run(cmnd: &sub::Example) {
+    pub fn run(cmnd: &sub::Docs) {
         match *cmnd {
-            sub::Example::Config => Self::config(),
-            sub::Example::View => Self::view(),
-            sub::Example::Add => Self::add(),
-            sub::Example::Set => Self::set(),
-            sub::Example::Check => Self::check(),
-            sub::Example::Uncheck => Self::uncheck(),
-            sub::Example::Drop => Self::drop(),
-            sub::Example::Sample => Self::sample(),
-            sub::Example::Copy => Self::copy(),
-            sub::Example::Clean => Self::clean(),
-            sub::Example::Remove => Self::remove(),
+            sub::Docs::Config => Self::config(),
+            sub::Docs::View => Self::view(),
+            sub::Docs::Add => Self::add(),
+            sub::Docs::Set => Self::set(),
+            sub::Docs::Check => Self::check(),
+            sub::Docs::Uncheck => Self::uncheck(),
+            sub::Docs::Drop => Self::drop(),
+            sub::Docs::Sample => Self::sample(),
+            sub::Docs::Copy => Self::copy(),
+            sub::Docs::Clean => Self::clean(),
+            sub::Docs::Remove => Self::remove(),
         }
     }
 

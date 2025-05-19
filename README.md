@@ -59,9 +59,9 @@ postit config init
 ```
 
 Here is a list of useful commands to get started:
-- `postit help`: displays a list of all possible commands.
-- `postit example`: displays an example on how to use every other command.
-- `postit flag`: displays information about commonly used flags.
+- `postit help`: a list of all possible commands.
+- `postit docs`: documentation and use examples for every command.
+- `postit flag`: documentation and use examples for flags.
 
 ## From 0.1.x to 0.2.x
 
@@ -103,10 +103,11 @@ Roadmap:
 
 postit's behavior can be changed using the `.postit.toml` file.
 
-You can check out its possible fields in the [docs](https://docs.rs/postit/latest/postit/struct.Config.html) or by running the example command:
+You can check out its possible fields in the [docs](https://docs.rs/postit/latest/postit/struct.Config.html)
+or by running the documentation command:
 
 ```sh
-postit example config
+postit docs config
 ```
 
 ## Development
