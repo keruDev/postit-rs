@@ -4,17 +4,17 @@ use assert_cmd::Command;
 use postit::cli::subcommands as sub;
 use postit::docs;
 
-fn get_example_output(command: &str) -> Output {
+fn get_docs_output(command: &str) -> Output {
     Command::cargo_bin("postit")
         .unwrap()
-        .args(["example", command])
+        .args(["docs", command])
         .output()
         .expect("Error while running the test")
 }
 
 #[test]
-fn example_sample_output() {
-    let output = get_example_output("sample");
+fn docs_sample_output() {
+    let output = get_docs_output("sample");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -23,13 +23,13 @@ fn example_sample_output() {
 }
 
 #[test]
-fn example_sample_no_panic() {
+fn docs_sample_no_panic() {
     docs::Command::run(&sub::Docs::Sample)
 }
 
 #[test]
-fn example_view_output() {
-    let output = get_example_output("view");
+fn docs_view_output() {
+    let output = get_docs_output("view");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -38,14 +38,16 @@ fn example_view_output() {
 }
 
 #[test]
-fn example_view_no_panic() {
+fn docs_view_no_panic() {
     docs::Command::run(&sub::Docs::View)
 }
 
 #[test]
-fn example_add_output() {
-    let output = get_example_output("add");
+fn docs_add_output() {
+    let output = get_docs_output("add");
     let stdout = String::from_utf8_lossy(&output.stdout);
+
+    dbg!(&output);
 
     assert!(output.status.success());
     assert!(stdout.contains("Usage: postit add <PRIORITY> <CONTENT> [--persister|-p]"));
@@ -53,13 +55,13 @@ fn example_add_output() {
 }
 
 #[test]
-fn example_add_no_panic() {
+fn docs_add_no_panic() {
     docs::Command::run(&sub::Docs::Add)
 }
 
 #[test]
-fn example_set_output() {
-    let output = get_example_output("set");
+fn docs_set_output() {
+    let output = get_docs_output("set");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -68,13 +70,13 @@ fn example_set_output() {
 }
 
 #[test]
-fn example_set_no_panic() {
+fn docs_set_no_panic() {
     docs::Command::run(&sub::Docs::Set)
 }
 
 #[test]
-fn example_check_output() {
-    let output = get_example_output("check");
+fn docs_check_output() {
+    let output = get_docs_output("check");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -83,13 +85,13 @@ fn example_check_output() {
 }
 
 #[test]
-fn example_check_no_panic() {
+fn docs_check_no_panic() {
     docs::Command::run(&sub::Docs::Check)
 }
 
 #[test]
-fn example_uncheck_output() {
-    let output = get_example_output("uncheck");
+fn docs_uncheck_output() {
+    let output = get_docs_output("uncheck");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -98,13 +100,13 @@ fn example_uncheck_output() {
 }
 
 #[test]
-fn example_uncheck_no_panic() {
+fn docs_uncheck_no_panic() {
     docs::Command::run(&sub::Docs::Uncheck)
 }
 
 #[test]
-fn example_drop_output() {
-    let output = get_example_output("drop");
+fn docs_drop_output() {
+    let output = get_docs_output("drop");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -113,13 +115,13 @@ fn example_drop_output() {
 }
 
 #[test]
-fn example_drop_no_panic() {
+fn docs_drop_no_panic() {
     docs::Command::run(&sub::Docs::Drop);
 }
 
 #[test]
-fn example_copy_output() {
-    let output = get_example_output("copy");
+fn docs_copy_output() {
+    let output = get_docs_output("copy");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -128,13 +130,13 @@ fn example_copy_output() {
 }
 
 #[test]
-fn example_copy_no_panic() {
+fn docs_copy_no_panic() {
     docs::Command::run(&sub::Docs::Copy)
 }
 
 #[test]
-fn example_clean_output() {
-    let output = get_example_output("clean");
+fn docs_clean_output() {
+    let output = get_docs_output("clean");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -143,13 +145,13 @@ fn example_clean_output() {
 }
 
 #[test]
-fn example_clean_no_panic() {
+fn docs_clean_no_panic() {
     docs::Command::run(&sub::Docs::Clean)
 }
 
 #[test]
-fn example_remove_output() {
-    let output = get_example_output("remove");
+fn docs_remove_output() {
+    let output = get_docs_output("remove");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -158,13 +160,13 @@ fn example_remove_output() {
 }
 
 #[test]
-fn example_remove_no_panic() {
+fn docs_remove_no_panic() {
     docs::Command::run(&sub::Docs::Remove)
 }
 
 #[test]
-fn example_config_output() {
-    let output = get_example_output("config");
+fn docs_config_output() {
+    let output = get_docs_output("config");
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success());
@@ -174,6 +176,6 @@ fn example_config_output() {
 }
 
 #[test]
-fn example_config_no_panic() {
+fn docs_config_no_panic() {
     docs::Command::run(&sub::Docs::Config)
 }
