@@ -62,9 +62,9 @@ fn get_persister_none() -> postit::Result<()> {
 }
 
 #[test]
-fn example() {
+fn docs() {
     let cli = Cli {
-        command: Command::Example(args::Example { subcommand: sub::Example::Add }),
+        command: Command::Docs(args::Docs { subcommand: sub::Docs::Add }),
     };
 
     assert!(Postit::run(cli).is_ok());

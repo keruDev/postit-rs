@@ -32,8 +32,8 @@ impl Postit {
     #[inline]
     pub fn run(cli: Cli) -> super::Result<()> {
         match cli.command {
-            Command::Example(args) => {
-                Self::example(&args);
+            Command::Docs(args) => {
+                Self::docs(&args);
                 Ok(())
             }
             Command::Flag(args) => {
@@ -82,7 +82,7 @@ impl Postit {
     }
 
     /// Shows use cases for every other command.
-    fn example(args: &args::Example) {
+    fn docs(args: &args::Docs) {
         docs::Command::run(&args.subcommand);
     }
 

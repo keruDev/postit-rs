@@ -24,7 +24,7 @@ fn example_sample_output() {
 
 #[test]
 fn example_sample_no_panic() {
-    docs::Command::run(&sub::Example::Sample)
+    docs::Command::run(&sub::Docs::Sample)
 }
 
 #[test]
@@ -39,7 +39,7 @@ fn example_view_output() {
 
 #[test]
 fn example_view_no_panic() {
-    docs::Command::run(&sub::Example::View)
+    docs::Command::run(&sub::Docs::View)
 }
 
 #[test]
@@ -54,7 +54,7 @@ fn example_add_output() {
 
 #[test]
 fn example_add_no_panic() {
-    docs::Command::run(&sub::Example::Add)
+    docs::Command::run(&sub::Docs::Add)
 }
 
 #[test]
@@ -69,7 +69,7 @@ fn example_set_output() {
 
 #[test]
 fn example_set_no_panic() {
-    docs::Command::run(&sub::Example::Set)
+    docs::Command::run(&sub::Docs::Set)
 }
 
 #[test]
@@ -84,7 +84,7 @@ fn example_check_output() {
 
 #[test]
 fn example_check_no_panic() {
-    docs::Command::run(&sub::Example::Check)
+    docs::Command::run(&sub::Docs::Check)
 }
 
 #[test]
@@ -99,7 +99,7 @@ fn example_uncheck_output() {
 
 #[test]
 fn example_uncheck_no_panic() {
-    docs::Command::run(&sub::Example::Uncheck)
+    docs::Command::run(&sub::Docs::Uncheck)
 }
 
 #[test]
@@ -114,7 +114,7 @@ fn example_drop_output() {
 
 #[test]
 fn example_drop_no_panic() {
-    docs::Command::run(&sub::Example::Drop);
+    docs::Command::run(&sub::Docs::Drop);
 }
 
 #[test]
@@ -129,7 +129,7 @@ fn example_copy_output() {
 
 #[test]
 fn example_copy_no_panic() {
-    docs::Command::run(&sub::Example::Copy)
+    docs::Command::run(&sub::Docs::Copy)
 }
 
 #[test]
@@ -144,7 +144,7 @@ fn example_clean_output() {
 
 #[test]
 fn example_clean_no_panic() {
-    docs::Command::run(&sub::Example::Clean)
+    docs::Command::run(&sub::Docs::Clean)
 }
 
 #[test]
@@ -159,7 +159,7 @@ fn example_remove_output() {
 
 #[test]
 fn example_remove_no_panic() {
-    docs::Command::run(&sub::Example::Remove)
+    docs::Command::run(&sub::Docs::Remove)
 }
 
 #[test]
@@ -175,5 +175,5 @@ fn example_config_output() {
 
 #[test]
 fn example_config_no_panic() {
-    docs::Command::run(&sub::Example::Config)
+    docs::Command::run(&sub::Docs::Config)
 }
