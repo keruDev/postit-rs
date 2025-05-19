@@ -349,7 +349,7 @@ fn copy() -> postit::Result<()> {
     mock_config.save()?;
 
     let mock_left = MockPath::create(Format::Csv)?;
-    let right_path = Config::build_path("postit_copy.json")?;
+    let right_path = Config::build_path("tasks.json")?;
     let right_str = right_path.to_str().unwrap();
 
     let cli = Cli {
@@ -368,6 +368,103 @@ fn copy() -> postit::Result<()> {
 
     assert_eq!(left_file.tasks()?, right_file.tasks()?);
     assert_eq!(left_todo, right_todo);
+
+    Ok(())
+}
+
+#[test]
+fn copy_from_ok() -> postit::Result<()> {
+    let mut mock_config = MockConfig::new()?;
+    mock_config.save()?;
+
+    let right_path = Config::build_path("tasks.json")?;
+    let mock_right = MockPath::from(&right_path)?;
+    mock_right.instance.write(&Todo::sample())?;
+
+    let cli = Cli {
+        command: Command::Copy(args::Copy {
+            left: "from".to_string(),
+            right: mock_right.path().to_string_lossy().to_string(),
+        }),
+    };
+
+    assert!(Postit::run(cli).is_ok());
+
+    let left_path = Config::build_path("tasks.csv")?;
+    let mock_left = MockPath::from(&left_path)?;
+
+    assert_eq!(mock_left.instance.tasks()?, mock_right.instance.tasks()?);
+
+    Ok(())
+}
+
+#[test]
+fn copy_from_err() -> postit::Result<()> {
+    let mut mock_config = MockConfig::new()?;
+    mock_config.save()?;
+
+    let right_path = Config::build_path("tasks.csv")?;
+    let mock_right = MockPath::from(&right_path)?;
+    mock_right.instance.write(&Todo::sample())?;
+
+    let cli = Cli {
+        command: Command::Copy(args::Copy {
+            left: "from".to_string(),
+            right: mock_right.path().to_string_lossy().to_string(),
+        }),
+    };
+
+    assert!(Postit::run(cli).is_err());
+
+    Ok(())
+}
+
+#[test]
+fn copy_to_ok() -> postit::Result<()> {
+    let mut mock_config = MockConfig::new()?;
+    mock_config.save()?;
+
+    let left_path = Config::build_path(&mock_config.config.persister)?;
+    let mock_left = MockPath::from(&left_path)?;
+    mock_left.instance.write(&Todo::sample())?;
+
+    let left_right = Config::build_path("tasks.json")?;
+
+    let cli = Cli {
+        command: Command::Copy(args::Copy {
+            left: "to".to_string(),
+            right: left_right.to_string_lossy().to_string(),
+        }),
+    };
+
+    assert!(Postit::run(cli).is_ok());
+
+    let mock_right = MockPath::from(left_right)?;
+
+    assert_eq!(mock_left.instance.tasks()?, mock_right.instance.tasks()?);
+
+    Ok(())
+}
+
+#[test]
+fn copy_to_err() -> postit::Result<()> {
+    let mut mock_config = MockConfig::new()?;
+    mock_config.save()?;
+
+    let left_path = Config::build_path(&mock_config.config.persister)?;
+    let mock_left = MockPath::from(&left_path)?;
+    mock_left.instance.write(&Todo::sample())?;
+
+    let left_right = Config::build_path("tasks.csv")?;
+
+    let cli = Cli {
+        command: Command::Copy(args::Copy {
+            left: "to".to_string(),
+            right: left_right.to_string_lossy().to_string(),
+        }),
+    };
+
+    assert!(Postit::run(cli).is_err());
 
     Ok(())
 }
