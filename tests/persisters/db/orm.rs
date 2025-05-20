@@ -6,7 +6,7 @@ use postit::models::{Task, Todo};
 use postit::traits::{DbPersister, Persister};
 use postit::Action;
 
-use crate::mocks::MockConn;
+use crate::mocks::{MockConfig, MockConn};
 
 #[test]
 fn error_wrap() {
@@ -78,6 +78,21 @@ fn get_persister() -> postit::Result<()> {
 fn get_persister_empty() {
     let err = Orm::get_persister("").unwrap_err();
     assert!(matches!(err, postit::Error::Db(postit::db::Error::IncorrectConnectionString)));
+}
+
+#[test]
+fn get_persister_unsupported() -> postit::Result<()> {
+    let conn = "tasks.db";
+
+    let _config = MockConfig::new()?;
+    let _mock = MockConn::new(conn);
+
+    let result = Orm::get_persister("http://localhost:27017")?;
+    let persister = Orm::get_persister(conn)?;
+
+    assert_eq!(result.conn(), persister.conn());
+
+    Ok(())
 }
 
 #[test]

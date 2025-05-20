@@ -104,7 +104,7 @@ pub struct Task {
 impl fmt::Display for Task {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let msg = format!("Task({}: {})", self.id, self.content);
+        let msg = format!("{}. {}", self.id, self.content);
 
         let colored = match self.priority {
             Priority::High => msg.red(),
