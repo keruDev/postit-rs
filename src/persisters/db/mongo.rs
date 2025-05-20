@@ -200,7 +200,7 @@ impl DbPersister for Mongo {
     fn drop_table(&self) -> super::Result<()> {
         self.collection::<Task>().drop().run()?;
 
-        println!("Removed the '{}' collection", self.table());
+        // println!("Removed the '{}' collection", self.table());
 
         Ok(())
     }

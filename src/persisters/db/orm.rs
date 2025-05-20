@@ -131,7 +131,7 @@ impl Orm {
 
         match Protocol::from(protocol) {
             Protocol::Mongo | Protocol::MongoSrv => Ok(Mongo::from(conn)?.boxed()),
-            Protocol::Sqlite => unreachable!(),
+            Protocol::Sqlite => Ok(Sqlite::from("tasks.db")?.boxed()),
         }
     }
 }
