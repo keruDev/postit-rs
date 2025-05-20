@@ -1,11 +1,11 @@
 [package]
 name = "postit"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 authors = ["cristianmarcosmartin1@gmail.com"]
 description = "Task manager on your CLI."
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/keruDev/postit-rs"
+repository = "https://github.com/kerudev/postit-rs"
 documentation = "https://docs.rs/postit/"
 keywords = ["cli", "productivity", "todo-list"]
 categories = ["command-line-utilities"]
